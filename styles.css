@@ -488,6 +488,29 @@ button { cursor: pointer; background: none; border: none; padding: 0; }
 .switch input:focus-visible + .switch__track { outline: 2px solid var(--color-ring); outline-offset: 2px; }
 .switch__label { font-size: .9375rem; font-weight: 500; }
 
+/* ---------- 同步面板 ---------- */
+.field--stack { display: block; margin-top: var(--s-5); }
+.field--stack > label {
+  display: block; font-size: .8125rem; font-weight: 600;
+  color: var(--color-muted-fg); margin-bottom: var(--s-2);
+}
+.field--stack input[type="text"],
+.field--stack input[type="password"] {
+  width: 100%; min-height: 44px; padding: 0 var(--s-4);
+  font: inherit; font-size: .9375rem; color: var(--color-fg);
+  background: var(--color-card); border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md); outline: none;
+  transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+}
+.field--stack input::placeholder { color: var(--color-muted-fg); opacity: .65; }
+.field--stack input:focus-visible { border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-ring); }
+.field__row { display: flex; gap: var(--s-3); }
+.field__row input { flex: 1; min-width: 0; }
+.btn--sm { min-height: 44px; padding: 0 var(--s-4); font-size: .875rem; }
+.sync-status { font-weight: 600; margin-top: var(--s-4); }
+.sync-status.is-error { color: var(--color-danger); }
+#sync-device { font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace); font-size: .75rem; }
+
 /* ---------- Footer / toast ---------- */
 .footer {
   border-top: 1px solid var(--color-border);

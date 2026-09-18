@@ -215,6 +215,55 @@
     </div>
 
     <div class="card settings-card">
+      <h2 class="card__title">多设备同步</h2>
+      <p class="card__desc">
+        进度存进一个<strong>私有</strong> GitHub 仓库，手机和电脑打开就自动合并。
+        两台设备各练各的词不会互相覆盖 —— 按每个词「最后练习时间」取新的那条，对错次数取较大值。
+      </p>
+
+      <label class="switch">
+        <input type="checkbox" id="sync-enabled">
+        <span class="switch__track" aria-hidden="true"><span class="switch__thumb"></span></span>
+        <span class="switch__label">开启自动同步</span>
+      </label>
+
+      <div class="field field--stack">
+        <label for="sync-owner">仓库所有者</label>
+        <input type="text" id="sync-owner" placeholder="DrivingGodJ" autocomplete="off" spellcheck="false">
+      </div>
+
+      <div class="field field--stack">
+        <label for="sync-repo">私有仓库名</label>
+        <input type="text" id="sync-repo" placeholder="worddrill-data" autocomplete="off" spellcheck="false">
+      </div>
+
+      <div class="field field--stack">
+        <label for="sync-path">进度文件路径</label>
+        <input type="text" id="sync-path" placeholder="progress.json" autocomplete="off" spellcheck="false">
+      </div>
+
+      <div class="field field--stack">
+        <label for="sync-token">访问令牌 token</label>
+        <div class="field__row">
+          <input type="password" id="sync-token" placeholder="github_pat_…" autocomplete="off" spellcheck="false">
+          <button class="btn btn--ghost btn--sm" id="btn-toggle-token" type="button">显示</button>
+        </div>
+        <p class="hint">
+          只存在这台设备的浏览器里，只会发往 <code>api.github.com</code>。
+          建议给 token 设有效期，别用勾了全部仓库的经典 token。
+        </p>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn--primary" id="btn-sync-now" type="button">立即同步</button>
+        <button class="btn btn--ghost" id="btn-sync-forget" type="button">清除凭据</button>
+      </div>
+
+      <p class="hint sync-status" id="sync-status"></p>
+      <p class="hint">本机标识：<code id="sync-device">—</code></p>
+    </div>
+
+    <div class="card settings-card">
       <h2 class="card__title">词库来源</h2>
       <p class="card__desc">
         词库文件：<code>data/words.json</code>，当前 <b id="meta-count">0</b> 个词，更新于 <span id="meta-updated">—</span>。<br>

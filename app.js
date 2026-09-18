@@ -29,11 +29,36 @@
   const STAGE_DUE = { recognize: 15 * MIN, write: 6 * HOUR, mastered: 3 * DAY };
   const REQUESTS_PER_ROUND = 40;   // 单轮最大题量，避免无限循环
 
+  /* ---------- 多设备同步（GitHub 私有仓库当存储） ---------- */
+  const SYNC_KEY = 'worddrill.sync.v1';
+  const SYNC_API = 'https://api.github.com';
+  /** 学习参数才同步；主题/发音是设备偏好，各设备自己存 */
+  const SYNCED_SETTINGS = ['newLimit', 'threshold'];
+  /** 学习参数的合法区间，必须和设置页滑块的 min/max 一致，否则同步进来的值会让界面与实际不一致 */
+  const SETTING_RANGE = { newLimit: [0, 40], threshold: [1, 4] };
+
+  function clampSetting(k, v) {
+    const r = SETTING_RANGE[k];
+    const n = Number(v);
+    if (!r || !isFinite(n)) return undefined;
+    return Math.min(r[1], Math.max(r[0], Math.round(n)));
+  }
+
+  function normalizeSettings(s) {
+    for (const k of Object.keys(SETTING_RANGE)) {
+      const c = clampSetting(k, s[k]);
+      if (c !== undefined) s[k] = c;
+    }
+    return s;
+  }
+
   /* ---------- 状态 ---------- */
   let WORDS = [];          // 词库
   let META = {};
   const byId = new Map();
   let store = null;        // 持久化状态
+  let sync = null;         // 多设备同步配置（token 只在本机）
+  let syncing = false;
   let session = null;      // 当前会话
   let libFilter = 'all';
   let libQuery = '';
@@ -74,6 +99,7 @@
     return {
       version: 1,
       settings: { newLimit: 10, threshold: 2, speak: true, theme: 'auto' },
+      settingsAt: 0,                   // 学习参数最后修改时间，用于多设备合并
       words: {},                       // id → 进度
       stats: { answers: 0, correct: 0, sessions: 0, lastDate: null, streakDays: 0 }
     };
@@ -84,11 +110,13 @@
       const raw = localStorage.getItem(STORE_KEY);
       if (!raw) return defaultStore();
       const parsed = JSON.parse(raw);
-      return Object.assign(defaultStore(), parsed, {
+      const merged = Object.assign(defaultStore(), parsed, {
         settings: Object.assign(defaultStore().settings, parsed.settings || {}),
         stats: Object.assign(defaultStore().stats, parsed.stats || {}),
         words: parsed.words || {}
       });
+      normalizeSettings(merged.settings);
+      return merged;
     } catch {
       return defaultStore();
     }
@@ -214,6 +242,236 @@
     return safe.replace(re, '<b>______</b>');
   }
 
+  /* ---------- 多设备同步：GitHub 私有仓库当存储 ----------
+     进度文件放在一个**私有**仓库里，token 用细粒度 PAT，
+     只授权那一个仓库的 Contents 读写。token 只存在本机浏览器，只发给 api.github.com。 */
+
+  function randomId() {
+    const a = new Uint8Array(8);
+    crypto.getRandomValues(a);
+    return Array.from(a, (b) => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  function defaultSync() {
+    return {
+      enabled: false,
+      owner: '', repo: '', path: 'progress.json', branch: 'main',
+      token: '', deviceId: randomId(),
+      lastSyncAt: 0, lastResult: ''
+    };
+  }
+
+  function loadSync() {
+    try {
+      const raw = localStorage.getItem(SYNC_KEY);
+      if (!raw) return defaultSync();
+      return Object.assign(defaultSync(), JSON.parse(raw));
+    } catch { return defaultSync(); }
+  }
+
+  function saveSync() {
+    try { localStorage.setItem(SYNC_KEY, JSON.stringify(sync)); }
+    catch { /* 存储被禁用，忽略 */ }
+  }
+
+  const b64Encode = (str) => {
+    const bytes = new TextEncoder().encode(str);
+    let bin = '';
+    for (const b of bytes) bin += String.fromCharCode(b);
+    return btoa(bin);
+  };
+
+  const b64Decode = (b64) => {
+    const bin = atob(String(b64).replace(/\s+/g, ''));
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return new TextDecoder().decode(bytes);
+  };
+
+  const syncApiUrl = () => {
+    const p = String(sync.path || 'progress.json').replace(/^\/+/, '');
+    return `${SYNC_API}/repos/${encodeURIComponent(sync.owner)}/${encodeURIComponent(sync.repo)}/contents/${p}`;
+  };
+
+  const syncHeaders = () => ({
+    Authorization: `Bearer ${sync.token}`,
+    Accept: 'application/vnd.github+json',
+    'X-GitHub-Api-Version': '2022-11-28',
+    'Content-Type': 'application/json'
+  });
+
+  function syncHttpError(status) {
+    if (status === 401) return new Error('token 无效或已过期（401）');
+    if (status === 403) return new Error('token 权限不足（403），确认勾了 Contents: Read and write');
+    if (status === 404) return new Error('找不到仓库或文件（404），确认仓库名和权限');
+    return new Error(`请求失败（${status}）`);
+  }
+
+  /** 读远端进度；文件还不存在返回 null。 */
+  async function remoteRead() {
+    const url = `${syncApiUrl()}?ref=${encodeURIComponent(sync.branch)}&t=${now()}`;
+    const res = await fetch(url, { headers: syncHeaders(), cache: 'no-store' });
+    if (res.status === 404) return null;
+    if (!res.ok) throw syncHttpError(res.status);
+    const j = await res.json();
+    let data = null;
+    try { data = JSON.parse(b64Decode(j.content)); } catch { data = null; }
+    return { sha: j.sha, data };
+  }
+
+  /** 写远端进度；sha 必填（新建时传 null）。别人抢先写了会抛 conflict。 */
+  async function remoteWrite(payload, sha) {
+    const body = {
+      message: `sync ${new Date().toISOString().slice(0, 16).replace('T', ' ')}`,
+      content: b64Encode(JSON.stringify(payload, null, 2)),
+      branch: sync.branch
+    };
+    if (sha) body.sha = sha;
+    const res = await fetch(syncApiUrl(), {
+      method: 'PUT', headers: syncHeaders(), body: JSON.stringify(body)
+    });
+    if (res.ok) return res.json();
+    if (res.status === 409) { const e = new Error('conflict'); e.conflict = true; throw e; }
+    throw syncHttpError(res.status);
+  }
+
+  const normalRec = (r) => ({
+    stage: r.stage || 'new', strength: r.strength || 0, streak: r.streak || 0,
+    due: r.due || 0, lastSeen: r.lastSeen || 0,
+    correct: r.correct || 0, wrong: r.wrong || 0
+  });
+
+  function buildPayload() {
+    const settings = {};
+    for (const k of SYNCED_SETTINGS) settings[k] = store.settings[k];
+    return {
+      version: 1,
+      app: 'worddrill',
+      deviceId: sync.deviceId,
+      syncedAt: now(),
+      settingsAt: store.settingsAt || 0,
+      settings,
+      stats: store.stats,
+      words: store.words
+    };
+  }
+
+  /** 只用来判断「内容有没有变」，排除 deviceId / syncedAt 这类每次都变的时间戳。 */
+  const payloadSig = (p) => JSON.stringify({
+    settings: p.settings || {}, settingsAt: p.settingsAt || 0,
+    stats: p.stats || {}, words: p.words || {}
+  });
+
+  /**
+   * 逐词合并远端进度。核心取舍：
+   * - 阶段/强度/到期时间取「最后练习时间（lastSeen）」较新的一条 —— 位置以最近练过的那台设备为准
+   * - 对错次数取两端较大值，而不是相加 —— 两台设备可能从同一份基线各自练习，相加会重复计数
+   */
+  function mergeRemote(remote) {
+    if (!remote || typeof remote !== 'object') return false;
+    let changed = false;
+
+    const rw = (remote.words && typeof remote.words === 'object') ? remote.words : {};
+    for (const id of new Set([...Object.keys(rw), ...Object.keys(store.words)])) {
+      const mine = store.words[id];
+      const theirs = rw[id];
+      if (!theirs) continue;
+      if (!mine) { store.words[id] = Object.assign(normalRec(theirs), { lastSeen: theirs.lastSeen || 0 }); changed = true; continue; }
+
+      const newer = (theirs.lastSeen || 0) > (mine.lastSeen || 0) ? theirs : mine;
+      const merged = normalRec(newer);
+      merged.correct = Math.max(mine.correct || 0, theirs.correct || 0);
+      merged.wrong = Math.max(mine.wrong || 0, theirs.wrong || 0);
+      if (JSON.stringify(merged) !== JSON.stringify(normalRec(mine))) {
+        store.words[id] = merged;
+        changed = true;
+      }
+    }
+
+    if ((remote.settingsAt || 0) > (store.settingsAt || 0) && remote.settings) {
+      for (const k of SYNCED_SETTINGS) {
+        const v = clampSetting(k, remote.settings[k]);
+        if (v !== undefined && store.settings[k] !== v) { store.settings[k] = v; changed = true; }
+      }
+      store.settingsAt = remote.settingsAt || 0;
+    }
+
+    const rs = remote.stats || {};
+    for (const k of ['answers', 'correct', 'sessions', 'streakDays']) {
+      const v = Math.max(store.stats[k] || 0, rs[k] || 0);
+      if (v !== (store.stats[k] || 0)) { store.stats[k] = v; changed = true; }
+    }
+    if (rs.lastDate && (!store.stats.lastDate || rs.lastDate > store.stats.lastDate)) {
+      store.stats.lastDate = rs.lastDate;
+      changed = true;
+    }
+
+    return changed;
+  }
+
+  function setSyncStatus(text, isError) {
+    const el = $('#sync-status');
+    if (!el) return;
+    el.textContent = text || '';
+    el.classList.toggle('is-error', !!isError);
+  }
+
+  function describeSync() {
+    if (!sync.lastSyncAt) return sync.enabled ? '还没同步过' : '未开启';
+    const mins = Math.floor((now() - sync.lastSyncAt) / MIN);
+    const when = mins < 1 ? '刚刚' : mins < 60 ? `${mins} 分钟前` : mins < 1440 ? `${Math.floor(mins / 60)} 小时前` : `${Math.floor(mins / 1440)} 天前`;
+    return `${when} · ${sync.lastResult || '已同步'}`;
+  }
+
+  /**
+   * 拉取 → 逐词合并 → 若无变化则不再写远端。
+   * 远端在读取与写入之间被别的设备改过会拿到 409，此时重读重合并（最多 3 轮）。
+   */
+  async function syncNow(opts) {
+    const silent = !!(opts && opts.silent);
+    if (syncing) return null;
+    if (!sync.enabled || !sync.token || !sync.owner || !sync.repo) {
+      if (!silent) toast('先把仓库和 token 填好');
+      return null;
+    }
+    syncing = true;
+    setSyncStatus('同步中…');
+    try {
+      let changed = false, pushed = false;
+      for (let attempt = 0; attempt < 3; attempt++) {
+        const remote = await remoteRead();
+        const remoteSig = (remote && remote.data) ? payloadSig(remote.data) : '';
+        if (mergeRemote(remote && remote.data)) { changed = true; saveStore(); }
+
+        const payload = buildPayload();
+        if (remoteSig && remoteSig === payloadSig(payload)) break;   // 两端一致，不用产生一次提交
+        try {
+          await remoteWrite(payload, remote ? remote.sha : null);
+          pushed = true;
+          break;
+        } catch (e) {
+          if (e.conflict && attempt < 2) continue;
+          throw e;
+        }
+      }
+      sync.lastSyncAt = now();
+      sync.lastResult = changed ? (pushed ? '双向合并' : '已拉取') : (pushed ? '已上传' : '已是最新');
+      saveSync();
+      setSyncStatus(describeSync());
+      if (changed) { applySettingsToUI(); refreshIntro(); renderLibrary(); }
+      return { changed, pushed };
+    } catch (e) {
+      const msg = '同步失败：' + ((e && e.message) || '未知错误');
+      sync.lastResult = msg;
+      saveSync();
+      setSyncStatus(describeSync(), true);
+      if (!silent) toast(msg);
+      return null;
+    } finally {
+      syncing = false;
+    }
+  }
+
   /* ---------- 会话 ---------- */
   function startSession() {
     const t = now();
@@ -334,6 +592,9 @@
 
     renderSummary(stats);
     showPanel('summary');
+
+    // 练完就推一次，别的设备打开就能拿到这次的进度
+    if (sync && sync.enabled && sync.token) syncNow({ silent: true });
   }
 
   /* ---------- 渲染：训练视图 ---------- */
@@ -608,6 +869,7 @@
     nl.addEventListener('input', () => {
       nlo.textContent = nl.value;
       store.settings.newLimit = Number(nl.value);
+      store.settingsAt = now();
       saveStore();
       refreshIntro();
     });
@@ -621,6 +883,7 @@
       tho.textContent = th.value;
       $('#set-threshold-text').textContent = th.value;
       store.settings.threshold = Number(th.value);
+      store.settingsAt = now();
       saveStore();
     });
 
@@ -651,6 +914,7 @@
           settings: Object.assign(defaultStore().settings, data.settings || {}),
           stats: Object.assign(defaultStore().stats, data.stats || {})
         });
+        normalizeSettings(store.settings);
         saveStore();
         applySettingsToUI();
         refreshIntro();
@@ -675,6 +939,65 @@
 
     $('#meta-count').textContent = WORDS.length;
     $('#meta-updated').textContent = META.updated || '—';
+  }
+
+  /* ---------- 同步面板 ---------- */
+  function applySyncToUI() {
+    $('#sync-owner').value = sync.owner || '';
+    $('#sync-repo').value = sync.repo || '';
+    $('#sync-path').value = sync.path || 'progress.json';
+    $('#sync-token').value = sync.token || '';
+    $('#sync-enabled').checked = !!sync.enabled;
+    $('#sync-device').textContent = sync.deviceId;
+    setSyncStatus(describeSync(), /失败/.test(sync.lastResult || ''));
+    $('#btn-sync-now').disabled = !sync.enabled;
+  }
+
+  function bindSync() {
+    const readForm = () => {
+      sync.owner = $('#sync-owner').value.trim();
+      sync.repo = $('#sync-repo').value.trim();
+      sync.path = $('#sync-path').value.trim() || 'progress.json';
+      sync.token = $('#sync-token').value.trim();
+    };
+
+    ['#sync-owner', '#sync-repo', '#sync-path'].forEach((sel) => {
+      $(sel).addEventListener('change', () => { readForm(); saveSync(); });
+    });
+    $('#sync-token').addEventListener('change', () => { readForm(); saveSync(); });
+
+    $('#sync-enabled').addEventListener('change', (e) => {
+      readForm();
+      sync.enabled = e.target.checked;
+      saveSync();
+      applySyncToUI();
+      if (sync.enabled) {
+        if (!sync.owner || !sync.repo || !sync.token) {
+          toast('还差仓库名或 token');
+        } else {
+          syncNow({ silent: false });
+        }
+      } else {
+        toast('已关闭同步（token 仍留在本机，可点「清除凭据」删掉）');
+      }
+    });
+
+    $('#btn-toggle-token').addEventListener('click', () => {
+      const el = $('#sync-token');
+      el.type = el.type === 'password' ? 'text' : 'password';
+      $('#btn-toggle-token').textContent = el.type === 'password' ? '显示' : '隐藏';
+    });
+
+    $('#btn-sync-now').addEventListener('click', () => { readForm(); saveSync(); syncNow({ silent: false }); });
+
+    $('#btn-sync-forget').addEventListener('click', () => {
+      if (!confirm('清除本机保存的仓库地址和 token？\n（只影响这台设备；远端进度文件不删，学习进度也不动）')) return;
+      const keepId = sync.deviceId;
+      sync = Object.assign(defaultSync(), { deviceId: keepId });
+      saveSync();
+      applySyncToUI();
+      toast('已清除同步凭据');
+    });
   }
 
   function applySettingsToUI() {
@@ -788,6 +1111,7 @@
   /* ---------- 启动 ---------- */
   async function boot() {
     store = loadStore();
+    sync = loadSync();
     applyTheme();
 
     try {
@@ -815,11 +1139,16 @@
 
     bindEvents();
     bindSettings();
+    bindSync();
+    applySyncToUI();
     refreshIntro();
     showPanel('intro');
 
     const hash = location.hash.replace('#', '');
     if (['library', 'settings'].includes(hash)) switchView(hash);
+
+    // 打开就同步一次：把另一台设备上练的进度合并进来（不阻塞首屏，失败也不打扰）
+    if (sync.enabled && sync.token && sync.owner && sync.repo) syncNow({ silent: true });
 
     // 标记今日待复习数量，方便一眼看到
     if (WORDS.some((w) => { const p = progressOf(w.id); return p.stage !== 'new' && p.due <= now(); })) {
