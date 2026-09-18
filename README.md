@@ -118,11 +118,24 @@ index.html              页面骨架（图标全部内联 SVG，没有 emoji）
 styles.css              设计系统：浅/深色主题变量、间距、焦点环、响应式
 app.js                  全部逻辑（SRS 调度、出题、渲染、快捷键）
 data/words.json         词库 —— 唯一需要维护的数据文件
-scripts/               FlowUs → 词库 的同步脚本
+scripts/               工具脚本：FlowUs → 词库同步、图标栅格化
 manifest.webmanifest    PWA 清单
 sw.js                   Service worker（静态资源 stale-while-revalidate）
-icon.svg / icon-maskable.svg
+icon.svg / icon-maskable.svg     圆角版图标（浏览器 tab、Android）
+icon-square.svg                   满幅方形源文件（PNG 由它生成）
+apple-touch-icon.png / icon-192.png / icon-512.png / icon-maskable-512.png
 ```
+
+### 图标：为什么既有 SVG 又有 PNG
+
+- **iOS 的「添加到主屏幕」只认 PNG**，读不了 manifest 里的 SVG，也读不了 `short_name`
+  （主屏名字只认 `<meta name="apple-mobile-web-app-title">`）。所以要 `apple-touch-icon.png`（180×180）。
+- iOS 会**自己按圆角裁切**图标，所以 `apple-touch-icon.png` 必须是**满幅方形且不透明**的 ——
+  不能预先画圆角（否则圆角外套圆角，出现双重描边），也不能留透明（会渲染成黑块）。
+- 改图标时别手改 PNG：改 `icon-square.svg` / `icon-maskable.svg` 的几何，
+  然后 `python3 scripts/make-icons.py` 重新生成（纯标准库，4×4 超采样抗锯齿，无需 ImageMagick）。
+- 图标有强缓存：**已加到主屏幕的旧图标不会自动更新**，要删掉重新添加一次。
+
 
 ## 加新词（日常流程）
 
