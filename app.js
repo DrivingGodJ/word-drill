@@ -21,23 +21,27 @@
   const DAY = 24 * HOUR;
 
   /**
-   * 「长期记住」判定模型 —— 核心不是「当场答对几次」，而是「跨天的累计次数」。
+   * 「长期记住」判定模型 —— 核心不是「当场答对几次」，而是「跨了多少个不同的日子」。
    *
-   * 一个词在当前阶段攒够 threshold 次答对、且这些答对**全部落在连续两周（PASS_WINDOW）内**，
-   * 才允许升到下一阶段；答错则已攒次数清零重来。
+   * 一个词在当前阶段，于一个自然月（PASS_WINDOW = 30 天）内累计有 threshold 天答对过，
+   * 才允许升到下一阶段。
    *
-   * 为什么同一天不会重复计数：答对后这个词的 due 会被推到第二天（CREDIT_DUE），
-   * 当天就不再出现在待复习队列里 —— 于是「两周内答对 5 次」自然等于「跨 5 天」。
+   * 三条规则：
+   * 1. **一天内可以反复刷**：答对后只是进入一个 20 分钟冷却（CREDIT_DUE），
+   *    冷却过去它又会回到队列，当天想练几遍都行。
+   * 2. **一天只记一次**：不论当天刷多少遍，`credits` 里最多只留当天的第一条记录。
+   * 3. **答错全部清零**：任何一次答错都会清空已攒的全部天数（含当天），重新计数一个月。
+   *    也就是「当天答对过才记这一天，之后又答错就整个作废」。
    */
-  const PASS_WINDOW = 14 * DAY;
-  /** 攒次数期间答对一次后，下一次什么时候来（一天一次 → 攒的就是天数） */
-  const CREDIT_DUE = 1 * DAY;
+  const PASS_WINDOW = 30 * DAY;
+  /** 攒天数期间答对后的冷却：过去就能再刷一遍（一天内可反复练，但只记 1 天） */
+  const CREDIT_DUE = 20 * MIN;
   /** 已掌握后的维护间隔：不再需要攒，只需偶尔回访 */
   const MASTERED_DUE = 3 * DAY;
-  /** 攒次数期间答错后的最短重来间隔（当轮还会回流一次） */
+  /** 攒天数期间答错后的最短重来间隔（当轮还会回流一次） */
   const LAPSE_DUE = 3 * MIN;
   /** 新词首次答对即进入「认词中」，这一关不需要攒 */
-  const CREDIT_NEED_MIN = 1, CREDIT_NEED_MAX = 6, CREDIT_NEED_DEFAULT = 5;
+  const CREDIT_NEED_MIN = 1, CREDIT_NEED_MAX = 30, CREDIT_NEED_DEFAULT = 15;
   const REQUESTS_PER_ROUND = 40;   // 单轮最大题量，避免无限循环
 
   /* ---------- 多设备同步（GitHub 私有仓库当存储） ---------- */
@@ -106,7 +110,7 @@
   }
 
   /* ---------- 持久化 ---------- */
-  const STORE_VERSION = 2;   // v2：过关判定从「连续答对」改成「两周内累计答对天数」
+  const STORE_VERSION = 3;   // v2：连续答对 → 两周内累计天数；v3：14 天/5 次 → 30 天/15 天 + 当天可反复刷
 
   function defaultStore() {
     return {
@@ -128,8 +132,8 @@
         stats: Object.assign(defaultStore().stats, parsed.stats || {}),
         words: parsed.words || {}
       });
-      // v1 → v2：threshold 的含义整个变了（「连续答对次数」→「两周内答对天数」），
-      // 旧值不再等价，直接置成新默认，免得用户拿到一个语义不明的数字。
+      // v1/v2 → v3：threshold 的语义改过两次（「连续答对次数」→「两周内天数」→「一个月内天数」），
+      // 旧值都不再等价，一律置成新默认，免得用户拿到一个语义不明的数字。
       if ((parsed.version || 1) < STORE_VERSION) {
         merged.version = STORE_VERSION;
         merged.settings.threshold = CREDIT_NEED_DEFAULT;
@@ -166,15 +170,29 @@
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   };
 
-  /** 当前设置要求的「两周内答对次数」。 */
+  /** 当前设置要求的「一个月内答对的天数」。 */
   const creditNeed = () =>
     Math.min(CREDIT_NEED_MAX, Math.max(CREDIT_NEED_MIN, Number(store.settings.threshold) || CREDIT_NEED_DEFAULT));
 
-  /** 丢掉滚出两周窗口的旧记录 —— 这就是「连续两周内」的实现。 */
+  /** 丢掉滚出一个月窗口的旧记录 —— 这就是「一个月内」的实现。 */
   const pruneCredits = (list, at) => (list || []).filter((ts) => at - ts <= PASS_WINDOW);
 
-  /** 是否还需要攒次数（已掌握的词不再需要）。 */
+  /** 是否还需要攒天数（已掌握的词不再需要）。 */
   const needsCredits = (stage) => stage === 'recognize' || stage === 'write';
+
+  /**
+   * 这个词是不是「今天练过、还在冷却里」—— 用来支持一天之内反复刷同一个词。
+   *
+   * 注意必须看 `lastSeen`（最后一次作答时间）而不是 `credits`：
+   * 新词首次答对只是升到「认词中」、并不记天，credits 仍是空的，
+   * 只看 credits 会导致刚练完的词当天回不来。
+   * 已掌握的词不算在内 —— 它们按维护间隔走，不需要一天刷好几遍。
+   */
+  function inCooling(p, t) {
+    if (!needsCredits(p.stage)) return false;
+    if (!(p.due > t)) return false;
+    return !!p.lastSeen && dayKey(p.lastSeen) === dayKey(t);
+  }
 
   /**
    * 判定一次作答并推进状态。
@@ -199,8 +217,7 @@
         after.credits = [];
         promoted = true;
       } else {
-        // 同一天重复答对不重复计数（答对后 due 已推到明天，正常不会走到这里；
-        // 但多设备合并或手动重放可能带进同一天的记录）
+        // 一天只记一次：当天已经记过就不再追加（一天内可以反复刷，但只算 1 天）
         if (!after.credits.some((ts) => dayKey(ts) === dayKey(after.lastSeen))) {
           after.credits.push(after.lastSeen);
           credited = true;
@@ -221,7 +238,7 @@
     let base;
     if (!isCorrect) base = LAPSE_DUE;                       // 当轮稍后回流，趁热打铁
     else if (after.stage === 'mastered') base = MASTERED_DUE; // 已掌握：只做维护
-    else base = CREDIT_DUE;                                  // 攒次数：明天再来
+    else base = CREDIT_DUE;                                  // 攒天数：20 分钟后可再刷
     after.due = now() + base;
 
     store.words[id] = after;
@@ -612,15 +629,25 @@
   }
 
   /* ---------- 会话 ---------- */
+  /**
+   * 开始一轮训练。
+   * 没有到期的词时，自动把「今天已经练过、还在冷却里」的词再带上 ——
+   * 这样一天之内可以反复刷同一个词（不管从「开始训练」还是「再来一轮」进来都一样）。
+   */
   function startSession() {
     const t = now();
-    const dueWords = WORDS
+    const pick = (allowCooling) => WORDS
       .filter((w) => {
         const p = progressOf(w.id);
-        return p.stage !== 'new' && p.due <= t;
+        if (p.stage === 'new') return false;
+        if (p.due <= t) return true;
+        return allowCooling && inCooling(p, t);
       })
       // 攒得最少的排前面：优先补上离升阶最远的词
       .sort((a, b) => (progressOf(a.id).credits || []).length - (progressOf(b.id).credits || []).length);
+
+    let dueWords = pick(false);
+    if (!dueWords.length) dueWords = pick(true);
 
     const newLimit = Math.max(0, Number(store.settings.newLimit) || 0);
     const freshWords = WORDS.filter((w) => progressOf(w.id).stage === 'new').slice(0, newLimit);
@@ -629,7 +656,7 @@
 
     if (!queue.length) {
       const allMastered = WORDS.length > 0 && WORDS.every((w) => progressOf(w.id).stage === 'mastered');
-      toast(allMastered ? '全部单词已掌握，今天没有待复习的' : '暂时没有需要训练的词');
+      toast(allMastered ? '全部单词已掌握，暂时没有待复习的' : '暂时没有到期的词，过一会儿再来');
       return;
     }
 
@@ -688,8 +715,7 @@
     session.results.set(word.id, r);
 
     // 答错 → 本次稍后重来一遍，趁热打铁。
-    // 答对则本轮不再出现：它的下次复习已被排到明天，当天重复答对也不会额外计数
-    //（要「跨天累计」，就不能在同一轮里靠复现刷次数）。
+    // 答对则本轮不再出现：它的冷却（20 分钟）还没过，当天再刷要走下一轮。
     if (!isCorrect) {
       const insertAt = Math.min(session.queue.length, session.index + 3);
       session.queue.splice(insertAt, 0, word.id);
@@ -760,13 +786,17 @@
     $('#stat-mastered').textContent = mastered;
 
     const totalToday = due + Math.min(fresh, Number(store.settings.newLimit) || 0);
+    const cooling = WORDS.some((w) => inCooling(progressOf(w.id), t));
     $('#intro-hint').textContent = totalToday
       ? `本轮约 ${totalToday} 个词 · 认词 ${recognize} · 拼写 ${write} · 已掌握 ${mastered}`
-      : (WORDS.length ? '今天的复习任务已完成，可以先去词库看看。' : '词库还是空的。');
+      : (!WORDS.length ? '词库还是空的。'
+        : cooling ? '今天的词都记上了，正在冷却 —— 也可以直接再练一遍（同一天只记 1 天）。'
+        : '暂时没有到期的词。');
     $('#intro-rule').textContent =
-      `升阶规则：两周内于不同的日子累计答对 ${creditNeed()} 次（约需 ${creditNeed()} 天）· 答错清零重攒 · `
-      + `已掌握后每 ${Math.round(MASTERED_DUE / DAY)} 天回访一次`;
-    $('#btn-start').disabled = totalToday === 0;
+      `升阶规则：一个月内累计有 ${creditNeed()} 天答对（当天可反复刷，只记 1 天）· `
+      + `答错则已攒天数全部清零 · 已掌握后每 ${Math.round(MASTERED_DUE / DAY)} 天回访一次`;
+    // 冷却中的词也能重练，所以这种情况下不能让「开始训练」变成灰的
+    $('#btn-start').disabled = totalToday === 0 && !cooling;
   }
 
   function updateProgress() {
@@ -890,24 +920,28 @@
       stageNote = `<p class="fb__stage" style="color:var(--color-danger)">↓ 退回${STAGE_BADGE[r.after.stage] || '认词'}关，再巩固一下</p>`;
     }
 
-    // 攒次数进度：让「跨两周累计」这件事在每次作答后都看得见
+    // 攒天数进度：让「一个月内攒够多少天」这件事在每次作答后都看得见
     const need = r.need || creditNeed();
     const have = (r.after.credits || []).length;
+    const cool = Math.round(CREDIT_DUE / MIN);
     let creditNote;
     if (!isCorrect) {
       creditNote = r.cleared
-        ? `<p class="fb__credit fb__credit--bad">答错 → 已攒的 ${r.cleared} 次清零，重新攒</p>`
-        : `<p class="fb__credit fb__credit--bad">答错 → 这一关重新攒</p>`;
+        ? `<p class="fb__credit fb__credit--bad">答错 → 已攒的 ${r.cleared} 天全部清零，重新计数一个月</p>`
+        : `<p class="fb__credit fb__credit--bad">答错 → 这一关重新计数一个月</p>`;
     } else if (r.before.stage === 'new') {
-      creditNote = `<p class="fb__credit">进入「认词中」，接下来要在两周内攒够 ${need} 次答对</p>`;
+      creditNote = `<p class="fb__credit">进入「认词中」，接下来要在一个月内攒够 ${need} 天答对</p>`;
     } else if (r.promoted) {
       creditNote = r.after.stage === 'mastered'
-        ? `<p class="fb__credit">两周内攒满 ${need} 次 → 已掌握 ✓</p>`
-        : `<p class="fb__credit">两周内攒满 ${need} 次 → 升入「${STAGE_BADGE[r.after.stage]}」关，重新开始攒</p>`;
+        ? `<p class="fb__credit">一个月内攒满 ${need} 天 → 已掌握 ✓</p>`
+        : `<p class="fb__credit">一个月内攒满 ${need} 天 → 升入「${STAGE_BADGE[r.after.stage]}」关，重新开始攒</p>`;
     } else if (r.after.stage === 'mastered') {
       creditNote = `<p class="fb__credit">已掌握 · 之后每 ${Math.round(MASTERED_DUE / DAY)} 天回访一次</p>`;
+    } else if (have === (r.before.credits || []).length) {
+      // 今天已经记过了，这次只是加刷一遍
+      creditNote = `<p class="fb__credit">今天已经记过了 · 已攒 <b>${have}</b> / ${need} 天 · ${cool} 分钟后可再刷</p>`;
     } else {
-      creditNote = `<p class="fb__credit">已攒 <b>${have}</b> / ${need} 次（两周内）· 下次明天</p>`;
+      creditNote = `<p class="fb__credit">已攒 <b>${have}</b> / ${need} 天（一个月内）· ${cool} 分钟后可再刷</p>`;
     }
 
     const userLine = (!isCorrect && q.kind !== 'recognize' && userAnswer)
@@ -957,7 +991,7 @@
       <div class="stat"><span class="stat__num">${gained.length}</span><span class="stat__label">攒到天数</span></div>`;
 
     const rows = [];
-    if (started.length) rows.push(`<div class="summary__row"><b>${started.length} 个</b> 词进入「认词中」，从明天开始攒天数</div>`);
+    if (started.length) rows.push(`<div class="summary__row"><b>${started.length} 个</b> 词进入「认词中」，开始攒天数</div>`);
     if (gained.length) rows.push(`<div class="summary__row"><b>${gained.length} 个</b> 词攒到了新的一天 <span class="tag tag--up">↑</span></div>`);
     if (lost.length) rows.push(`<div class="summary__row"><b>${lost.length} 个</b> 词答错清零，得重新攒 <span class="tag tag--down">↓</span></div>`);
     if (advanced.length) {
@@ -1002,7 +1036,7 @@
         `<i class="strength__pip ${(p.stage === 'mastered' || i < have) ? 'is-on' : ''}" data-stage="${p.stage}"></i>`).join('');
       const creditText = p.stage === 'new' ? '未开始'
         : p.stage === 'mastered' ? '已掌握'
-        : `已攒 ${have}/${need}`;
+        : `已攒 ${have}/${need} 天`;
       const dueText = p.stage === 'new' ? '尚未开始'
         : p.due <= now() ? '待复习'
         : `复习：${formatDue(p.due)}`;
@@ -1255,6 +1289,7 @@
     });
 
     $('#btn-start').addEventListener('click', startSession);
+    // 「再来一轮」也走同一逻辑：没有到期的词就把今天练过的再带上
     $('#btn-again').addEventListener('click', () => { showPanel('intro'); refreshIntro(); startSession(); });
     $('#btn-end').addEventListener('click', endSession);
     $('#btn-next').addEventListener('click', () => {
