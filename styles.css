@@ -507,8 +507,9 @@ button { cursor: pointer; background: none; border: none; padding: 0; }
 .field__row { display: flex; gap: var(--s-3); }
 .field__row input { flex: 1; min-width: 0; }
 .btn--sm { min-height: 44px; padding: 0 var(--s-4); font-size: .875rem; }
-.sync-status { font-weight: 600; margin-top: var(--s-4); }
+.sync-status { font-weight: 600; margin-top: var(--s-4); white-space: pre-line; }
 .sync-status.is-error { color: var(--color-danger); }
+.sync-status.is-ok { color: var(--color-success); }
 #sync-device { font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace); font-size: .75rem; }
 
 /* ---------- Footer / toast ---------- */

@@ -300,10 +300,18 @@
     'Content-Type': 'application/json'
   });
 
-  function syncHttpError(status) {
-    if (status === 401) return new Error('token 无效或已过期（401）');
-    if (status === 403) return new Error('token 权限不足（403），确认勾了 Contents: Read and write');
-    if (status === 404) return new Error('找不到仓库或文件（404），确认仓库名和权限');
+  function syncHttpError(status, hint) {
+    if (status === 401) return new Error('token 无效或已过期（401），重新生成一个细粒度 token');
+    if (status === 403) return new Error('token 权限不足（403），确认 Contents 设成了 Read and write');
+    if (status === 404) {
+      // 关键：私有仓库在「token 没授权这个仓库」时也返回 404，而不是 403。
+      // 只看状态码无法区分「没权限」和「路径写错」，所以这里要把这个坑说出来。
+      return new Error(hint || (
+        '看不到这个仓库（404）。注意私有仓库只要 token 没授权就返回 404 而不是 403，'
+        + '所以多半不是路径写错。常见原因：① token 的 Repository access 没勾上这个仓库；'
+        + '② 用了经典 token 但没给 repo 权限；③ Owner/Repo 拼错。点「测试连接」可精确定位'
+      ));
+    }
     return new Error(`请求失败（${status}）`);
   }
 
@@ -333,6 +341,89 @@
     if (res.ok) return res.json();
     if (res.status === 409) { const e = new Error('conflict'); e.conflict = true; throw e; }
     throw syncHttpError(res.status);
+  }
+
+  /**
+   * 逐层探测并给出精确结论：仓库看不看得见 → 有没有写权限 → 分支在不在 → 文件能不能读。
+   * 必须分层，因为 GitHub 把「无权访问私有仓库」也报成 404，单看一个错误码分不清原因。
+   */
+  async function diagnoseSync() {
+    if (!sync.owner || !sync.repo) return { mode: 'error', text: '先把 Owner 和 Repo 填上' };
+    if (!sync.token) return { mode: 'error', text: '先把 token 填上' };
+
+    const full = `${sync.owner}/${sync.repo}`;
+    const repoUrl = `${SYNC_API}/repos/${encodeURIComponent(sync.owner)}/${encodeURIComponent(sync.repo)}`;
+
+    let res;
+    try {
+      res = await fetch(repoUrl, { headers: syncHeaders(), cache: 'no-store' });
+    } catch {
+      return { mode: 'error', text: '连不上 api.github.com —— 检查网络，或代理是否拦了它' };
+    }
+
+    if (res.status === 401) return { mode: 'error', text: 'token 无效或已过期（401），重新生成一个' };
+    if (res.status === 403) return { mode: 'error', text: '被限流或权限不足（403），过一会再试' };
+    if (res.status === 404) {
+      return {
+        mode: 'error',
+        text: [
+          `看不到 ${full}（404）。`,
+          '私有仓库在 token 未授权时也返回 404，所以先别怀疑路径：',
+          '① token 的 Repository access 没勾上这个仓库（细粒度 token 必须显式选中）；',
+          '② 用了经典 token 但没给 repo 权限；',
+          '③ Owner 或 Repo 拼错 —— 注意是 worddrill-data，中间有连字符。',
+          `自己核对一下：github.com/${full}`
+        ].join('\n')
+      };
+    }
+    if (!res.ok) return { mode: 'error', text: `查询仓库失败（${res.status}）` };
+
+    const info = await res.json();
+    if (!(info.permissions && info.permissions.push)) {
+      return {
+        mode: 'error',
+        text: `能看到 ${info.full_name}，但 token 只有读权限。\n`
+            + '去 token 设置把 Contents 改成 Read and write（改完不必重新粘贴 token）'
+      };
+    }
+
+    const brRes = await fetch(`${repoUrl}/branches/${encodeURIComponent(sync.branch)}`,
+      { headers: syncHeaders(), cache: 'no-store' });
+    if (brRes.status === 404) {
+      return {
+        mode: 'error',
+        text: `仓库可写，但分支 ${sync.branch} 不存在（404）。\n`
+            + '去仓库首页确认默认分支叫什么，改对再试'
+      };
+    }
+    if (!brRes.ok) return { mode: 'error', text: `查询分支失败（${brRes.status}）` };
+
+    const fileRes = await fetch(syncApiUrl(), { headers: syncHeaders(), cache: 'no-store' });
+    const fileOk = fileRes.ok || fileRes.status === 404;
+    let fileNote;
+    if (fileRes.status === 404) fileNote = '进度文件还没建，首次同步会自动创建';
+    else if (fileRes.ok) fileNote = '进度文件已存在，可正常读写';
+    else fileNote = `读进度文件失败（${fileRes.status}）`;
+
+    return {
+      mode: fileOk ? 'ok' : 'error',
+      text: `连接正常 ✓\n${info.full_name}（${info.private ? '私有' : '⚠️ 公开'}）· 分支 ${sync.branch}\n${fileNote}`
+    };
+  }
+
+  /** 允许把 "owner/repo" 或整个仓库网址粘进 Owner 输入框，自动拆成两个字段。 */
+  function normalizeRepoFields() {
+    const el = $('#sync-owner');
+    const raw = el.value.trim()
+      .replace(/^https?:\/\//i, '')
+      .replace(/^(www\.)?github\.com\//i, '')
+      .replace(/\.git$/i, '');
+    if (!raw.includes('/')) return;
+    const parts = raw.replace(/^\/+|\/+$/g, '').split('/').filter(Boolean);
+    if (parts.length >= 2) {
+      el.value = parts[0];
+      $('#sync-repo').value = parts[1];
+    }
   }
 
   const normalRec = (r) => ({
@@ -409,15 +500,21 @@
     return changed;
   }
 
-  function setSyncStatus(text, isError) {
+  function setSyncStatus(text, mode) {
     const el = $('#sync-status');
     if (!el) return;
     el.textContent = text || '';
-    el.classList.toggle('is-error', !!isError);
+    const ok = mode === 'ok';
+    el.classList.toggle('is-error', !ok && !!mode);
+    el.classList.toggle('is-ok', ok);
   }
 
   function describeSync() {
-    if (!sync.lastSyncAt) return sync.enabled ? '还没同步过' : '未开启';
+    if (!sync.lastSyncAt) {
+      // 从没成功同步过时，上次的失败原因比「还没同步过」有用得多
+      if (sync.lastResult) return sync.lastResult;
+      return sync.enabled ? '还没同步过' : '未开启';
+    }
     const mins = Math.floor((now() - sync.lastSyncAt) / MIN);
     const when = mins < 1 ? '刚刚' : mins < 60 ? `${mins} 分钟前` : mins < 1440 ? `${Math.floor(mins / 60)} 小时前` : `${Math.floor(mins / 1440)} 天前`;
     return `${when} · ${sync.lastResult || '已同步'}`;
@@ -457,14 +554,14 @@
       sync.lastSyncAt = now();
       sync.lastResult = changed ? (pushed ? '双向合并' : '已拉取') : (pushed ? '已上传' : '已是最新');
       saveSync();
-      setSyncStatus(describeSync());
+      setSyncStatus(describeSync(), 'ok');
       if (changed) { applySettingsToUI(); refreshIntro(); renderLibrary(); }
       return { changed, pushed };
     } catch (e) {
       const msg = '同步失败：' + ((e && e.message) || '未知错误');
       sync.lastResult = msg;
       saveSync();
-      setSyncStatus(describeSync(), true);
+      setSyncStatus(describeSync(), 'error');
       if (!silent) toast(msg);
       return null;
     } finally {
@@ -955,6 +1052,7 @@
 
   function bindSync() {
     const readForm = () => {
+      normalizeRepoFields();
       sync.owner = $('#sync-owner').value.trim();
       sync.repo = $('#sync-repo').value.trim();
       sync.path = $('#sync-path').value.trim() || 'progress.json';
@@ -989,6 +1087,24 @@
     });
 
     $('#btn-sync-now').addEventListener('click', () => { readForm(); saveSync(); syncNow({ silent: false }); });
+
+    // 分层探测，避免用户对着一个 404 猜原因
+    $('#btn-sync-test').addEventListener('click', async () => {
+      readForm();
+      saveSync();
+      const btn = $('#btn-sync-test');
+      btn.disabled = true;
+      setSyncStatus('测试中…');
+      try {
+        const r = await diagnoseSync();
+        setSyncStatus(r.text, r.mode);
+        toast(r.mode === 'ok' ? '连接正常' : '连接测试没过，看设置面板下方的提示');
+      } catch (e) {
+        setSyncStatus('测试出错：' + ((e && e.message) || '未知错误'), 'error');
+      } finally {
+        btn.disabled = false;
+      }
+    });
 
     $('#btn-sync-forget').addEventListener('click', () => {
       if (!confirm('清除本机保存的仓库地址和 token？\n（只影响这台设备；远端进度文件不删，学习进度也不动）')) return;
