@@ -72,6 +72,7 @@
   let META = {};
   const byId = new Map();
   let store = null;        // 持久化状态
+  let storeMigrated = false;  // 本次启动是否把旧存档升级过（升级结果要立刻写回，免得旧标签页又读到老值）
   let sync = null;         // 多设备同步配置（token 只在本机）
   let syncing = false;
   let session = null;      // 当前会话
@@ -149,7 +150,7 @@
         stats: Object.assign(defaultStore().stats, parsed.stats || {}),
         words: parsed.words || {}
       });
-      migrateStore(merged, parsed.version);
+      if (migrateStore(merged, parsed.version)) storeMigrated = true;
       // 老记录里的 strength / streak 已经没有意义，统一补上 credits
       for (const id of Object.keys(merged.words)) merged.words[id] = normalRec(merged.words[id]);
       normalizeSettings(merged.settings);
@@ -1356,6 +1357,7 @@
   /* ---------- 启动 ---------- */
   async function boot() {
     store = loadStore();
+    if (storeMigrated) saveStore();   // 迁移结果立刻落盘：同浏览器的旧标签页不该再读到旧语义的 threshold
     sync = loadSync();
     applyTheme();
 
