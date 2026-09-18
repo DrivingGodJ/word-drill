@@ -110,7 +110,7 @@
   }
 
   /* ---------- 持久化 ---------- */
-  const STORE_VERSION = 3;   // v2：连续答对 → 两周内累计天数；v3：14 天/5 次 → 30 天/15 天 + 当天可反复刷
+  const STORE_VERSION = 4;   // v2 两周内天数 → v3 一个月内 15 天 + 当天可刷 → v4 修「旧同步值覆盖新判定」
 
   function defaultStore() {
     return {
@@ -120,6 +120,23 @@
       words: {},                       // id → 进度
       stats: { answers: 0, correct: 0, sessions: 0, lastDate: null, streakDays: 0 }
     };
+  }
+
+  /**
+   * 把旧版存档升级到当前语义。
+   *
+   * threshold 的含义改过三次（「连续答对几次」→「两周内有几天」→「一个月内有几天」→
+   * 「一个月内有几天 + 当天可反复刷」），旧值在新语义下都不等价，一律置成新默认。
+   *
+   * 同时把 settingsAt 顶到现在 —— 否则本机刚拿到的正确默认值会被仓库里那条
+   * 「旧语义、但时间戳不比我旧」的 threshold 挡回去（同步合并是按 settingsAt 比新旧的）。
+   */
+  function migrateStore(s, fromVersion) {
+    if ((fromVersion || 1) >= STORE_VERSION) return false;
+    s.version = STORE_VERSION;
+    s.settings.threshold = CREDIT_NEED_DEFAULT;
+    s.settingsAt = now();
+    return true;
   }
 
   function loadStore() {
@@ -132,12 +149,7 @@
         stats: Object.assign(defaultStore().stats, parsed.stats || {}),
         words: parsed.words || {}
       });
-      // v1/v2 → v3：threshold 的语义改过两次（「连续答对次数」→「两周内天数」→「一个月内天数」），
-      // 旧值都不再等价，一律置成新默认，免得用户拿到一个语义不明的数字。
-      if ((parsed.version || 1) < STORE_VERSION) {
-        merged.version = STORE_VERSION;
-        merged.settings.threshold = CREDIT_NEED_DEFAULT;
-      }
+      migrateStore(merged, parsed.version);
       // 老记录里的 strength / streak 已经没有意义，统一补上 credits
       for (const id of Object.keys(merged.words)) merged.words[id] = normalRec(merged.words[id]);
       normalizeSettings(merged.settings);
@@ -495,7 +507,7 @@
     const settings = {};
     for (const k of SYNCED_SETTINGS) settings[k] = store.settings[k];
     return {
-      version: 2,
+      version: STORE_VERSION,      // 声明本条记录的判定语义版本，对面据此决定要不要采纳 settings
       app: 'worddrill',
       deviceId: sync.deviceId,
       syncedAt: now(),
@@ -538,7 +550,12 @@
       }
     }
 
-    if ((remote.settingsAt || 0) > (store.settingsAt || 0) && remote.settings) {
+    // 学习参数只在「两边语义版本一致」时互相同步。
+    // 旧版本客户端（payload 里 version 落后）存的 threshold 是另一套含义的数字，
+    // 采纳它会把本机刚迁移好的新默认值顶掉 —— 这正是「设置里明明该是 15 天，却显示 5 天」的原因。
+    const remoteModel = Number(remote.version) || 1;
+    const settingsOk = remoteModel >= STORE_VERSION;
+    if (settingsOk && (remote.settingsAt || 0) > (store.settingsAt || 0) && remote.settings) {
       for (const k of SYNCED_SETTINGS) {
         const v = clampSetting(k, remote.settings[k]);
         if (v !== undefined && store.settings[k] !== v) { store.settings[k] = v; changed = true; }
@@ -1120,6 +1137,8 @@
           settings: Object.assign(defaultStore().settings, data.settings || {}),
           stats: Object.assign(defaultStore().stats, data.stats || {})
         });
+        // 导入的也可能是旧版导出的文件，同样按版本升级语义
+        migrateStore(store, data.version);
         normalizeSettings(store.settings);
         saveStore();
         applySettingsToUI();
