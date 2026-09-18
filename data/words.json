@@ -1,0 +1,124 @@
+{
+  "meta": {
+    "name": "WordDrill",
+    "version": 1,
+    "updated": "2026-09-18",
+    "source": "FlowUs · page 2220ec94-e0c2-4523-87be-f8277b09d786",
+    "note": "词库由 FlowUs 生词页同步而来；新增单词请用 scripts/sync-from-flowus.py 或直接编辑本文件。"
+  },
+  "words": [
+    {
+      "id": "abundance",
+      "word": "abundance",
+      "pos": "n.",
+      "meaning": "大量，丰富；充裕",
+      "example": "There was an abundance of food at the party.",
+      "exampleZh": "聚会上食物非常充足。",
+      "collocations": [
+        "an abundance of",
+        "in abundance"
+      ],
+      "tags": []
+    },
+    {
+      "id": "allure",
+      "word": "allure",
+      "pos": "n.",
+      "meaning": "诱惑力，魅力；v. 诱惑，吸引",
+      "example": "The allure of the big city draws in young graduates every year.",
+      "exampleZh": "大城市的魅力每年都吸引着年轻毕业生。",
+      "collocations": [
+        "the allure of"
+      ],
+      "tags": []
+    },
+    {
+      "id": "commonplace",
+      "word": "commonplace",
+      "pos": "adj.",
+      "meaning": "平常的，普通的；n. 老生常谈",
+      "example": "Smartphones have become commonplace in daily life.",
+      "exampleZh": "智能手机在日常生活中已变得司空见惯。",
+      "collocations": [
+        "become commonplace"
+      ],
+      "tags": []
+    },
+    {
+      "id": "foray",
+      "word": "foray",
+      "pos": "n.",
+      "meaning": "涉足，初步尝试（make forays into）；（短暂）突袭",
+      "example": "The company made its first foray into the electric-vehicle market.",
+      "exampleZh": "该公司首次涉足电动车市场。",
+      "collocations": [
+        "make a foray into",
+        "make forays into"
+      ],
+      "tags": []
+    },
+    {
+      "id": "metropolis",
+      "word": "metropolis",
+      "pos": "n.",
+      "meaning": "大都市，大城市",
+      "example": "Tokyo is one of the largest metropolises in the world.",
+      "exampleZh": "东京是世界上最大的大都市之一。",
+      "collocations": [
+        "a bustling metropolis"
+      ],
+      "tags": []
+    },
+    {
+      "id": "resolute",
+      "word": "resolute",
+      "pos": "adj.",
+      "meaning": "坚决的，果断的",
+      "example": "She remained resolute in her decision to study industrial design.",
+      "exampleZh": "她坚持学工业设计的决定毫不动摇。",
+      "collocations": [
+        "remain resolute",
+        "a resolute decision"
+      ],
+      "tags": []
+    },
+    {
+      "id": "rim",
+      "word": "rim",
+      "pos": "n.",
+      "meaning": "边缘，边沿；（容器的）口",
+      "example": "He wiped the rim of the glass before pouring the wine.",
+      "exampleZh": "倒酒前他擦了擦杯口。",
+      "collocations": [
+        "the rim of"
+      ],
+      "tags": []
+    },
+    {
+      "id": "shore-up",
+      "word": "shore up",
+      "pos": "phr.",
+      "meaning": "支撑，加固；稳住（局面）",
+      "example": "The government took measures to shore up the weakening economy.",
+      "exampleZh": "政府采取措施支撑走弱的经济。",
+      "collocations": [
+        "shore up the economy"
+      ],
+      "tags": [
+        "短语动词"
+      ]
+    },
+    {
+      "id": "unveil",
+      "word": "unveil",
+      "pos": "v.",
+      "meaning": "揭开，公布；为…揭幕",
+      "example": "The company will unveil its new concept car next month.",
+      "exampleZh": "该公司下月将发布新款概念车。",
+      "collocations": [
+        "unveil a plan"
+      ],
+      "tags": []
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "name": "WordDrill · 背单词",
+  "short_name": "WordDrill",
+  "description": "先会认，再会写。两阶段单词训练工具，含间隔重复调度与熟练度追踪。",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#F8F8FB",
+  "theme_color": "#7C3AED",
+  "lang": "zh-CN",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-maskable.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}

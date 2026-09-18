@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="auto">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WordDrill · 背单词</title>
+<meta name="description" content="按认识 → 拼写两阶段递进的单词训练工具，内置间隔重复调度与熟练度追踪。">
+<meta name="theme-color" content="#7C3AED">
+<meta name="color-scheme" content="light dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap">
+<link rel="stylesheet" href="styles.css">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%237C3AED'/><path d='M28 32h14v36H28zm30 0h14v36H58z' fill='white' opacity='.9'/></svg>">
+</head>
+<body>
+
+<a class="skip-link" href="#main">跳到主要内容</a>
+
+<header class="topbar">
+  <div class="topbar__inner">
+    <div class="brand">
+      <span class="brand__mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+        </svg>
+      </span>
+      <span class="brand__name">WordDrill</span>
+    </div>
+
+    <nav class="nav" aria-label="主导航">
+      <button class="nav__item is-active" data-view="learn" aria-current="page">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/>
+        </svg>
+        <span>训练</span>
+      </button>
+      <button class="nav__item" data-view="library">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>
+        </svg>
+        <span>词库</span>
+      </button>
+      <button class="nav__item" data-view="settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+        <span>设置</span>
+      </button>
+    </nav>
+
+    <button class="icon-btn" id="theme-toggle" type="button" aria-label="切换深浅色主题">
+      <svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>
+      </svg>
+      <svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ============ 训练 ============ -->
+  <section class="view is-active" id="view-learn" aria-labelledby="learn-title">
+    <h1 class="sr-only" id="learn-title">训练</h1>
+
+    <!-- 开始 -->
+    <div class="panel panel--intro card" id="session-intro">
+      <p class="eyebrow">今日训练</p>
+      <h2 class="intro__title">先认得出，再写得出。</h2>
+      <p class="intro__sub">每个词要过两关：先能在四个释义里认出它，再能凭中文拼出它。两关都过了，才算你的。</p>
+
+      <div class="stat-row" id="intro-stats">
+        <div class="stat">
+          <span class="stat__num" id="stat-due">0</span>
+          <span class="stat__label">待复习</span>
+        </div>
+        <div class="stat">
+          <span class="stat__num" id="stat-new">0</span>
+          <span class="stat__label">新词</span>
+        </div>
+        <div class="stat">
+          <span class="stat__num" id="stat-mastered">0</span>
+          <span class="stat__label">已掌握</span>
+        </div>
+      </div>
+
+      <button class="btn btn--primary btn--lg" id="btn-start" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M5 3l14 9-14 9V3z"/>
+        </svg>
+        开始训练
+      </button>
+      <p class="hint" id="intro-hint"></p>
+    </div>
+
+    <!-- 答题 -->
+    <div class="panel card" id="session-quiz" hidden>
+      <div class="quiz__head">
+        <span class="badge" id="stage-badge">认词</span>
+        <div class="quiz__progress">
+          <div class="bar" role="progressbar" aria-labelledby="quiz-counter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="quiz-bar">
+            <span class="bar__fill" id="quiz-bar-fill"></span>
+          </div>
+          <span class="counter" id="quiz-counter">0 / 0</span>
+        </div>
+      </div>
+
+      <div class="quiz__body" id="quiz-body">
+        <!-- JS 注入题干与作答区 -->
+      </div>
+
+      <div class="feedback" id="feedback" role="status" aria-live="polite"></div>
+
+      <div class="quiz__foot">
+        <button class="btn btn--ghost" id="btn-end" type="button">结束本次</button>
+        <button class="btn btn--primary" id="btn-next" type="button" hidden>继续</button>
+      </div>
+    </div>
+
+    <!-- 小结 -->
+    <div class="panel card" id="session-summary" hidden>
+      <p class="eyebrow">本次训练</p>
+      <h2 class="intro__title" id="summary-title">收工</h2>
+      <div class="stat-row" id="summary-stats"></div>
+      <div class="summary__list" id="summary-list"></div>
+      <div class="summary__actions">
+        <button class="btn btn--primary" id="btn-again" type="button">再来一轮</button>
+        <button class="btn btn--ghost" data-view="library" type="button">看词库</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 词库 ============ -->
+  <section class="view" id="view-library" aria-labelledby="library-title" hidden>
+    <h1 class="page-title" id="library-title">词库</h1>
+
+    <div class="mastery-summary card">
+      <div class="mastery-summary__head">
+        <span class="eyebrow">熟练度分布</span>
+        <span class="mastery-summary__total" id="lib-total"></span>
+      </div>
+      <div class="dist" id="lib-dist"></div>
+      <div class="dist-legend" id="lib-legend"></div>
+    </div>
+
+    <div class="toolbar">
+      <div class="segmented" role="group" aria-label="按掌握阶段筛选">
+        <button class="segmented__item is-active" data-filter="all" type="button">全部</button>
+        <button class="segmented__item" data-filter="new" type="button">未开始</button>
+        <button class="segmented__item" data-filter="recognize" type="button">认词中</button>
+        <button class="segmented__item" data-filter="write" type="button">拼写中</button>
+        <button class="segmented__item" data-filter="mastered" type="button">已掌握</button>
+      </div>
+      <label class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>
+        </svg>
+        <span class="sr-only">搜索单词</span>
+        <input type="search" id="lib-search" placeholder="搜索单词或释义…" autocomplete="off">
+      </label>
+    </div>
+
+    <ul class="wordlist" id="wordlist"></ul>
+    <p class="empty" id="wordlist-empty" hidden>没有符合条件的单词。</p>
+  </section>
+
+  <!-- ============ 设置 ============ -->
+  <section class="view" id="view-settings" aria-labelledby="settings-title" hidden>
+    <h1 class="page-title" id="settings-title">设置</h1>
+
+    <div class="card settings-card">
+      <h2 class="card__title">每日新词上限</h2>
+      <p class="card__desc">控制一轮训练里最多引入几个没见过的词。复习词不受此限制。</p>
+      <div class="field">
+        <input type="range" id="set-newlimit" min="0" max="40" step="1" value="10">
+        <output id="set-newlimit-out" for="set-newlimit">10</output>
+      </div>
+    </div>
+
+    <div class="card settings-card">
+      <h2 class="card__title">答对判级</h2>
+      <p class="card__desc">一个词在同一阶段连续答对几次，才允许进入下一阶段。次数越高越扎实，但推进越慢。</p>
+      <div class="field">
+        <input type="range" id="set-threshold" min="1" max="4" step="1" value="2">
+        <output id="set-threshold-out" for="set-threshold">2</output>
+      </div>
+      <p class="hint">当前：连续答对 <b id="set-threshold-text">2</b> 次升阶</p>
+    </div>
+
+    <div class="card settings-card">
+      <h2 class="card__title">发音</h2>
+      <p class="card__desc">答题时朗读英文单词（使用系统语音，不联网）。</p>
+      <label class="switch">
+        <input type="checkbox" id="set-speak" checked>
+        <span class="switch__track" aria-hidden="true"><span class="switch__thumb"></span></span>
+        <span class="switch__label">开启朗读</span>
+      </label>
+    </div>
+
+    <div class="card settings-card">
+      <h2 class="card__title">进度数据</h2>
+      <p class="card__desc">学习进度保存在本机浏览器。换设备或换浏览器时，用导出/导入搬运。</p>
+      <div class="btn-row">
+        <button class="btn btn--ghost" id="btn-export" type="button">导出进度</button>
+        <label class="btn btn--ghost" for="import-file">导入进度</label>
+        <input type="file" id="import-file" accept="application/json,.json" hidden>
+        <button class="btn btn--danger" id="btn-reset" type="button">清空进度</button>
+      </div>
+    </div>
+
+    <div class="card settings-card">
+      <h2 class="card__title">词库来源</h2>
+      <p class="card__desc">
+        词库文件：<code>data/words.json</code>，当前 <b id="meta-count">0</b> 个词，更新于 <span id="meta-updated">—</span>。<br>
+        新增生词：先在 FlowUs 生词页记下，再用 <code>scripts/sync-from-flowus.py</code> 同步进词库。
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <p>WordDrill · 词库与进度都在本地，不上传任何数据。</p>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script src="app.js"></script>
+</body>
+</html>

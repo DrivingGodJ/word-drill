@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="WordDrill">
+  <!-- maskable：主体收在中心 80% 安全区内 -->
+  <rect width="512" height="512" fill="#7C3AED"/>
+  <g fill="#FFFFFF">
+    <rect x="164" y="176" width="38" height="164" rx="12"/>
+    <rect x="220" y="208" width="106" height="38" rx="12" opacity=".95"/>
+    <rect x="220" y="268" width="146" height="38" rx="12" opacity=".8"/>
+  </g>
+</svg>
