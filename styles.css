@@ -386,6 +386,12 @@ button { cursor: pointer; background: none; border: none; padding: 0; }
 .fb__ex-en b { color: var(--color-primary); font-style: normal; font-weight: 700; }
 .fb__ex-zh { color: var(--color-muted-fg); font-size: .875rem; margin-top: 2px; }
 .fb__stage { margin-top: var(--s-3); font-size: .8125rem; font-weight: 600; }
+.fb__credit {
+  margin-top: var(--s-2); font-size: .8125rem; font-weight: 600;
+  color: var(--color-muted-fg);
+}
+.fb__credit b { color: var(--color-fg); font-variant-numeric: tabular-nums; }
+.fb__credit--bad { color: var(--color-warning); }
 
 .quiz__foot {
   display: flex; justify-content: space-between; align-items: center;

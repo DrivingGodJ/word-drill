@@ -19,14 +19,25 @@
   const MIN = 60 * 1000;
   const HOUR = 60 * MIN;
   const DAY = 24 * HOUR;
-  /** 强度 → 复习间隔（毫秒）。索引即 strength。 */
-  const INTERVALS = [10 * MIN, 1 * DAY, 3 * DAY, 7 * DAY, 16 * DAY, 35 * DAY];
+
   /**
-   * 下一次复习间隔按「当前所处阶段」给，而不是按强度。
-   * 好处：同一个词答对一次不会被直接推到 1 天后，当轮还想再练就能继续练；
-   * 真正掌握了（mastered）才拉长到天级间隔。
+   * 「长期记住」判定模型 —— 核心不是「当场答对几次」，而是「跨天的累计次数」。
+   *
+   * 一个词在当前阶段攒够 threshold 次答对、且这些答对**全部落在连续两周（PASS_WINDOW）内**，
+   * 才允许升到下一阶段；答错则已攒次数清零重来。
+   *
+   * 为什么同一天不会重复计数：答对后这个词的 due 会被推到第二天（CREDIT_DUE），
+   * 当天就不再出现在待复习队列里 —— 于是「两周内答对 5 次」自然等于「跨 5 天」。
    */
-  const STAGE_DUE = { recognize: 15 * MIN, write: 6 * HOUR, mastered: 3 * DAY };
+  const PASS_WINDOW = 14 * DAY;
+  /** 攒次数期间答对一次后，下一次什么时候来（一天一次 → 攒的就是天数） */
+  const CREDIT_DUE = 1 * DAY;
+  /** 已掌握后的维护间隔：不再需要攒，只需偶尔回访 */
+  const MASTERED_DUE = 3 * DAY;
+  /** 攒次数期间答错后的最短重来间隔（当轮还会回流一次） */
+  const LAPSE_DUE = 3 * MIN;
+  /** 新词首次答对即进入「认词中」，这一关不需要攒 */
+  const CREDIT_NEED_MIN = 1, CREDIT_NEED_MAX = 6, CREDIT_NEED_DEFAULT = 5;
   const REQUESTS_PER_ROUND = 40;   // 单轮最大题量，避免无限循环
 
   /* ---------- 多设备同步（GitHub 私有仓库当存储） ---------- */
@@ -35,7 +46,7 @@
   /** 学习参数才同步；主题/发音是设备偏好，各设备自己存 */
   const SYNCED_SETTINGS = ['newLimit', 'threshold'];
   /** 学习参数的合法区间，必须和设置页滑块的 min/max 一致，否则同步进来的值会让界面与实际不一致 */
-  const SETTING_RANGE = { newLimit: [0, 40], threshold: [1, 4] };
+  const SETTING_RANGE = { newLimit: [0, 40], threshold: [CREDIT_NEED_MIN, CREDIT_NEED_MAX] };
 
   function clampSetting(k, v) {
     const r = SETTING_RANGE[k];
@@ -95,10 +106,12 @@
   }
 
   /* ---------- 持久化 ---------- */
+  const STORE_VERSION = 2;   // v2：过关判定从「连续答对」改成「两周内累计答对天数」
+
   function defaultStore() {
     return {
-      version: 1,
-      settings: { newLimit: 10, threshold: 2, speak: true, theme: 'auto' },
+      version: STORE_VERSION,
+      settings: { newLimit: 10, threshold: CREDIT_NEED_DEFAULT, speak: true, theme: 'auto' },
       settingsAt: 0,                   // 学习参数最后修改时间，用于多设备合并
       words: {},                       // id → 进度
       stats: { answers: 0, correct: 0, sessions: 0, lastDate: null, streakDays: 0 }
@@ -115,6 +128,14 @@
         stats: Object.assign(defaultStore().stats, parsed.stats || {}),
         words: parsed.words || {}
       });
+      // v1 → v2：threshold 的含义整个变了（「连续答对次数」→「两周内答对天数」），
+      // 旧值不再等价，直接置成新默认，免得用户拿到一个语义不明的数字。
+      if ((parsed.version || 1) < STORE_VERSION) {
+        merged.version = STORE_VERSION;
+        merged.settings.threshold = CREDIT_NEED_DEFAULT;
+      }
+      // 老记录里的 strength / streak 已经没有意义，统一补上 credits
+      for (const id of Object.keys(merged.words)) merged.words[id] = normalRec(merged.words[id]);
       normalizeSettings(merged.settings);
       return merged;
     } catch {
@@ -133,21 +154,37 @@
   /** 取某个词的进度（不存在则视为未开始）。 */
   function progressOf(id) {
     return store.words[id] || {
-      stage: 'new', strength: 0, streak: 0,
+      stage: 'new', credits: [],
       correct: 0, wrong: 0, due: 0, lastSeen: 0
     };
   }
 
   /* ---------- SRS 引擎 ---------- */
+  /** 本地日期键（YYYY-MM-DD），用来判断两次答对是不是同一天。 */
+  const dayKey = (ts) => {
+    const d = new Date(ts);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  };
+
+  /** 当前设置要求的「两周内答对次数」。 */
+  const creditNeed = () =>
+    Math.min(CREDIT_NEED_MAX, Math.max(CREDIT_NEED_MIN, Number(store.settings.threshold) || CREDIT_NEED_DEFAULT));
+
+  /** 丢掉滚出两周窗口的旧记录 —— 这就是「连续两周内」的实现。 */
+  const pruneCredits = (list, at) => (list || []).filter((ts) => at - ts <= PASS_WINDOW);
+
+  /** 是否还需要攒次数（已掌握的词不再需要）。 */
+  const needsCredits = (stage) => stage === 'recognize' || stage === 'write';
+
   /**
    * 判定一次作答并推进状态。
-   * @returns {{before:object, after:object, promoted:boolean, demoted:boolean}}
+   * @returns {{before:object, after:object, promoted:boolean, demoted:boolean, credited:boolean, cleared:number}}
    */
   function grade(id, isCorrect) {
     const before = progressOf(id);
-    const after = Object.assign({}, before);
-    const threshold = Math.max(1, Number(store.settings.threshold) || 2);
-    let promoted = false, demoted = false;
+    const after = Object.assign({}, before, { credits: pruneCredits(before.credits, now()) });
+    const need = creditNeed();
+    let promoted = false, demoted = false, credited = false, cleared = 0;
 
     after.lastSeen = now();
     store.stats.answers++;
@@ -155,37 +192,41 @@
 
     if (isCorrect) {
       after.correct++;
-      after.streak++;
-      after.strength = Math.min(5, after.strength + 1);
 
-      // 升阶
       if (after.stage === 'new') {
+        // 新词只要认对一次就进入「认词中」；攒次数从这一关才开始
         after.stage = 'recognize';
+        after.credits = [];
         promoted = true;
-      } else if (after.streak >= threshold) {
-        // 每跨一关都要重新累计「连续答对」，否则一关只需再对一次就过
-        if (after.stage === 'recognize') { after.stage = 'write'; after.streak = 0; promoted = true; }
-        else if (after.stage === 'write') { after.stage = 'mastered'; after.streak = 0; promoted = true; }
+      } else {
+        // 同一天重复答对不重复计数（答对后 due 已推到明天，正常不会走到这里；
+        // 但多设备合并或手动重放可能带进同一天的记录）
+        if (!after.credits.some((ts) => dayKey(ts) === dayKey(after.lastSeen))) {
+          after.credits.push(after.lastSeen);
+          credited = true;
+        }
+        if (after.credits.length >= need && needsCredits(after.stage)) {
+          if (after.stage === 'recognize') { after.stage = 'write'; promoted = true; after.credits = []; }
+          else if (after.stage === 'write') { after.stage = 'mastered'; promoted = true; after.credits = []; }
+        }
       }
     } else {
       after.wrong++;
-      after.streak = 0;
-      after.strength = Math.max(0, after.strength - 1);
-
-      // 降阶：写不出来 / 巩固失败 → 退回上一关
+      cleared = after.credits.length;
+      after.credits = [];                       // 答错说明没记住，已攒次数清零重来
       if (after.stage === 'mastered') { after.stage = 'write'; demoted = true; }
-      else if (after.stage === 'write' && after.strength === 0) { after.stage = 'recognize'; demoted = true; }
     }
 
-    // 间隔调度：答错用最短间隔，让它在本次之后很快重现
-    const base = isCorrect
-      ? (STAGE_DUE[after.stage] || INTERVALS[Math.min(after.strength, 5)])
-      : 3 * MIN;
+    // 间隔调度
+    let base;
+    if (!isCorrect) base = LAPSE_DUE;                       // 当轮稍后回流，趁热打铁
+    else if (after.stage === 'mastered') base = MASTERED_DUE; // 已掌握：只做维护
+    else base = CREDIT_DUE;                                  // 攒次数：明天再来
     after.due = now() + base;
 
     store.words[id] = after;
     saveStore();
-    return { before, after, promoted, demoted };
+    return { before, after, promoted, demoted, credited, cleared, need };
   }
 
   /** 根据当前阶段决定出题方式。 */
@@ -427,7 +468,8 @@
   }
 
   const normalRec = (r) => ({
-    stage: r.stage || 'new', strength: r.strength || 0, streak: r.streak || 0,
+    stage: r.stage || 'new',
+    credits: Array.isArray(r.credits) ? r.credits.filter((t) => typeof t === 'number' && isFinite(t)) : [],
     due: r.due || 0, lastSeen: r.lastSeen || 0,
     correct: r.correct || 0, wrong: r.wrong || 0
   });
@@ -436,7 +478,7 @@
     const settings = {};
     for (const k of SYNCED_SETTINGS) settings[k] = store.settings[k];
     return {
-      version: 1,
+      version: 2,
       app: 'worddrill',
       deviceId: sync.deviceId,
       syncedAt: now(),
@@ -455,7 +497,7 @@
 
   /**
    * 逐词合并远端进度。核心取舍：
-   * - 阶段/强度/到期时间取「最后练习时间（lastSeen）」较新的一条 —— 位置以最近练过的那台设备为准
+   * - 阶段 / 已攒天数 / 到期时间取「最后练习时间（lastSeen）」较新的一条 —— 位置以最近练过的那台设备为准
    * - 对错次数取两端较大值，而不是相加 —— 两台设备可能从同一份基线各自练习，相加会重复计数
    */
   function mergeRemote(remote) {
@@ -577,7 +619,8 @@
         const p = progressOf(w.id);
         return p.stage !== 'new' && p.due <= t;
       })
-      .sort((a, b) => progressOf(a.id).strength - progressOf(b.id).strength);
+      // 攒得最少的排前面：优先补上离升阶最远的词
+      .sort((a, b) => (progressOf(a.id).credits || []).length - (progressOf(b.id).credits || []).length);
 
     const newLimit = Math.max(0, Number(store.settings.newLimit) || 0);
     const freshWords = WORDS.filter((w) => progressOf(w.id).stage === 'new').slice(0, newLimit);
@@ -644,12 +687,10 @@
     // 记录（同一词多轮取最后一次）
     session.results.set(word.id, r);
 
-    const threshold = Math.max(1, Number(store.settings.threshold) || 2);
-    // 答错 → 本次稍后重来一遍，趁热打铁
-    // 答对但本关还没累计够「连续答对」→ 也稍后重现，让「先认后写」在同一轮里走完
-    const needsMore = !isCorrect ||
-      (r.after.stage !== 'mastered' && r.after.streak < threshold);
-    if (needsMore) {
+    // 答错 → 本次稍后重来一遍，趁热打铁。
+    // 答对则本轮不再出现：它的下次复习已被排到明天，当天重复答对也不会额外计数
+    //（要「跨天累计」，就不能在同一轮里靠复现刷次数）。
+    if (!isCorrect) {
       const insertAt = Math.min(session.queue.length, session.index + 3);
       session.queue.splice(insertAt, 0, word.id);
       session.requeued++;
@@ -722,6 +763,9 @@
     $('#intro-hint').textContent = totalToday
       ? `本轮约 ${totalToday} 个词 · 认词 ${recognize} · 拼写 ${write} · 已掌握 ${mastered}`
       : (WORDS.length ? '今天的复习任务已完成，可以先去词库看看。' : '词库还是空的。');
+    $('#intro-rule').textContent =
+      `升阶规则：两周内于不同的日子累计答对 ${creditNeed()} 次（约需 ${creditNeed()} 天）· 答错清零重攒 · `
+      + `已掌握后每 ${Math.round(MASTERED_DUE / DAY)} 天回访一次`;
     $('#btn-start').disabled = totalToday === 0;
   }
 
@@ -846,6 +890,26 @@
       stageNote = `<p class="fb__stage" style="color:var(--color-danger)">↓ 退回${STAGE_BADGE[r.after.stage] || '认词'}关，再巩固一下</p>`;
     }
 
+    // 攒次数进度：让「跨两周累计」这件事在每次作答后都看得见
+    const need = r.need || creditNeed();
+    const have = (r.after.credits || []).length;
+    let creditNote;
+    if (!isCorrect) {
+      creditNote = r.cleared
+        ? `<p class="fb__credit fb__credit--bad">答错 → 已攒的 ${r.cleared} 次清零，重新攒</p>`
+        : `<p class="fb__credit fb__credit--bad">答错 → 这一关重新攒</p>`;
+    } else if (r.before.stage === 'new') {
+      creditNote = `<p class="fb__credit">进入「认词中」，接下来要在两周内攒够 ${need} 次答对</p>`;
+    } else if (r.promoted) {
+      creditNote = r.after.stage === 'mastered'
+        ? `<p class="fb__credit">两周内攒满 ${need} 次 → 已掌握 ✓</p>`
+        : `<p class="fb__credit">两周内攒满 ${need} 次 → 升入「${STAGE_BADGE[r.after.stage]}」关，重新开始攒</p>`;
+    } else if (r.after.stage === 'mastered') {
+      creditNote = `<p class="fb__credit">已掌握 · 之后每 ${Math.round(MASTERED_DUE / DAY)} 天回访一次</p>`;
+    } else {
+      creditNote = `<p class="fb__credit">已攒 <b>${have}</b> / ${need} 次（两周内）· 下次明天</p>`;
+    }
+
     const userLine = (!isCorrect && q.kind !== 'recognize' && userAnswer)
       ? `<p class="fb__meaning" style="color:var(--color-danger)">你写的是：<s>${esc(userAnswer)}</s></p>` : '';
 
@@ -863,6 +927,7 @@
           <p class="fb__ex-zh">${esc(w.exampleZh || '')}</p>
         </div>
         ${stageNote}
+        ${creditNote}
       </div>`;
 
     const next = $('#btn-next');
@@ -875,24 +940,28 @@
     const rate = stats.done ? Math.round((stats.correct / stats.done) * 100) : 0;
     $('#summary-title').textContent = rate >= 90 ? '干净利落' : rate >= 70 ? '稳步推进' : '有难点，正常';
 
-    const up = [], down = [];
+    // 把结果分成四类，避免把「新词刚起步」说成「攒到了新的一天」
+    const started = [], advanced = [], gained = [], lost = [];
     stats.results.forEach((r, id) => {
-      if (r.after.strength > r.before.strength) up.push(id);
-      if (r.after.strength < r.before.strength) down.push(id);
+      const before = (r.before.credits || []).length;
+      const after = (r.after.credits || []).length;
+      if (r.promoted && r.before.stage === 'new') started.push(id);
+      else if (r.promoted) advanced.push(id);
+      else if (after > before) gained.push(id);
+      if (!r.promoted && after < before) lost.push(id);
     });
 
     $('#summary-stats').innerHTML = `
       <div class="stat"><span class="stat__num">${stats.done}</span><span class="stat__label">答题</span></div>
       <div class="stat"><span class="stat__num">${rate}%</span><span class="stat__label">正确率</span></div>
-      <div class="stat"><span class="stat__num">${up.length}</span><span class="stat__label">变扎实</span></div>`;
+      <div class="stat"><span class="stat__num">${gained.length}</span><span class="stat__label">攒到天数</span></div>`;
 
     const rows = [];
-    if (up.length) rows.push(`<div class="summary__row"><b>${up.length} 个</b> 词的熟练度上升 <span class="tag tag--up">↑</span></div>`);
-    if (down.length) rows.push(`<div class="summary__row"><b>${down.length} 个</b> 词需要巩固 <span class="tag tag--down">↓</span></div>`);
-    const advanced = [];
-    stats.results.forEach((r, id) => { if (r.promoted) advanced.push(byId.get(id)?.word); });
+    if (started.length) rows.push(`<div class="summary__row"><b>${started.length} 个</b> 词进入「认词中」，从明天开始攒天数</div>`);
+    if (gained.length) rows.push(`<div class="summary__row"><b>${gained.length} 个</b> 词攒到了新的一天 <span class="tag tag--up">↑</span></div>`);
+    if (lost.length) rows.push(`<div class="summary__row"><b>${lost.length} 个</b> 词答错清零，得重新攒 <span class="tag tag--down">↓</span></div>`);
     if (advanced.length) {
-      rows.push(`<div class="summary__row">升阶：<b>${advanced.map(esc).join('、')}</b> <span class="tag tag--up">晋级</span></div>`);
+      rows.push(`<div class="summary__row">升阶：<b>${advanced.map((id) => esc(byId.get(id)?.word || id)).join('、')}</b> <span class="tag tag--up">晋级</span></div>`);
     }
     $('#summary-list').innerHTML = rows.join('') || '<div class="summary__row">这轮没有需要特别标记的词。</div>';
   }
@@ -926,8 +995,14 @@
     const ul = $('#wordlist');
     ul.innerHTML = list.map((w) => {
       const p = progressOf(w.id);
-      const pips = Array.from({ length: 5 }, (_, i) =>
-        `<i class="strength__pip ${i < p.strength ? 'is-on' : ''}" data-stage="${p.stage}"></i>`).join('');
+      const need = creditNeed();
+      const have = (p.credits || []).length;
+      // 已掌握的词不再需要攒，直接把格子填满表示「已达成」
+      const pips = Array.from({ length: need }, (_, i) =>
+        `<i class="strength__pip ${(p.stage === 'mastered' || i < have) ? 'is-on' : ''}" data-stage="${p.stage}"></i>`).join('');
+      const creditText = p.stage === 'new' ? '未开始'
+        : p.stage === 'mastered' ? '已掌握'
+        : `已攒 ${have}/${need}`;
       const dueText = p.stage === 'new' ? '尚未开始'
         : p.due <= now() ? '待复习'
         : `复习：${formatDue(p.due)}`;
@@ -941,8 +1016,8 @@
           <p class="wcard__meaning">${esc(w.meaning)}</p>
           <p class="wcard__ex">${esc(w.example)}</p>
           <div class="wcard__foot">
-            <span class="strength" role="img" aria-label="熟练度 ${p.strength} / 5">${pips}</span>
-            <span class="wcard__meta">对 ${p.correct} · 错 ${p.wrong} · ${dueText}</span>
+            <span class="strength" role="img" aria-label="${creditText}">${pips}</span>
+            <span class="wcard__meta">${creditText} · 对 ${p.correct} · 错 ${p.wrong} · ${dueText}</span>
           </div>
         </li>`;
     }).join('');

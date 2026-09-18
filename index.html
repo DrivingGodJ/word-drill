@@ -73,7 +73,7 @@
     <div class="panel panel--intro card" id="session-intro">
       <p class="eyebrow">今日训练</p>
       <h2 class="intro__title">先认得出，再写得出。</h2>
-      <p class="intro__sub">每个词要过两关：先能在四个释义里认出它，再能凭中文拼出它。两关都过了，才算你的。</p>
+      <p class="intro__sub">每个词要过两关：先能在四个释义里认出它，再能凭中文拼出它。每关都要在<strong>连续两周</strong>内于不同的日子累计答对够次数才放行 —— 当天刷多少遍都不算。</p>
 
       <div class="stat-row" id="intro-stats">
         <div class="stat">
@@ -97,6 +97,7 @@
         开始训练
       </button>
       <p class="hint" id="intro-hint"></p>
+      <p class="hint" id="intro-rule"></p>
     </div>
 
     <!-- 答题 -->
@@ -184,13 +185,16 @@
     </div>
 
     <div class="card settings-card">
-      <h2 class="card__title">答对判级</h2>
-      <p class="card__desc">一个词在同一阶段连续答对几次，才允许进入下一阶段。次数越高越扎实，但推进越慢。</p>
+      <h2 class="card__title">升阶判级</h2>
+      <p class="card__desc">
+        一个词要在<strong>连续两周</strong>内、于不同的日子累计答对几次，才允许升到下一阶段。
+        同一天答对多次只算一次 —— 所以「两周内答对 5 次」实际就是跨 5 天，考的是长期，不是当场。
+      </p>
       <div class="field">
-        <input type="range" id="set-threshold" min="1" max="4" step="1" value="2">
-        <output id="set-threshold-out" for="set-threshold">2</output>
+        <input type="range" id="set-threshold" min="1" max="6" step="1" value="5">
+        <output id="set-threshold-out" for="set-threshold">5</output>
       </div>
-      <p class="hint">当前：连续答对 <b id="set-threshold-text">2</b> 次升阶</p>
+      <p class="hint">当前：两周内答对 <b id="set-threshold-text">5</b> 次升阶 · 答错则已攒次数清零重来</p>
     </div>
 
     <div class="card settings-card">
