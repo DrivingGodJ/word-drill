@@ -165,6 +165,28 @@ python3 scripts/sync-from-flowus.py
 
 也可以直接编辑 `data/words.json`。每条的结构：
 
+### 四六级自动补词
+
+词不够时自动从四六级词书里挑新词，不用手动维护：
+
+```bash
+python3 scripts/add-cet-words.py            # 自动判断；词够就什么都不做
+python3 scripts/add-cet-words.py --dry-run  # 只看会补哪些词
+python3 scripts/add-cet-words.py --force    # 跳过「词不够」判断（配额仍生效）
+```
+
+规则：
+
+- **触发**：词库里「还没开始学」的词少于 15 个才补，一次补到 30 个为止（判断依据是
+  `worddrill-data` 私有仓库里的学习进度，所以以真实进度为准）。
+- **配额**：滚动 7 天最多 7 个，记在 `scripts/cet-state.json`（随仓库提交，可审计）。
+- **词源**：`kajweb/dict` 的 CET4/CET6 词书（有中文释义 + 配对中英例句），
+  下载后缓存在 `scripts/.cache-cet/`（gitignore，只需下载一次）。
+- **过滤**：先排除中小学教材词表（约 5700 词，默认已掌握），再排除词库里已有的词；
+  例句必须包含词头且带中文翻译，否则宁缺毋滥。四级优先，六级靠后。
+- 提交后 GitHub Pages 自动重新部署；词库请求是 network-first，**不用 bump SW 缓存**。
+- 也可以建一个每日定时任务跑它：词够的时候它自己什么都不做。
+
 ```json
 {
   "id": "unveil",
