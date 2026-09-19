@@ -118,6 +118,7 @@
       version: STORE_VERSION,
       settings: { newLimit: 10, threshold: CREDIT_NEED_DEFAULT, speak: true, theme: 'auto' },
       settingsAt: 0,                   // 学习参数最后修改时间，用于多设备合并
+      cet: { approved: [], rejected: [] },   // 四六级候选词的取舍决定，随进度一起同步
       words: {},                       // id → 进度
       stats: { answers: 0, correct: 0, sessions: 0, lastDate: null, streakDays: 0 }
     };
@@ -151,6 +152,11 @@
         words: parsed.words || {}
       });
       if (migrateStore(merged, parsed.version)) storeMigrated = true;
+      // 候选词取舍记录的结构保护（旧存档没有这个字段）
+      if (!merged.cet || typeof merged.cet !== 'object'
+          || !Array.isArray(merged.cet.approved) || !Array.isArray(merged.cet.rejected)) {
+        merged.cet = { approved: [], rejected: [] };
+      }
       // 老记录里的 strength / streak 已经没有意义，统一补上 credits
       for (const id of Object.keys(merged.words)) merged.words[id] = normalRec(merged.words[id]);
       normalizeSettings(merged.settings);
@@ -514,6 +520,7 @@
       syncedAt: now(),
       settingsAt: store.settingsAt || 0,
       settings,
+      cet: store.cet || { approved: [], rejected: [] },
       stats: store.stats,
       words: store.words
     };
@@ -522,6 +529,7 @@
   /** 只用来判断「内容有没有变」，排除 deviceId / syncedAt 这类每次都变的时间戳。 */
   const payloadSig = (p) => JSON.stringify({
     settings: p.settings || {}, settingsAt: p.settingsAt || 0,
+    cet: p.cet || { approved: [], rejected: [] },
     stats: p.stats || {}, words: p.words || {}
   });
 
@@ -572,6 +580,17 @@
     if (rs.lastDate && (!store.stats.lastDate || rs.lastDate > store.stats.lastDate)) {
       store.stats.lastDate = rs.lastDate;
       changed = true;
+    }
+
+    // 候选词的取舍决定：两端取并集（决定是不可撤销的标记，合并只会增多）
+    const rc = remote.cet;
+    if (rc && typeof rc === 'object') {
+      store.cet = store.cet || { approved: [], rejected: [] };
+      for (const k of ['approved', 'rejected']) {
+        for (const id of (Array.isArray(rc[k]) ? rc[k] : [])) {
+          if (!store.cet[k].includes(id)) { store.cet[k].push(id); changed = true; }
+        }
+      }
     }
 
     return changed;
@@ -632,7 +651,7 @@
       sync.lastResult = changed ? (pushed ? '双向合并' : '已拉取') : (pushed ? '已上传' : '已是最新');
       saveSync();
       setSyncStatus(describeSync(), 'ok');
-      if (changed) { applySettingsToUI(); refreshIntro(); renderLibrary(); }
+      if (changed) { applySettingsToUI(); refreshIntro(); renderLibrary(); refreshCetReview(); }
       return { changed, pushed };
     } catch (e) {
       const msg = '同步失败：' + ((e && e.message) || '未知错误');
@@ -815,6 +834,72 @@
       + `答错则已攒天数全部清零 · 已掌握后每 ${Math.round(MASTERED_DUE / DAY)} 天回访一次`;
     // 冷却中的词也能重练，所以这种情况下不能让「开始训练」变成灰的
     $('#btn-start').disabled = totalToday === 0 && !cooling;
+  }
+
+  /* ---------- 四六级候选词确认卡 ----------
+   * 补词脚本只负责「挑出来」（写进 data/cet-pending.json），
+   * 加不加、加哪几个，必须在这里由你点头。决定记进 store.cet 并随进度同步，
+   * 补词脚本读到后再真正写入词库 —— 所以决定在所有设备之间是共享的。
+   */
+  async function refreshCetReview() {
+    const box = $('#cet-review');
+    if (!box) return;
+    let pending = [];
+    try {
+      // 时间戳绕开 SW 的 stale-while-revalidate，保证候选词列表是新的
+      const res = await fetch(`data/cet-pending.json?t=${now()}`, { cache: 'no-store' });
+      if (res.ok) {
+        const data = await res.json();
+        pending = Array.isArray(data.words) ? data.words : [];
+      }
+    } catch { /* 离线 / 还没有候选词文件：不出卡片 */ }
+
+    const decided = new Set([...(store.cet?.approved || []), ...(store.cet?.rejected || [])]);
+    const known = new Set(WORDS.map((w) => w.id));
+    pending = pending.filter((w) => w && w.id && w.word && !decided.has(w.id) && !known.has(w.id));
+    if (!pending.length) { box.hidden = true; box.innerHTML = ''; return; }
+
+    box.hidden = false;
+    box.innerHTML = `
+      <h2 class="cet-review__title">四六级候选词 · 要加入词库吗？</h2>
+      <p class="cet-review__sub">补词脚本按真题覆盖挑出来的新词，勾上想要的、去掉不想要的；确认后由脚本自动入库（不用等这一页刷新）。</p>
+      <ul class="cet-review__list">
+        ${pending.map((w) => `
+          <li class="cet-review__item">
+            <input type="checkbox" checked data-cet-id="${esc(w.id)}" id="cet-${esc(w.id)}">
+            <label for="cet-${esc(w.id)}"><span class="cet-review__word">${esc(w.word)}</span>
+              <span class="cet-review__pos">${esc(w.pos || '')}</span></label>
+            <span class="cet-review__meaning">${esc(w.meaning)}</span>
+            <span class="cet-review__tag">${esc((w.tags && w.tags[0]) || 'CET')}</span>
+          </li>`).join('')}
+      </ul>
+      <div class="cet-review__actions">
+        <button class="btn btn--primary" id="btn-cet-approve" type="button">加入所选</button>
+        <button class="btn btn--ghost" id="btn-cet-skip" type="button">这批都不要</button>
+      </div>`;
+
+    const collect = () => [...box.querySelectorAll('input[data-cet-id]')];
+    const decide = (approvedIds, rejectedIds) => {
+      store.cet = store.cet || { approved: [], rejected: [] };
+      for (const id of approvedIds) if (!store.cet.approved.includes(id)) store.cet.approved.push(id);
+      for (const id of rejectedIds) if (!store.cet.rejected.includes(id)) store.cet.rejected.push(id);
+      saveStore();
+      box.hidden = true;
+      box.innerHTML = '';
+      toast(approvedIds.length
+        ? `已选 ${approvedIds.length} 个，稍后自动加入词库`
+        : '这批候选词已跳过，之后会换新的来');
+      // 决定要尽快让补词脚本看到：开着同步就立刻推一次
+      if (sync.enabled && sync.token && sync.owner && sync.repo) syncNow({ silent: true });
+    };
+    $('#btn-cet-approve').addEventListener('click', () => {
+      const all = collect();
+      decide(all.filter((i) => i.checked).map((i) => i.dataset.cetId),
+             all.filter((i) => !i.checked).map((i) => i.dataset.cetId));
+    });
+    $('#btn-cet-skip').addEventListener('click', () => {
+      decide([], collect().map((i) => i.dataset.cetId));
+    });
   }
 
   function updateProgress() {
@@ -1396,6 +1481,9 @@
 
     // 打开就同步一次：把另一台设备上练的进度合并进来（不阻塞首屏，失败也不打扰）
     if (sync.enabled && sync.token && sync.owner && sync.repo) syncNow({ silent: true });
+
+    // 四六级候选词确认卡（async，不阻塞首屏；同步合并后 syncNow 里会再刷一次）
+    refreshCetReview();
 
     // 标记今日待复习数量，方便一眼看到
     if (WORDS.some((w) => { const p = progressOf(w.id); return p.stage !== 'new' && p.due <= now(); })) {

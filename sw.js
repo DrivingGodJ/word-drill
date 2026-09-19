@@ -1,5 +1,5 @@
 /* WordDrill service worker —— 静态资源 stale-while-revalidate，导航 network-first */
-const CACHE = 'worddrill-v10';
+const CACHE = 'worddrill-v11';
 const SHELL = [
   './',
   './index.html',

@@ -562,6 +562,26 @@ button { cursor: pointer; background: none; border: none; padding: 0; }
 }
 .toast.is-show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
+/* ---------- 四六级候选词确认卡 ---------- */
+.cet-review__title { font-size: 1rem; font-weight: 600; margin: 0 0 var(--s-1); }
+.cet-review__sub { margin: 0 0 var(--s-4); font-size: .8125rem; color: var(--color-muted-fg); }
+.cet-review__list { list-style: none; margin: 0 0 var(--s-4); padding: 0; display: grid; gap: var(--s-2); }
+.cet-review__item {
+  display: flex; align-items: baseline; gap: var(--s-3);
+  padding: var(--s-2) var(--s-3);
+  border: 1px solid var(--color-border); border-radius: var(--radius-md);
+  cursor: pointer;
+}
+.cet-review__item input { accent-color: var(--color-primary); flex: none; align-self: center; }
+.cet-review__word { font-weight: 600; }
+.cet-review__pos { color: var(--color-muted-fg); font-size: .75rem; }
+.cet-review__meaning { color: var(--color-muted-fg); font-size: .875rem; flex: 1; min-width: 0; }
+.cet-review__tag {
+  flex: none; font-size: .6875rem; padding: 1px var(--s-2); border-radius: var(--radius-full);
+  background: var(--color-primary-soft); color: var(--color-primary);
+}
+.cet-review__actions { display: flex; gap: var(--s-3); flex-wrap: wrap; }
+
 /* ---------- Responsive ---------- */
 @media (max-width: 640px) {
   #main { padding: var(--s-5) var(--s-4) var(--s-8); }
