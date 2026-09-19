@@ -33,6 +33,18 @@
       "tags": []
     },
     {
+      "id": "bibliography",
+      "word": "bibliography",
+      "pos": "n.",
+      "meaning": "参考书目； 书目",
+      "example": "At the end of this chapter there is a select bibliography of useful books.",
+      "exampleZh": "本章末尾附着有用书籍的精选书目。",
+      "collocations": [],
+      "tags": [
+        "CET6"
+      ]
+    },
+    {
       "id": "commonplace",
       "word": "commonplace",
       "pos": "adj.",
@@ -43,6 +55,18 @@
         "become commonplace"
       ],
       "tags": []
+    },
+    {
+      "id": "distort",
+      "word": "distort",
+      "pos": "vi./vt.",
+      "meaning": "变形；歪曲，曲解；扭曲，使变形",
+      "example": "Tall buildings can distort radio signals.",
+      "exampleZh": "高大的建筑物会使无线电信号失真。",
+      "collocations": [],
+      "tags": [
+        "CET6"
+      ]
     },
     {
       "id": "foray",
@@ -58,6 +82,30 @@
       "tags": []
     },
     {
+      "id": "generalize",
+      "word": "generalize",
+      "pos": "vt.",
+      "meaning": "概括， 归纳， 推断； 普及",
+      "example": "Critics love to generalize, to formulate trends into which all new work must be fitted, however contradictory.",
+      "exampleZh": "评论家喜欢概括，归纳出所有新作品都必须符合的趋势，不管它们是如何地不符。",
+      "collocations": [],
+      "tags": [
+        "CET6"
+      ]
+    },
+    {
+      "id": "instructional",
+      "word": "instructional",
+      "pos": "adj.",
+      "meaning": "指导的， 教育的",
+      "example": "...instructional material designed to help you with your lifestyle.",
+      "exampleZh": "...旨在为你的生活方式提供帮助的指导材料。",
+      "collocations": [],
+      "tags": [
+        "CET6"
+      ]
+    },
+    {
       "id": "metropolis",
       "word": "metropolis",
       "pos": "n.",
@@ -68,6 +116,42 @@
         "a bustling metropolis"
       ],
       "tags": []
+    },
+    {
+      "id": "periodical",
+      "word": "periodical",
+      "pos": "adj./n.",
+      "meaning": "周期的； 定期的； 时而发生的；期刊",
+      "example": "She made periodical visits to her dentist.",
+      "exampleZh": "她定期去看牙医。",
+      "collocations": [],
+      "tags": [
+        "CET6"
+      ]
+    },
+    {
+      "id": "prevalence",
+      "word": "prevalence",
+      "pos": "n.",
+      "meaning": "流行",
+      "example": "The report says climate change could also increase the prevalence of dengue fever.",
+      "exampleZh": "报告表示，气候变化还有可能增加登革热的流行强度。",
+      "collocations": [],
+      "tags": [
+        "CET6"
+      ]
+    },
+    {
+      "id": "quantitative",
+      "word": "quantitative",
+      "pos": "adj.",
+      "meaning": "量的， 定量的",
+      "example": "...the advantages of quantitative and qualitative research.",
+      "exampleZh": "…定量和定性研究的优点。",
+      "collocations": [],
+      "tags": [
+        "CET6"
+      ]
     },
     {
       "id": "resolute",

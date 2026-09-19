@@ -491,6 +491,10 @@ def main() -> None:
         print("\n--dry-run：未写入、未提交。")
         return
 
+    # ⚠️ 入库的词必须写回 words.json —— 曾漏掉这一步，导致「打印了入库、文件没变」
+    if added_names:
+        WORDS_FILE.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n",
+                              encoding="utf-8")
     STATE_FILE.write_text(json.dumps(state, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     if added_names:
         msg = f"chore(dict): 确认入库四六级生词 {len(added_names)} 个：{'、'.join(added_names)}"
