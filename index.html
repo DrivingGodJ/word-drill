@@ -2,11 +2,16 @@
 <html lang="zh-CN" data-theme="auto">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>WordDrill · 背单词</title>
 <meta name="description" content="按认识 → 拼写两阶段递进的单词训练工具，内置间隔重复调度与熟练度追踪。">
-<meta name="theme-color" content="#7C3AED">
+<!-- 主题色分浅/深两份，浏览器 UI（Safari 顶栏、Android 工具栏）会按系统外观自动选 -->
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#7C3AED">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0C0D12">
 <meta name="color-scheme" content="light dark">
+<!-- iOS 主屏幕模式：状态栏透明，露出页面自己画的状态栏底色（跟随系统明暗）；
+     这个值在「添加到主屏幕」时被缓存，改了要删掉重加才生效 -->
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap">

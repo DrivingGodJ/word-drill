@@ -136,6 +136,17 @@ apple-touch-icon.png / icon-192.png / icon-512.png / icon-maskable-512.png
   然后 `python3 scripts/make-icons.py` 重新生成（纯标准库，4×4 超采样抗锯齿，无需 ImageMagick）。
 - 图标有强缓存：**已加到主屏幕的旧图标不会自动更新**，要删掉重新添加一次。
 
+### 深浅色：自动跟随系统
+
+- 页面默认就是「跟随系统」：CSS 用 `@media (prefers-color-scheme: dark)` 实现自动切换，
+  右上角按钮只是手动覆盖（跟随系统 → 深色 → 浅色循环），选中的值存在本机、不同步。
+- `theme-color` 分浅/深两份（带 `media` 属性），Safari 顶栏 / Android 工具栏跟着系统走。
+- iOS 主屏幕模式用的是 `black-translucent` 透明状态栏 + `viewport-fit=cover`，
+  页面自己在顶部画一条 `--statusbar-bg`（浅色下是品牌紫、深色下是近黑），状态栏区域也就跟着系统变了。
+  代价是状态栏文字固定为白色，所以这条底色两种主题都必须够深。
+- 注意：`apple-mobile-web-app-status-bar-style` 在「添加到主屏幕」时被 iOS 缓存，
+  改了它要**删掉主屏幕图标重新添加**才生效。
+
 
 ## 加新词（日常流程）
 

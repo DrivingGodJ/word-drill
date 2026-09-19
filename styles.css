@@ -51,6 +51,13 @@
   --tap: 44px;                     /* 最小点击尺寸 */
   --ease: cubic-bezier(.2, .8, .3, 1);
   --dur: 200ms;
+
+  /* iOS 主屏幕模式的安全区（浏览器模式里 top/bottom 是 0，等价于没开） */
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  /* 状态栏底色：要压得住白色的状态栏文字，所以两种主题都用深色 */
+  --statusbar-bg: #7C3AED;
+  color-scheme: light;
 }
 
 /* ---------- Dark tokens ---------- */
@@ -79,6 +86,8 @@
   --color-border: #282B36;
   --color-border-strong: #3A3E4C;
   --color-ring: #A78BFA;
+  --statusbar-bg: #0C0D12;
+  color-scheme: dark;
 
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, .4);
   --shadow-md: 0 4px 18px -6px rgba(0, 0, 0, .6), 0 1px 2px rgba(0, 0, 0, .4);
@@ -107,6 +116,8 @@
     --color-border: #282B36;
     --color-border-strong: #3A3E4C;
     --color-ring: #A78BFA;
+    --statusbar-bg: #0C0D12;
+    color-scheme: dark;
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, .4);
     --shadow-md: 0 4px 18px -6px rgba(0, 0, 0, .6), 0 1px 2px rgba(0, 0, 0, .4);
     --shadow-lg: 0 24px 50px -20px rgba(0, 0, 0, .75);
@@ -130,6 +141,22 @@ body {
   display: flex;
   flex-direction: column;
   overflow-x: hidden;
+  /* 主屏幕模式：内容避开刘海/状态栏与底部小白条；
+     浏览器模式里这两个 env 是 0，等价于没写 */
+  padding-top: var(--sat);
+  padding-bottom: var(--sab);
+}
+
+/* 状态栏区域的底色：iOS「透明状态栏」露出来的就是这一条。
+   深浅色各有一份 --statusbar-bg，系统切外观时这里跟着变 */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: var(--sat);
+  background: var(--statusbar-bg);
+  z-index: 60;                      /* 压过 topbar(40)，低于 skip-link(100) */
+  pointer-events: none;
 }
 
 svg { display: block; }
@@ -153,11 +180,11 @@ button { cursor: pointer; background: none; border: none; padding: 0; }
   text-decoration: none; font-weight: 600;
   transition: top var(--dur) var(--ease);
 }
-.skip-link:focus { top: var(--s-4); }
+.skip-link:focus { top: calc(var(--s-4) + var(--sat)); }
 
 /* ---------- Top bar ---------- */
 .topbar {
-  position: sticky; top: 0; z-index: 40;
+  position: sticky; top: var(--sat); z-index: 40;
   background: color-mix(in srgb, var(--color-bg) 88%, transparent);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--color-border);
@@ -526,7 +553,7 @@ button { cursor: pointer; background: none; border: none; padding: 0; }
   font-size: .8125rem; color: var(--color-muted-fg);
 }
 .toast {
-  position: fixed; left: 50%; bottom: var(--s-6); transform: translateX(-50%) translateY(8px);
+  position: fixed; left: 50%; bottom: calc(var(--s-6) + var(--sab)); transform: translateX(-50%) translateY(8px);
   background: var(--color-fg); color: var(--color-bg);
   padding: var(--s-3) var(--s-5); border-radius: var(--radius-full);
   font-size: .875rem; font-weight: 500; box-shadow: var(--shadow-lg);
@@ -566,4 +593,6 @@ button { cursor: pointer; background: none; border: none; padding: 0; }
 @media print {
   .topbar, .footer, .toast, .quiz__foot, .summary__actions, .toolbar { display: none; }
   .card, .wcard { box-shadow: none; border-color: #ccc; }
+  body::before { display: none; }
+  body { padding-top: 0; padding-bottom: 0; }
 }
