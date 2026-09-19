@@ -2,7 +2,7 @@
   "meta": {
     "name": "WordDrill",
     "version": 1,
-    "updated": "2026-09-18",
+    "updated": "2026-09-19",
     "source": "FlowUs · page 2220ec94-e0c2-4523-87be-f8277b09d786",
     "note": "词库由 FlowUs 生词页同步而来；新增单词请用 scripts/sync-from-flowus.py 或直接编辑本文件。"
   },
@@ -19,6 +19,90 @@
         "in abundance"
       ],
       "tags": []
+    },
+    {
+      "id": "acceleration",
+      "word": "acceleration",
+      "pos": "n.",
+      "meaning": "加速；加速度",
+      "example": "The latest model has excellent acceleration.",
+      "exampleZh": "这款最新型号加速性能优异。",
+      "collocations": [],
+      "tags": [
+        "CET4"
+      ]
+    },
+    {
+      "id": "acceptable",
+      "word": "acceptable",
+      "pos": "adj.",
+      "meaning": "可接受的，合意的",
+      "example": "How do we reach an acceptable level of data security?",
+      "exampleZh": "我们如何使数据安全达到令人满意的程度？",
+      "collocations": [],
+      "tags": [
+        "CET4"
+      ]
+    },
+    {
+      "id": "acceptance",
+      "word": "acceptance",
+      "pos": "n.",
+      "meaning": "接受，验收；承认",
+      "example": "He wrote a letter of acceptance (=  a letter in which you agree to accept a job, university place etc  ) to the university.",
+      "exampleZh": "他给那所大学写了一封接受函。",
+      "collocations": [],
+      "tags": [
+        "CET4"
+      ]
+    },
+    {
+      "id": "accidental",
+      "word": "accidental",
+      "pos": "adj.",
+      "meaning": "偶然的；非本质的",
+      "example": "an accidental discharge of toxic waste",
+      "exampleZh": "有毒废料的意外排放",
+      "collocations": [],
+      "tags": [
+        "CET4"
+      ]
+    },
+    {
+      "id": "accommodate",
+      "word": "accommodate",
+      "pos": "v.",
+      "meaning": "容纳；供应，供给",
+      "example": "The ballroom can accommodate 400 people.",
+      "exampleZh": "那个舞厅可容纳400人。",
+      "collocations": [],
+      "tags": [
+        "CET4"
+      ]
+    },
+    {
+      "id": "accordingly",
+      "word": "accordingly",
+      "pos": "adv.",
+      "meaning": "因此，所以；照着",
+      "example": "Some of the laws were contradictory. Accordingly, measures were taken to clarify them.",
+      "exampleZh": "有些法律相互矛盾，因此，采取了措施将其阐明。",
+      "collocations": [],
+      "tags": [
+        "CET4"
+      ]
+    },
+    {
+      "id": "additional",
+      "word": "additional",
+      "pos": "adj.",
+      "meaning": "附加的，追加的",
+      "example": "Additional information can be obtained from the centre.",
+      "exampleZh": "可以从中心获取更多信息。",
+      "collocations": [],
+      "tags": [
+        "CET4"
+      ]
     },
     {
       "id": "allure",
