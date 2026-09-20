@@ -1,0 +1,2404 @@
+{
+ "words": [
+  {
+   "w": "abide",
+   "pos": "v.",
+   "meaning": "忍受；遵守"
+  },
+  {
+   "w": "accommodate",
+   "pos": "v.",
+   "meaning": "容纳；供应，供给，提供住宿"
+  },
+  {
+   "w": "acquaint",
+   "pos": "v.",
+   "meaning": "使认识，使了解"
+  },
+  {
+   "w": "adversity",
+   "pos": "n.",
+   "meaning": "逆境"
+  },
+  {
+   "w": "agreeable",
+   "pos": "adj.",
+   "meaning": "惬意的；同意的"
+  },
+  {
+   "w": "ally",
+   "pos": "v.",
+   "meaning": "结盟， 联合；同盟国， 同盟者； 支持者"
+  },
+  {
+   "w": "ampere",
+   "pos": "n.",
+   "meaning": "安培"
+  },
+  {
+   "w": "angel",
+   "pos": "n.",
+   "meaning": "天使；安琪儿，天使〔指仁慈、善良或美丽的人〕"
+  },
+  {
+   "w": "anticipate",
+   "pos": "v.",
+   "meaning": "预料，预期，期望"
+  },
+  {
+   "w": "apparatus",
+   "pos": "n.",
+   "meaning": "器械，仪器；器官"
+  },
+  {
+   "w": "Arabian",
+   "pos": "adj.",
+   "meaning": "阿拉伯的"
+  },
+  {
+   "w": "archive",
+   "pos": "n.",
+   "meaning": "档案馆，档案室；档案"
+  },
+  {
+   "w": "ascend",
+   "pos": "vi.",
+   "meaning": "渐渐上升，升高；攀登， 登上"
+  },
+  {
+   "w": "assemble",
+   "pos": "v.",
+   "meaning": "集合；组装；集合"
+  },
+  {
+   "w": "assert",
+   "pos": "v.",
+   "meaning": "主张，断言"
+  },
+  {
+   "w": "asset",
+   "pos": "n.",
+   "meaning": "有价值的人(或物)资产"
+  },
+  {
+   "w": "authoritative",
+   "pos": "adj.",
+   "meaning": "有权威性的， 可信的； 专断的， 命令式的"
+  },
+  {
+   "w": "automate",
+   "pos": "v.",
+   "meaning": "使自动化"
+  },
+  {
+   "w": "auxiliary",
+   "pos": "adj.",
+   "meaning": "辅助的， 附属的； 后备的"
+  },
+  {
+   "w": "axial",
+   "pos": "adj.",
+   "meaning": "轴的；轴向的"
+  },
+  {
+   "w": "bandit",
+   "pos": "n.",
+   "meaning": "土匪，盗匪，歹徒"
+  },
+  {
+   "w": "barely",
+   "pos": "adv.",
+   "meaning": "仅仅，几乎不"
+  },
+  {
+   "w": "beforehand",
+   "pos": "adv.",
+   "meaning": "预先；提前地"
+  },
+  {
+   "w": "bewilder",
+   "pos": "v.",
+   "meaning": "迷惑，把…弄糊涂"
+  },
+  {
+   "w": "bias",
+   "pos": "n.",
+   "meaning": "偏见"
+  },
+  {
+   "w": "bloom",
+   "pos": "n.",
+   "meaning": "花；开花，开花期"
+  },
+  {
+   "w": "blunt",
+   "pos": "adj.",
+   "meaning": "钝的；率直的，直言不讳的；使迟钝； 使减弱； 使钝"
+  },
+  {
+   "w": "blush",
+   "pos": "n.",
+   "meaning": "脸红"
+  },
+  {
+   "w": "bogus",
+   "pos": "adj.",
+   "meaning": "假冒的"
+  },
+  {
+   "w": "boost",
+   "pos": "n.",
+   "meaning": "推动,宣扬；促使，促进"
+  },
+  {
+   "w": "bough",
+   "pos": "n.",
+   "meaning": "树枝"
+  },
+  {
+   "w": "brace",
+   "pos": "vi.",
+   "meaning": "做好准备；振作精神；使防备，使受锻炼；支住，撑牢，使绷紧"
+  },
+  {
+   "w": "breed",
+   "pos": "n.",
+   "meaning": "（动物）品种"
+  },
+  {
+   "w": "brittle",
+   "pos": "adj.",
+   "meaning": "脆的；易损坏的"
+  },
+  {
+   "w": "buck",
+   "pos": "v.",
+   "meaning": "反对；美元"
+  },
+  {
+   "w": "buck",
+   "pos": "vi.",
+   "meaning": "猛然弓背跃起；美元，澳元；雄鹿，雄兔"
+  },
+  {
+   "w": "bulk",
+   "pos": "v.",
+   "meaning": "变得越来越大； 使更大；物体，体积；大批"
+  },
+  {
+   "w": "bulk",
+   "pos": "n.",
+   "meaning": "大部分；体积，块头"
+  },
+  {
+   "w": "bully",
+   "pos": "n.",
+   "meaning": "恃强欺弱者；威吓， 欺负"
+  },
+  {
+   "w": "bust",
+   "pos": "vi.",
+   "meaning": "爆裂，坏掉；打破，打碎"
+  },
+  {
+   "w": "bypass",
+   "pos": "n.",
+   "meaning": "旁通管；绕过"
+  },
+  {
+   "w": "capacitor",
+   "pos": "n.",
+   "meaning": "电容器"
+  },
+  {
+   "w": "capacity",
+   "pos": "n.",
+   "meaning": "能力，容量"
+  },
+  {
+   "w": "capture",
+   "pos": "v.",
+   "meaning": "捕获，俘获；夺得"
+  },
+  {
+   "w": "catalog",
+   "pos": "n.",
+   "meaning": "目录，目录册；一系列；将…编入目录， 将编目"
+  },
+  {
+   "w": "cemetery",
+   "pos": "n.",
+   "meaning": "墓地， 公墓"
+  },
+  {
+   "w": "censor",
+   "pos": "v.",
+   "meaning": "审查，检查"
+  },
+  {
+   "w": "chap",
+   "pos": "n.",
+   "meaning": "小伙子，小家伙，家伙"
+  },
+  {
+   "w": "chronic",
+   "pos": "adj.",
+   "meaning": "慢性的， 久病的； 长久的， 不断的； 积习难改的"
+  },
+  {
+   "w": "clan",
+   "pos": "n.",
+   "meaning": "宗族， 家族"
+  },
+  {
+   "w": "climax",
+   "pos": "n.",
+   "meaning": "高潮， 最令人兴奋的部分"
+  },
+  {
+   "w": "cluster",
+   "pos": "n.",
+   "meaning": "串，束，簇；群，组；群聚；聚集"
+  },
+  {
+   "w": "clutch",
+   "pos": "v.",
+   "meaning": "抓住，掌握，攫"
+  },
+  {
+   "w": "code",
+   "pos": "n.",
+   "meaning": "准则；法典；代码"
+  },
+  {
+   "w": "comparative",
+   "pos": "adj.",
+   "meaning": "比较的，相对的"
+  },
+  {
+   "w": "compatible",
+   "pos": "adj.",
+   "meaning": "兼容的"
+  },
+  {
+   "w": "complexity",
+   "pos": "n.",
+   "meaning": "复杂（性）"
+  },
+  {
+   "w": "comprehensive",
+   "pos": "adj.",
+   "meaning": "广泛的， 综合的； 理解的"
+  },
+  {
+   "w": "confer",
+   "pos": "vi.",
+   "meaning": "商谈，商议；授予， 赋予"
+  },
+  {
+   "w": "conform",
+   "pos": "v.",
+   "meaning": "使遵守；一致"
+  },
+  {
+   "w": "conformity",
+   "pos": "n.",
+   "meaning": "一致"
+  },
+  {
+   "w": "confrontation",
+   "pos": "n.",
+   "meaning": "冲突，对抗"
+  },
+  {
+   "w": "congress",
+   "pos": "n.",
+   "meaning": "大会；国会，议会"
+  },
+  {
+   "w": "constituent",
+   "pos": "adj.",
+   "meaning": "组成的， 构成的；选民，选区居民；成分，组成；配料"
+  },
+  {
+   "w": "constructive",
+   "pos": "adj.",
+   "meaning": "建设的，建设性的"
+  },
+  {
+   "w": "continuous",
+   "pos": "adj.",
+   "meaning": "连续不断的，持续的"
+  },
+  {
+   "w": "controversy",
+   "pos": "n.",
+   "meaning": "争论， 辩论"
+  },
+  {
+   "w": "convention",
+   "pos": "n.",
+   "meaning": "习俗，惯例；公约"
+  },
+  {
+   "w": "convert",
+   "pos": "v.",
+   "meaning": "转换，改变"
+  },
+  {
+   "w": "convict",
+   "pos": "vt.",
+   "meaning": "证明…有罪， 宣判…有罪；囚犯"
+  },
+  {
+   "w": "cooperate",
+   "pos": "v.",
+   "meaning": "合作，协作；配合"
+  },
+  {
+   "w": "craft",
+   "pos": "n.",
+   "meaning": "工艺；手艺，行业"
+  },
+  {
+   "w": "craft",
+   "pos": "n.",
+   "meaning": "技巧"
+  },
+  {
+   "w": "creativity",
+   "pos": "n.",
+   "meaning": "创造力"
+  },
+  {
+   "w": "cripple",
+   "pos": "n.",
+   "meaning": "跛子；残疾人；使跛； 使残疾"
+  },
+  {
+   "w": "crisis",
+   "pos": "n.",
+   "meaning": "危机"
+  },
+  {
+   "w": "criteria",
+   "pos": "n.",
+   "meaning": "标准"
+  },
+  {
+   "w": "criticism",
+   "pos": "n.",
+   "meaning": "批评"
+  },
+  {
+   "w": "crucial",
+   "pos": "adj.",
+   "meaning": "至关重要的"
+  },
+  {
+   "w": "cultivate",
+   "pos": "v.",
+   "meaning": "培养， 养成"
+  },
+  {
+   "w": "deceit",
+   "pos": "n.",
+   "meaning": "欺骗，欺诈"
+  },
+  {
+   "w": "decisive",
+   "pos": "adj.",
+   "meaning": "决定性的； 坚定的， 果断的， 决断的"
+  },
+  {
+   "w": "decisive",
+   "pos": "adj.",
+   "meaning": "决定性的；果断的"
+  },
+  {
+   "w": "deck",
+   "pos": "n.",
+   "meaning": "甲板；舱面；层面"
+  },
+  {
+   "w": "dedicate",
+   "pos": "v.",
+   "meaning": "奉献；献身"
+  },
+  {
+   "w": "default",
+   "pos": "v.",
+   "meaning": "不履行义务， 拖欠；违约，拖欠；弃权；预设，缺省"
+  },
+  {
+   "w": "deficit",
+   "pos": "n.",
+   "meaning": "赤字， 亏空， 亏损"
+  },
+  {
+   "w": "define",
+   "pos": "v.",
+   "meaning": "下定义，确定"
+  },
+  {
+   "w": "define",
+   "pos": "v.",
+   "meaning": "确定；下定义"
+  },
+  {
+   "w": "democratic",
+   "pos": "adj.",
+   "meaning": "民主的"
+  },
+  {
+   "w": "dense",
+   "pos": "adj.",
+   "meaning": "密集的；浓厚的"
+  },
+  {
+   "w": "deprivation",
+   "pos": "n.",
+   "meaning": "剥夺，匮乏"
+  },
+  {
+   "w": "deputy",
+   "pos": "n.",
+   "meaning": "副职， 副手； 代表， 代理人"
+  },
+  {
+   "w": "derail",
+   "pos": "v.",
+   "meaning": "脱轨"
+  },
+  {
+   "w": "descendant",
+   "pos": "n.",
+   "meaning": "子孙，后裔"
+  },
+  {
+   "w": "designate",
+   "pos": "v.",
+   "meaning": "指定；指示；指明"
+  },
+  {
+   "w": "destiny",
+   "pos": "n.",
+   "meaning": "命运，天数"
+  },
+  {
+   "w": "destructive",
+   "pos": "adj.",
+   "meaning": "破坏性的，毁灭性的"
+  },
+  {
+   "w": "deviate",
+   "pos": "vi.",
+   "meaning": "背离， 偏离"
+  },
+  {
+   "w": "deviate",
+   "pos": "v.",
+   "meaning": "偏离"
+  },
+  {
+   "w": "deviation",
+   "pos": "n.",
+   "meaning": "背离，偏离；偏差"
+  },
+  {
+   "w": "dictate",
+   "pos": "v.",
+   "meaning": "命令，规定"
+  },
+  {
+   "w": "diligence",
+   "pos": "n.",
+   "meaning": "勤奋"
+  },
+  {
+   "w": "disable",
+   "pos": "vt.",
+   "meaning": "丧失能力， 伤残"
+  },
+  {
+   "w": "discharge",
+   "pos": "v.",
+   "meaning": "释放；排出；释放"
+  },
+  {
+   "w": "disorder",
+   "pos": "n.",
+   "meaning": "混乱，杂乱；骚乱"
+  },
+  {
+   "w": "distract",
+   "pos": "v.",
+   "meaning": "分心"
+  },
+  {
+   "w": "distraction",
+   "pos": "n.",
+   "meaning": "消遣；分心"
+  },
+  {
+   "w": "diversion",
+   "pos": "n.",
+   "meaning": "转移；娱乐"
+  },
+  {
+   "w": "dock",
+   "pos": "n.",
+   "meaning": "船坞；码头"
+  },
+  {
+   "w": "dose",
+   "pos": "n.",
+   "meaning": "剂量， 用量， 一剂"
+  },
+  {
+   "w": "downfall",
+   "pos": "n.",
+   "meaning": "（雨等的）大下特下"
+  },
+  {
+   "w": "drain",
+   "pos": "vi.",
+   "meaning": "慢慢减少；排去，放水；渐渐耗尽"
+  },
+  {
+   "w": "dramatically",
+   "pos": "adv.",
+   "meaning": "戏剧性地，引人注目地"
+  },
+  {
+   "w": "dreadful",
+   "pos": "adj.",
+   "meaning": "糟透了的， 极不合意的； 极端的， 极其大的； 可怕的"
+  },
+  {
+   "w": "duplicate",
+   "pos": "adj.",
+   "meaning": "完全一样的， 复制的；完全一样的东西，复制品"
+  },
+  {
+   "w": "duplicate",
+   "pos": "n.",
+   "meaning": "副本，复制品"
+  },
+  {
+   "w": "duplication",
+   "pos": "n.",
+   "meaning": "复制品"
+  },
+  {
+   "w": "dwarf",
+   "pos": "adj.",
+   "meaning": "矮小的，发育不全的；矮子，侏儒"
+  },
+  {
+   "w": "dwell",
+   "pos": "v.",
+   "meaning": "居住；凝思，细想"
+  },
+  {
+   "w": "economy",
+   "pos": "n.",
+   "meaning": "经济； 节约， 节省"
+  },
+  {
+   "w": "ego",
+   "pos": "n.",
+   "meaning": "自我， 自己， 自尊"
+  },
+  {
+   "w": "eject",
+   "pos": "vt.",
+   "meaning": "驱逐， 逐出； 喷射， 排出； 弹出"
+  },
+  {
+   "w": "electron",
+   "pos": "n.",
+   "meaning": "电子"
+  },
+  {
+   "w": "elevate",
+   "pos": "vt.",
+   "meaning": "提升…的职位， 提高， 改善； 使情绪高昂； 举起， 使上升"
+  },
+  {
+   "w": "eloquent",
+   "pos": "adj.",
+   "meaning": "口才好的，雄辩的"
+  },
+  {
+   "w": "embed",
+   "pos": "vt.",
+   "meaning": "把…嵌入， 扎牢； 使深留脑中"
+  },
+  {
+   "w": "empirical",
+   "pos": "adj.",
+   "meaning": "以经验为依据的， 经验主义的， 经验的"
+  },
+  {
+   "w": "enclose",
+   "pos": "v.",
+   "meaning": "附上；围住，圈起"
+  },
+  {
+   "w": "endeavor",
+   "pos": "n.",
+   "meaning": "努力， 尽力， 尝试"
+  },
+  {
+   "w": "enroll",
+   "pos": "vi.",
+   "meaning": "入学，加入；招收， 吸收"
+  },
+  {
+   "w": "equivalent",
+   "pos": "adj.",
+   "meaning": "相等的，等量的；相等物， 等价物"
+  },
+  {
+   "w": "equivalent",
+   "pos": "adj.",
+   "meaning": "等面（体）积的"
+  },
+  {
+   "w": "erect",
+   "pos": "adj.",
+   "meaning": "竖直的， 挺直的；建造，使竖立"
+  },
+  {
+   "w": "erroneous",
+   "pos": "adj.",
+   "meaning": "错误的"
+  },
+  {
+   "w": "escort",
+   "pos": "v.",
+   "meaning": "护卫，护送；护卫者，护送车辆"
+  },
+  {
+   "w": "estate",
+   "pos": "n.",
+   "meaning": "土地， 住宅区， 地产； 财产， 遗产； 庄园， 种植园"
+  },
+  {
+   "w": "esteem",
+   "pos": "v.",
+   "meaning": "尊重"
+  },
+  {
+   "w": "evaporate",
+   "pos": "v.",
+   "meaning": "使蒸发；蒸发"
+  },
+  {
+   "w": "exceed",
+   "pos": "vt.",
+   "meaning": "超过， 胜过， 超出"
+  },
+  {
+   "w": "excess",
+   "pos": "n.",
+   "meaning": "过量，过度"
+  },
+  {
+   "w": "exclusive",
+   "pos": "adj.",
+   "meaning": "除外的"
+  },
+  {
+   "w": "experimentally",
+   "pos": "adv.",
+   "meaning": "实验上，实验性地"
+  },
+  {
+   "w": "exposure",
+   "pos": "n.",
+   "meaning": "暴露， 揭露； 曝光"
+  },
+  {
+   "w": "extend",
+   "pos": "v.",
+   "meaning": "延长；扩大"
+  },
+  {
+   "w": "extent",
+   "pos": "n.",
+   "meaning": "程度"
+  },
+  {
+   "w": "extent",
+   "pos": "n.",
+   "meaning": "广度； 范围； 程度"
+  },
+  {
+   "w": "extravagant",
+   "pos": "adj.",
+   "meaning": "奢侈的； 过度的， 过分的， 放肆的"
+  },
+  {
+   "w": "factor",
+   "pos": "n.",
+   "meaning": "因素； 因子； 系数"
+  },
+  {
+   "w": "faculty",
+   "pos": "n.",
+   "meaning": "系，科；才能，能力"
+  },
+  {
+   "w": "fastener",
+   "pos": "n.",
+   "meaning": "扣件，钮扣，揿钮"
+  },
+  {
+   "w": "fatigue",
+   "pos": "n.",
+   "meaning": "疲劳，劳累"
+  },
+  {
+   "w": "fission",
+   "pos": "n.",
+   "meaning": "裂开；分裂生殖"
+  },
+  {
+   "w": "flip",
+   "pos": "adj.",
+   "meaning": "〈口〉无理的， 轻率的， 轻浮的；快速翻动，转动"
+  },
+  {
+   "w": "fluctuate",
+   "pos": "v.",
+   "meaning": "波动"
+  },
+  {
+   "w": "flush",
+   "pos": "v.",
+   "meaning": "奔流；(脸)发红"
+  },
+  {
+   "w": "foam",
+   "pos": "n.",
+   "meaning": "泡沫塑料；泡沫"
+  },
+  {
+   "w": "foam",
+   "pos": "vi.",
+   "meaning": "起泡沫， 吐白沫；泡沫；泡沫材料，泡沫状物"
+  },
+  {
+   "w": "foothold",
+   "pos": "n.",
+   "meaning": "立足处（攀登时脚踩的地方）"
+  },
+  {
+   "w": "forge",
+   "pos": "v.",
+   "meaning": "打（铁等），锻造"
+  },
+  {
+   "w": "formula",
+   "pos": "n.",
+   "meaning": "公式"
+  },
+  {
+   "w": "fortunately",
+   "pos": "adv.",
+   "meaning": "幸运地"
+  },
+  {
+   "w": "foundation",
+   "pos": "n.",
+   "meaning": "基础；地基；基金"
+  },
+  {
+   "w": "frequency",
+   "pos": "n.",
+   "meaning": "屡次； 次数， 频率"
+  },
+  {
+   "w": "fret",
+   "pos": "v.",
+   "meaning": "（使）烦恼"
+  },
+  {
+   "w": "fuse",
+   "pos": "v.",
+   "meaning": "熔合， 合并； 因保险丝熔断而中断工作；保险丝，熔丝；导火线"
+  },
+  {
+   "w": "gardener",
+   "pos": "n.",
+   "meaning": "园丁，花匠"
+  },
+  {
+   "w": "generalization",
+   "pos": "n.",
+   "meaning": "一般化；概括，综合"
+  },
+  {
+   "w": "generator",
+   "pos": "n.",
+   "meaning": "发电机；发生者"
+  },
+  {
+   "w": "generator",
+   "pos": "n.",
+   "meaning": "发电机； 发生器"
+  },
+  {
+   "w": "genetic",
+   "pos": "adj.",
+   "meaning": "遗传的；[-s]遗传学"
+  },
+  {
+   "w": "genius",
+   "pos": "n.",
+   "meaning": "天才， 天赋， 天资； 天才人物"
+  },
+  {
+   "w": "gracious",
+   "pos": "adj.",
+   "meaning": "亲切的，和蔼的；优美的；雅致的，雍容华贵的；天哪!"
+  },
+  {
+   "w": "granite",
+   "pos": "adj.",
+   "meaning": "花岗岩，花岗石"
+  },
+  {
+   "w": "grease",
+   "pos": "n.",
+   "meaning": "动物脂，脂肪"
+  },
+  {
+   "w": "groan",
+   "pos": "vi.",
+   "meaning": "呻吟，抱怨；发出呻吟般的声音；呻吟， 抱怨； 呻吟般的声音"
+  },
+  {
+   "w": "groove",
+   "pos": "n.",
+   "meaning": "沟， 槽"
+  },
+  {
+   "w": "groundless",
+   "pos": "adj.",
+   "meaning": "无理由的，无根据的"
+  },
+  {
+   "w": "groundlessly",
+   "pos": "adv.",
+   "meaning": "无缘无故地，无根据地"
+  },
+  {
+   "w": "guilt",
+   "pos": "n.",
+   "meaning": "有罪，犯罪行为"
+  },
+  {
+   "w": "halfway",
+   "pos": "adv.",
+   "meaning": "半路地； 在中途， 在半途；中途的；部分的；不彻底的"
+  },
+  {
+   "w": "hardy",
+   "pos": "adj.",
+   "meaning": "能吃苦耐劳的， 坚强的； 耐寒的"
+  },
+  {
+   "w": "haul",
+   "pos": "v.",
+   "meaning": "拖曳；拖运"
+  },
+  {
+   "w": "headquarter",
+   "pos": "v.",
+   "meaning": "设立总部，在…设立总部"
+  },
+  {
+   "w": "heater",
+   "pos": "n.",
+   "meaning": "加热器"
+  },
+  {
+   "w": "heir",
+   "pos": "n.",
+   "meaning": "后嗣，继承人"
+  },
+  {
+   "w": "helpless",
+   "pos": "adj.",
+   "meaning": "无助的； 无能的； 无法抗拒的"
+  },
+  {
+   "w": "hinge",
+   "pos": "n.",
+   "meaning": "合页，折叶，铰链"
+  },
+  {
+   "w": "hip",
+   "pos": "n.",
+   "meaning": "臀部， 髋部"
+  },
+  {
+   "w": "historic",
+   "pos": "adj.",
+   "meaning": "历史上著名的， 具有重大历史意义的"
+  },
+  {
+   "w": "homely",
+   "pos": "adj.",
+   "meaning": "家常的"
+  },
+  {
+   "w": "horizontal",
+   "pos": "adj.",
+   "meaning": "地平的， 水平的"
+  },
+  {
+   "w": "hound",
+   "pos": "n.",
+   "meaning": "猎犬"
+  },
+  {
+   "w": "hull",
+   "pos": "n.",
+   "meaning": "外壳，豆荚；薄膜"
+  },
+  {
+   "w": "idle",
+   "pos": "adj.",
+   "meaning": "空闲的，懒散的；无用的；虚度， 无所事事"
+  },
+  {
+   "w": "idleness",
+   "pos": "n.",
+   "meaning": "懒惰；赋闲无事"
+  },
+  {
+   "w": "illiterate",
+   "pos": "adj.",
+   "meaning": "文盲的；文盲"
+  },
+  {
+   "w": "illuminate",
+   "pos": "v.",
+   "meaning": "阐释，阐明"
+  },
+  {
+   "w": "illustration",
+   "pos": "n.",
+   "meaning": "说明，图解；例证"
+  },
+  {
+   "w": "image",
+   "pos": "n.",
+   "meaning": "像；形象；映象"
+  },
+  {
+   "w": "imitation",
+   "pos": "n.",
+   "meaning": "仿制品，伪制物"
+  },
+  {
+   "w": "immortal",
+   "pos": "adj.",
+   "meaning": "不朽的；永生的"
+  },
+  {
+   "w": "impart",
+   "pos": "vt.",
+   "meaning": "告知， 透露； 赋予， 给予"
+  },
+  {
+   "w": "impermanency",
+   "pos": "n.",
+   "meaning": "非永久性"
+  },
+  {
+   "w": "inadequate",
+   "pos": "adj.",
+   "meaning": "不足的"
+  },
+  {
+   "w": "inaugurate",
+   "pos": "vt.",
+   "meaning": "开始， 开展； 为…举行就职典礼； 为…举行开幕式， 为…举行落成仪式"
+  },
+  {
+   "w": "incidence",
+   "pos": "n.",
+   "meaning": "发生率，影响；入射"
+  },
+  {
+   "w": "incidence",
+   "pos": "n.",
+   "meaning": "发生率"
+  },
+  {
+   "w": "incredible",
+   "pos": "adj.",
+   "meaning": "难以置信的，惊人的"
+  },
+  {
+   "w": "index",
+   "pos": "n.",
+   "meaning": "索引； 指数， 指标"
+  },
+  {
+   "w": "indignant",
+   "pos": "adj.",
+   "meaning": "愤慨的，义愤的"
+  },
+  {
+   "w": "indoor",
+   "pos": "adv.",
+   "meaning": "在室内， 在户内；室内的"
+  },
+  {
+   "w": "induce",
+   "pos": "vt.",
+   "meaning": "引导， 劝； 引起， 导致"
+  },
+  {
+   "w": "inexhaustible",
+   "pos": "adj.",
+   "meaning": "用不完的，无穷无尽的"
+  },
+  {
+   "w": "inexpensive",
+   "pos": "adj.",
+   "meaning": "花费不多的，廉价的"
+  },
+  {
+   "w": "inferior",
+   "pos": "adj.",
+   "meaning": "下等的，劣等的；下级， 下属"
+  },
+  {
+   "w": "inlet",
+   "pos": "n.",
+   "meaning": "小湾， 水湾； 进口， 入口"
+  },
+  {
+   "w": "insight",
+   "pos": "n.",
+   "meaning": "洞察力； 洞悉， 深刻的见解"
+  },
+  {
+   "w": "instantly",
+   "pos": "adv.",
+   "meaning": "立即，即刻"
+  },
+  {
+   "w": "instinct",
+   "pos": "n.",
+   "meaning": "本能； 直觉， 生性"
+  },
+  {
+   "w": "intellect",
+   "pos": "n.",
+   "meaning": "智力， 理解力； 才智非凡的人"
+  },
+  {
+   "w": "intensive",
+   "pos": "adj.",
+   "meaning": "加强的；精耕细作的"
+  },
+  {
+   "w": "intensive",
+   "pos": "adj.",
+   "meaning": "加强的； 精深的， 透彻的； 精耕细作的"
+  },
+  {
+   "w": "interim",
+   "pos": "adj.",
+   "meaning": "暂时的，临时的；间歇， 过渡期间"
+  },
+  {
+   "w": "internal",
+   "pos": "adj.",
+   "meaning": "内的， 国内的； 内心的"
+  },
+  {
+   "w": "internal",
+   "pos": "adj.",
+   "meaning": "内的；国内的"
+  },
+  {
+   "w": "intimidate",
+   "pos": "vt.",
+   "meaning": "恐吓， 威胁"
+  },
+  {
+   "w": "intuitive",
+   "pos": "adj.",
+   "meaning": "直觉的"
+  },
+  {
+   "w": "invoice",
+   "pos": "n.",
+   "meaning": "发票，发货清单"
+  },
+  {
+   "w": "jealous",
+   "pos": "adj.",
+   "meaning": "妒忌的；猜疑的"
+  },
+  {
+   "w": "joint",
+   "pos": "adj.",
+   "meaning": "联合的"
+  },
+  {
+   "w": "judicial",
+   "pos": "adj.",
+   "meaning": "司法的"
+  },
+  {
+   "w": "justify",
+   "pos": "vt.",
+   "meaning": "证明…是正当的"
+  },
+  {
+   "w": "juvenile",
+   "pos": "adj.",
+   "meaning": "少年的，少年特有的；幼稚的，不成熟的；未成年人， 少年"
+  },
+  {
+   "w": "kidney",
+   "pos": "n.",
+   "meaning": "肾，腰子"
+  },
+  {
+   "w": "largely",
+   "pos": "adv.",
+   "meaning": "主要地"
+  },
+  {
+   "w": "latent",
+   "pos": "adj.",
+   "meaning": "潜在的， 隐伏的， 不易察觉的"
+  },
+  {
+   "w": "leakage",
+   "pos": "n.",
+   "meaning": "漏，泄漏；漏出物"
+  },
+  {
+   "w": "lease",
+   "pos": "n.",
+   "meaning": "租约，租契；出租； 租得， 租有"
+  },
+  {
+   "w": "lest",
+   "pos": "conj.",
+   "meaning": "以免"
+  },
+  {
+   "w": "liable",
+   "pos": "adj.",
+   "meaning": "易于…的， 可能的"
+  },
+  {
+   "w": "liable",
+   "pos": "adj.",
+   "meaning": "有（法律）责任的"
+  },
+  {
+   "w": "limestone",
+   "pos": "n.",
+   "meaning": "石灰石"
+  },
+  {
+   "w": "liter",
+   "pos": "n.",
+   "meaning": "升"
+  },
+  {
+   "w": "lofty",
+   "pos": "adj.",
+   "meaning": "崇高的"
+  },
+  {
+   "w": "luxurious",
+   "pos": "adj.",
+   "meaning": "奢侈的，豪华的"
+  },
+  {
+   "w": "malice",
+   "pos": "n.",
+   "meaning": "恶意；蓄意犯罪"
+  },
+  {
+   "w": "manufacturer",
+   "pos": "n.",
+   "meaning": "制造商；制造厂"
+  },
+  {
+   "w": "marshal",
+   "pos": "n.",
+   "meaning": "元帅；陆军元帅"
+  },
+  {
+   "w": "massacre",
+   "pos": "n.",
+   "meaning": "大屠杀，残杀"
+  },
+  {
+   "w": "mast",
+   "pos": "n.",
+   "meaning": "桅杆"
+  },
+  {
+   "w": "mechanics",
+   "pos": "n.",
+   "meaning": "力学"
+  },
+  {
+   "w": "medieval",
+   "pos": "adj.",
+   "meaning": "中世纪的； 中古的"
+  },
+  {
+   "w": "mere",
+   "pos": "adj.",
+   "meaning": "仅仅的； 纯粹的"
+  },
+  {
+   "w": "merit",
+   "pos": "n.",
+   "meaning": "长处，优点；价值；功劳，成绩；值得， 应受"
+  },
+  {
+   "w": "merit",
+   "pos": "n.",
+   "meaning": "优点，成绩；值得"
+  },
+  {
+   "w": "miniature",
+   "pos": "adj.",
+   "meaning": "小型的，微小的；微小的模型， 缩影； 微型画， 微型人物像"
+  },
+  {
+   "w": "minimize",
+   "pos": "v.",
+   "meaning": "使减到最小"
+  },
+  {
+   "w": "miser",
+   "pos": "n.",
+   "meaning": "守财奴，吝啬鬼"
+  },
+  {
+   "w": "misfortune",
+   "pos": "n.",
+   "meaning": "不幸，灾祸，灾难"
+  },
+  {
+   "w": "mistress",
+   "pos": "n.",
+   "meaning": "情妇； 主妇， 女主人"
+  },
+  {
+   "w": "mock",
+   "pos": "vi.",
+   "meaning": "嘲笑，嘲弄；模拟的， 演习的； 假的， 假装的"
+  },
+  {
+   "w": "moderately",
+   "pos": "adv.",
+   "meaning": "适度地，适中"
+  },
+  {
+   "w": "moist",
+   "pos": "adj.",
+   "meaning": "湿润的；多雨的"
+  },
+  {
+   "w": "monopoly",
+   "pos": "n.",
+   "meaning": "垄断， 专卖； 垄断物， 垄断商品， 专卖商品"
+  },
+  {
+   "w": "mosque",
+   "pos": "n.",
+   "meaning": "清真寺"
+  },
+  {
+   "w": "multitude",
+   "pos": "n.",
+   "meaning": "大量， 许多； 大众， 民众"
+  },
+  {
+   "w": "negligible",
+   "pos": "adj.",
+   "meaning": "微不足道的"
+  },
+  {
+   "w": "negotiation",
+   "pos": "n.",
+   "meaning": "协商"
+  },
+  {
+   "w": "neutral",
+   "pos": "adj.",
+   "meaning": "中立的， 中性的"
+  },
+  {
+   "w": "notify",
+   "pos": "vt.",
+   "meaning": "通知， 告知， 报告"
+  },
+  {
+   "w": "notoriously",
+   "pos": "adv.",
+   "meaning": "臭名昭著地"
+  },
+  {
+   "w": "notwithstanding",
+   "pos": "prep.",
+   "meaning": "尽管，虽然"
+  },
+  {
+   "w": "numerous",
+   "pos": "adj.",
+   "meaning": "为数众多的；许多"
+  },
+  {
+   "w": "oblige",
+   "pos": "vt.",
+   "meaning": "迫使； 施恩于， 帮…的忙； 使感激"
+  },
+  {
+   "w": "obscurity",
+   "pos": "n.",
+   "meaning": "默默无闻"
+  },
+  {
+   "w": "occasional",
+   "pos": "adj.",
+   "meaning": "偶然的；临时的"
+  },
+  {
+   "w": "occurrence",
+   "pos": "n.",
+   "meaning": "发生，出现；事件"
+  },
+  {
+   "w": "offense",
+   "pos": "n.",
+   "meaning": "过错，犯罪"
+  },
+  {
+   "w": "offset",
+   "pos": "v.",
+   "meaning": "抵销"
+  },
+  {
+   "w": "omit",
+   "pos": "v.",
+   "meaning": "省略，省去；遗漏"
+  },
+  {
+   "w": "oppress",
+   "pos": "vt.",
+   "meaning": "压迫， 压制； 使沉重， 使烦恼"
+  },
+  {
+   "w": "organism",
+   "pos": "n.",
+   "meaning": "生物， 有机体； 机体， 有机组织"
+  },
+  {
+   "w": "oriental",
+   "pos": "adj.",
+   "meaning": "东方的；东方国家的"
+  },
+  {
+   "w": "originate",
+   "pos": "vi.",
+   "meaning": "起源于，来自，产生；创造， 创始， 开创"
+  },
+  {
+   "w": "ornamental",
+   "pos": "adj.",
+   "meaning": "装饰的"
+  },
+  {
+   "w": "outermost",
+   "pos": "adj.",
+   "meaning": "最外面的，最远的"
+  },
+  {
+   "w": "overcharge",
+   "pos": "v.",
+   "meaning": "向……多收费"
+  },
+  {
+   "w": "overflow",
+   "pos": "v.",
+   "meaning": "溢出，淹没"
+  },
+  {
+   "w": "overthrow",
+   "pos": "v.",
+   "meaning": "推翻；推翻，瓦解"
+  },
+  {
+   "w": "oxidize",
+   "pos": "v.",
+   "meaning": "氧化，使生锈"
+  },
+  {
+   "w": "pamphlet",
+   "pos": "n.",
+   "meaning": "小册子"
+  },
+  {
+   "w": "parachute",
+   "pos": "n.",
+   "meaning": "降落伞"
+  },
+  {
+   "w": "partial",
+   "pos": "adj.",
+   "meaning": "部分的； 不公平的； 偏爱的， 偏袒的"
+  },
+  {
+   "w": "passion",
+   "pos": "n.",
+   "meaning": "强烈的情感，激情；强烈的爱好，热爱"
+  },
+  {
+   "w": "pastry",
+   "pos": "n.",
+   "meaning": "油酥面团， 酥皮糕点"
+  },
+  {
+   "w": "patch",
+   "pos": "n.",
+   "meaning": "补丁；〔与周围部分不同的〕斑，小块；修补，缝补"
+  },
+  {
+   "w": "patrol",
+   "pos": "n.",
+   "meaning": "巡逻，巡查"
+  },
+  {
+   "w": "patron",
+   "pos": "n.",
+   "meaning": "庇护人；赞助人"
+  },
+  {
+   "w": "perceive",
+   "pos": "v.",
+   "meaning": "察觉，发觉；理解"
+  },
+  {
+   "w": "perception",
+   "pos": "n.",
+   "meaning": "感知；理解力"
+  },
+  {
+   "w": "peril",
+   "pos": "n.",
+   "meaning": "危机；危险的事物"
+  },
+  {
+   "w": "perish",
+   "pos": "v.",
+   "meaning": "死亡"
+  },
+  {
+   "w": "perish",
+   "pos": "v.",
+   "meaning": "死亡，夭折；枯萎"
+  },
+  {
+   "w": "permeate",
+   "pos": "v.",
+   "meaning": "弥漫， 遍布， 散布； 渗入， 渗透"
+  },
+  {
+   "w": "pertinent",
+   "pos": "adj.",
+   "meaning": "恰当的；有关的"
+  },
+  {
+   "w": "petty",
+   "pos": "adj.",
+   "meaning": "小的， 琐碎的； 不重要的； 气量小的， 心胸狭窄的"
+  },
+  {
+   "w": "phase",
+   "pos": "n.",
+   "meaning": "阶段；相位"
+  },
+  {
+   "w": "physically",
+   "pos": "adv.",
+   "meaning": "身体上；体格上"
+  },
+  {
+   "w": "physiological",
+   "pos": "adj.",
+   "meaning": "生理的， 生理学的"
+  },
+  {
+   "w": "pillar",
+   "pos": "n.",
+   "meaning": "柱， 柱子； 栋梁"
+  },
+  {
+   "w": "pinch",
+   "pos": "v.",
+   "meaning": "捏，拧，掐掉"
+  },
+  {
+   "w": "pledge",
+   "pos": "n.",
+   "meaning": "保证，誓言；保证， 许诺"
+  },
+  {
+   "w": "plunge",
+   "pos": "v.",
+   "meaning": "使投入；使陷入"
+  },
+  {
+   "w": "plural",
+   "pos": "adj.",
+   "meaning": "复数的；复数"
+  },
+  {
+   "w": "poll",
+   "pos": "n.",
+   "meaning": "民意测验"
+  },
+  {
+   "w": "portion",
+   "pos": "n.",
+   "meaning": "部分"
+  },
+  {
+   "w": "precede",
+   "pos": "v.",
+   "meaning": "先于…，领先"
+  },
+  {
+   "w": "precision",
+   "pos": "n.",
+   "meaning": "精确性"
+  },
+  {
+   "w": "preposition",
+   "pos": "n.",
+   "meaning": "前置词，介词"
+  },
+  {
+   "w": "prevail",
+   "pos": "v.",
+   "meaning": "流行；胜，优胜"
+  },
+  {
+   "w": "prioritize",
+   "pos": "v.",
+   "meaning": "优先"
+  },
+  {
+   "w": "proceed",
+   "pos": "vi.",
+   "meaning": "继续进行； 行进， 前进"
+  },
+  {
+   "w": "profound",
+   "pos": "adj.",
+   "meaning": "深刻的，博学的"
+  },
+  {
+   "w": "progressive",
+   "pos": "adj.",
+   "meaning": "进步的；向前进的"
+  },
+  {
+   "w": "propaganda",
+   "pos": "n.",
+   "meaning": "宣传"
+  },
+  {
+   "w": "propagate",
+   "pos": "v.",
+   "meaning": "传播，普及；繁殖"
+  },
+  {
+   "w": "propel",
+   "pos": "v.",
+   "meaning": "推进，推动"
+  },
+  {
+   "w": "propeller",
+   "pos": "n.",
+   "meaning": "螺旋桨，推进器"
+  },
+  {
+   "w": "prophet",
+   "pos": "n.",
+   "meaning": "先知； 预言者"
+  },
+  {
+   "w": "proportional",
+   "pos": "adj.",
+   "meaning": "比例的；相称的"
+  },
+  {
+   "w": "proposal",
+   "pos": "n.",
+   "meaning": "提议， 建议； 求婚"
+  },
+  {
+   "w": "proposal",
+   "pos": "n.",
+   "meaning": "提议"
+  },
+  {
+   "w": "provoke",
+   "pos": "vt.",
+   "meaning": "对…挑衅， 激怒； 激起， 引起"
+  },
+  {
+   "w": "proximity",
+   "pos": "n.",
+   "meaning": "接近， 邻近"
+  },
+  {
+   "w": "prune",
+   "pos": "vt.",
+   "meaning": "修剪， 修整； 删除， 削减"
+  },
+  {
+   "w": "publicity",
+   "pos": "n.",
+   "meaning": "公众的注意， 名声； 宣传， 宣扬"
+  },
+  {
+   "w": "pumpkin",
+   "pos": "n.",
+   "meaning": "南瓜"
+  },
+  {
+   "w": "punch",
+   "pos": "v.",
+   "meaning": "打孔；冲压机"
+  },
+  {
+   "w": "racket",
+   "pos": "n.",
+   "meaning": "喧嚷， 吵闹； 敲诈， 勒索， 诈骗； 球拍"
+  },
+  {
+   "w": "radiator",
+   "pos": "n.",
+   "meaning": "暖气片；散热器"
+  },
+  {
+   "w": "rage",
+   "pos": "vi.",
+   "meaning": "狂吹； 汹涌； 激烈进行； 发怒， 发火；狂怒，盛怒；风靡一时的事物，时尚"
+  },
+  {
+   "w": "rally",
+   "pos": "v.",
+   "meaning": "集合"
+  },
+  {
+   "w": "reassess",
+   "pos": "vt.",
+   "meaning": "再评价"
+  },
+  {
+   "w": "rebellion",
+   "pos": "n.",
+   "meaning": "叛逆"
+  },
+  {
+   "w": "redefine",
+   "pos": "v.",
+   "meaning": "重新定义"
+  },
+  {
+   "w": "reduction",
+   "pos": "n.",
+   "meaning": "减少，减小，缩减"
+  },
+  {
+   "w": "redundant",
+   "pos": "adj.",
+   "meaning": "失业的，被解雇的；过剩的"
+  },
+  {
+   "w": "refine",
+   "pos": "vt.",
+   "meaning": "精炼， 精制， 提纯； 使优美， 使完善"
+  },
+  {
+   "w": "refine",
+   "pos": "vt.",
+   "meaning": "精炼，提纯"
+  },
+  {
+   "w": "regularity",
+   "pos": "n.",
+   "meaning": "规则性；整齐，端正"
+  },
+  {
+   "w": "relativity",
+   "pos": "n.",
+   "meaning": "相对论； 相关性"
+  },
+  {
+   "w": "reluctance",
+   "pos": "n.",
+   "meaning": "勉强，不情愿"
+  },
+  {
+   "w": "reluctant",
+   "pos": "adj.",
+   "meaning": "不愿意的，勉强的"
+  },
+  {
+   "w": "renew",
+   "pos": "v.",
+   "meaning": "使更新"
+  },
+  {
+   "w": "repertoire",
+   "pos": "n.",
+   "meaning": "全部节目"
+  },
+  {
+   "w": "repression",
+   "pos": "n.",
+   "meaning": "压抑， 压制， 镇压"
+  },
+  {
+   "w": "reserved",
+   "pos": "adj.",
+   "meaning": "保留意见的；矜持的"
+  },
+  {
+   "w": "residual",
+   "pos": "adj.",
+   "meaning": "剩余的；残余的"
+  },
+  {
+   "w": "resistant",
+   "pos": "adj.",
+   "meaning": "抵抗的，反抗的"
+  },
+  {
+   "w": "resistant",
+   "pos": "adj.",
+   "meaning": "抵抗的，抵制的"
+  },
+  {
+   "w": "responsive",
+   "pos": "adj.",
+   "meaning": "响应的； 敏感的， 易受影响的"
+  },
+  {
+   "w": "resume",
+   "pos": "v.",
+   "meaning": "恢复；重新开始"
+  },
+  {
+   "w": "retailer",
+   "pos": "n.",
+   "meaning": "零售商"
+  },
+  {
+   "w": "retard",
+   "pos": "v.",
+   "meaning": "阻碍；减缓；放慢"
+  },
+  {
+   "w": "retrain",
+   "pos": "v.",
+   "meaning": "再教育；再训练"
+  },
+  {
+   "w": "retreat",
+   "pos": "v.",
+   "meaning": "(被迫)退却，后退"
+  },
+  {
+   "w": "revive",
+   "pos": "v.",
+   "meaning": "复苏"
+  },
+  {
+   "w": "rewarding",
+   "pos": "adj.",
+   "meaning": "有回报的"
+  },
+  {
+   "w": "rifle",
+   "pos": "n.",
+   "meaning": "来复枪， 步枪"
+  },
+  {
+   "w": "rig",
+   "pos": "vt.",
+   "meaning": "操纵，垄断；给装配帆及索具；用临时替代材料迅速搭起；船桅的装置， 成套器械"
+  },
+  {
+   "w": "rival",
+   "pos": "adj.",
+   "meaning": "竞争的，对抗的；竞争对手，敌手；可与匹敌的人"
+  },
+  {
+   "w": "romantic",
+   "pos": "adj.",
+   "meaning": "浪漫的；传奇的"
+  },
+  {
+   "w": "rug",
+   "pos": "n.",
+   "meaning": "小地毯；毛毯"
+  },
+  {
+   "w": "rupture",
+   "pos": "v.",
+   "meaning": "破裂；破裂，裂开；决裂，断绝"
+  },
+  {
+   "w": "saint",
+   "pos": "n.",
+   "meaning": "圣徒； 圣人， 道德高尚的人； [用于人名或地名等前]圣"
+  },
+  {
+   "w": "scandal",
+   "pos": "n.",
+   "meaning": "丑闻"
+  },
+  {
+   "w": "scandal",
+   "pos": "n.",
+   "meaning": "丑事， 丑闻； 流言蜚语； 反感， 愤慨"
+  },
+  {
+   "w": "scatter",
+   "pos": "vt.",
+   "meaning": "撒， 散播； 使散开， 驱散"
+  },
+  {
+   "w": "scope",
+   "pos": "n.",
+   "meaning": "（学科、活动、书籍等的）范围；（发挥能力的）机会，施展余地；眼界"
+  },
+  {
+   "w": "segment",
+   "pos": "n.",
+   "meaning": "部分， 片段； 瓣"
+  },
+  {
+   "w": "selective",
+   "pos": "adj.",
+   "meaning": "选择的,精选的"
+  },
+  {
+   "w": "semiconductor",
+   "pos": "n.",
+   "meaning": "n.；半导体"
+  },
+  {
+   "w": "sensation",
+   "pos": "n.",
+   "meaning": "感觉能力； 感觉， 知觉； 轰动， 引起轰动的事件"
+  },
+  {
+   "w": "serial",
+   "pos": "adj.",
+   "meaning": "连续的， 顺序排列的；连续剧，连载故事"
+  },
+  {
+   "w": "sexism",
+   "pos": "n.",
+   "meaning": "性别歧视"
+  },
+  {
+   "w": "shovel",
+   "pos": "n.",
+   "meaning": "铲，铁铲；铲"
+  },
+  {
+   "w": "shrub",
+   "pos": "n.",
+   "meaning": "灌木"
+  },
+  {
+   "w": "significant",
+   "pos": "adj.",
+   "meaning": "相当数量的； 重要的， 意义重大的， 意味深长的"
+  },
+  {
+   "w": "significant",
+   "pos": "adj.",
+   "meaning": "重要的"
+  },
+  {
+   "w": "sincere",
+   "pos": "adj.",
+   "meaning": "真诚的， 诚挚的"
+  },
+  {
+   "w": "skeleton",
+   "pos": "n.",
+   "meaning": "骨骼，骷髅；骨架"
+  },
+  {
+   "w": "slaughter",
+   "pos": "n.",
+   "meaning": "屠杀， 杀戮； 屠宰"
+  },
+  {
+   "w": "slick",
+   "pos": "adj.",
+   "meaning": "圆滑的， 口齿伶俐的； 精巧的， 巧妙的， 灵巧的； 光滑的， 滑溜的"
+  },
+  {
+   "w": "slope",
+   "pos": "v.",
+   "meaning": "倾斜；倾斜；斜面"
+  },
+  {
+   "w": "snail",
+   "pos": "n.",
+   "meaning": "蜗牛；行动缓慢的人"
+  },
+  {
+   "w": "snap",
+   "pos": "v.",
+   "meaning": "咔嚓折断，啪地绷断；吧嗒一声；猛咬；厉声说话，怒声责骂；仓促的， 突然的"
+  },
+  {
+   "w": "sober",
+   "pos": "adj.",
+   "meaning": "未醉的，有节制的；严肃的，持重的；素淡的，暗淡的；醒酒， 清醒"
+  },
+  {
+   "w": "sole",
+   "pos": "n.",
+   "meaning": "脚底，鞋底，袜底"
+  },
+  {
+   "w": "solicitor",
+   "pos": "n.",
+   "meaning": "律师， 法律顾问"
+  },
+  {
+   "w": "soluble",
+   "pos": "adj.",
+   "meaning": "可溶的； 可解决的"
+  },
+  {
+   "w": "sophisticated",
+   "pos": "adj.",
+   "meaning": "老于世故的； 高级的； 精密的， 复杂的； 高雅的"
+  },
+  {
+   "w": "spacecraft",
+   "pos": "n.",
+   "meaning": "航天器，宇宙飞船"
+  },
+  {
+   "w": "span",
+   "pos": "n.",
+   "meaning": "跨距，一段时间；持续， 贯穿， 包括； 横跨， 跨越"
+  },
+  {
+   "w": "spectator",
+   "pos": "n.",
+   "meaning": "参观者，观众"
+  },
+  {
+   "w": "spite",
+   "pos": "n.",
+   "meaning": "恶意，怨恨；不顾；刁难， 欺侮"
+  },
+  {
+   "w": "splash",
+   "pos": "v.",
+   "meaning": "溅，泼；溅泼声； 溅出的水； 斑点"
+  },
+  {
+   "w": "squat",
+   "pos": "v.",
+   "meaning": "（使）蹲下"
+  },
+  {
+   "w": "stability",
+   "pos": "n.",
+   "meaning": "稳定；稳定性"
+  },
+  {
+   "w": "stability",
+   "pos": "n.",
+   "meaning": "稳定，稳定性，巩固"
+  },
+  {
+   "w": "staircase",
+   "pos": "n.",
+   "meaning": "楼梯"
+  },
+  {
+   "w": "stalk",
+   "pos": "n.",
+   "meaning": "主茎，叶柄"
+  },
+  {
+   "w": "sticky",
+   "pos": "adj.",
+   "meaning": "粘性的；胶粘的"
+  },
+  {
+   "w": "stiffness",
+   "pos": "n.",
+   "meaning": "硬度"
+  },
+  {
+   "w": "stimulate",
+   "pos": "v.",
+   "meaning": "刺激，激励，激发"
+  },
+  {
+   "w": "stimulate",
+   "pos": "v.",
+   "meaning": "刺激；激励"
+  },
+  {
+   "w": "stoop",
+   "pos": "v.",
+   "meaning": "俯身；弯身；弯腰"
+  },
+  {
+   "w": "storey",
+   "pos": "n.",
+   "meaning": "(层)楼"
+  },
+  {
+   "w": "straighten",
+   "pos": "v.",
+   "meaning": "把…弄直；挺起来"
+  },
+  {
+   "w": "strap",
+   "pos": "v.",
+   "meaning": "用带绑住"
+  },
+  {
+   "w": "submarine",
+   "pos": "adj.",
+   "meaning": "水下的；潜水艇"
+  },
+  {
+   "w": "subscript",
+   "pos": "adj.",
+   "meaning": "写在下方的；下标"
+  },
+  {
+   "w": "subtract",
+   "pos": "v.",
+   "meaning": "减，减去，去掉"
+  },
+  {
+   "w": "suburb",
+   "pos": "n.",
+   "meaning": "郊区， 郊外， 近郊"
+  },
+  {
+   "w": "sue",
+   "pos": "v.",
+   "meaning": "控告， 起诉； 要求， 请求"
+  },
+  {
+   "w": "suicide",
+   "pos": "n.",
+   "meaning": "自杀"
+  },
+  {
+   "w": "supervisor",
+   "pos": "n.",
+   "meaning": "督导"
+  },
+  {
+   "w": "susceptible",
+   "pos": "adj.",
+   "meaning": "易受影响的； 过敏的； 能经受的， 容许的"
+  },
+  {
+   "w": "suspicion",
+   "pos": "n.",
+   "meaning": "怀疑， 疑心， 猜疑； 一点儿， 少量"
+  },
+  {
+   "w": "swamp",
+   "pos": "n.",
+   "meaning": "沼泽；淹没， 浸没； 难倒， 压倒"
+  },
+  {
+   "w": "sympathize",
+   "pos": "v.",
+   "meaning": "同情；同感，共鸣"
+  },
+  {
+   "w": "tedious",
+   "pos": "adj.",
+   "meaning": "单调沉闷的"
+  },
+  {
+   "w": "tedious",
+   "pos": "adj.",
+   "meaning": "冗长乏味的，沉闷的"
+  },
+  {
+   "w": "tender",
+   "pos": "adj.",
+   "meaning": "嫩的；脆弱的；疼痛的，一触即痛的；温柔的；提出"
+  },
+  {
+   "w": "tender",
+   "pos": "adj.",
+   "meaning": "嫩的；脆弱的"
+  },
+  {
+   "w": "terrific",
+   "pos": "adj.",
+   "meaning": "极妙的； 极大的； 令人恐惧的"
+  },
+  {
+   "w": "territory",
+   "pos": "n.",
+   "meaning": "领土，领域"
+  },
+  {
+   "w": "testimony",
+   "pos": "n.",
+   "meaning": "证词"
+  },
+  {
+   "w": "thereafter",
+   "pos": "adv.",
+   "meaning": "之后， 以后"
+  },
+  {
+   "w": "thereof",
+   "pos": "adv.",
+   "meaning": "它的，其；由此"
+  },
+  {
+   "w": "thrust",
+   "pos": "v.",
+   "meaning": "插，刺；猛冲，猛刺；推进"
+  },
+  {
+   "w": "tone",
+   "pos": "n.",
+   "meaning": "色调，光度"
+  },
+  {
+   "w": "torpedo",
+   "pos": "n.",
+   "meaning": "鱼雷，水雷"
+  },
+  {
+   "w": "toxic",
+   "pos": "adj.",
+   "meaning": "有毒的"
+  },
+  {
+   "w": "transaction",
+   "pos": "n.",
+   "meaning": "交易，业务，事务"
+  },
+  {
+   "w": "transformer",
+   "pos": "n.",
+   "meaning": "变压器，转换器"
+  },
+  {
+   "w": "transition",
+   "pos": "n.",
+   "meaning": "转变，变迁；过渡"
+  },
+  {
+   "w": "transition",
+   "pos": "n.",
+   "meaning": "过渡"
+  },
+  {
+   "w": "traverse",
+   "pos": "vt.",
+   "meaning": "横渡， 横越"
+  },
+  {
+   "w": "trench",
+   "pos": "n.",
+   "meaning": "沟， 沟渠"
+  },
+  {
+   "w": "tribute",
+   "pos": "n.",
+   "meaning": "献礼；贡物"
+  },
+  {
+   "w": "trigger",
+   "pos": "v.",
+   "meaning": "引发，引起"
+  },
+  {
+   "w": "tumor",
+   "pos": "n.",
+   "meaning": "瘤"
+  },
+  {
+   "w": "twilight",
+   "pos": "n.",
+   "meaning": "黄昏"
+  },
+  {
+   "w": "undermine",
+   "pos": "vt.",
+   "meaning": "暗中破坏， 逐渐削弱； 侵蚀…的基础"
+  },
+  {
+   "w": "undermine",
+   "pos": "v.",
+   "meaning": "暗中削弱"
+  },
+  {
+   "w": "upgrade",
+   "pos": "vt.",
+   "meaning": "提升，使升级；向上的斜坡"
+  },
+  {
+   "w": "upright",
+   "pos": "adv.",
+   "meaning": "挺直着， 竖立着；垂直的；正直的，诚实的"
+  },
+  {
+   "w": "van",
+   "pos": "n.",
+   "meaning": "大篷车， 运货车"
+  },
+  {
+   "w": "vanish",
+   "pos": "v.",
+   "meaning": "突然不见， 消失； 不复存在， 绝迹"
+  },
+  {
+   "w": "vary",
+   "pos": "vi.",
+   "meaning": "变化， 有差异；改变，使多样化"
+  },
+  {
+   "w": "veil",
+   "pos": "n.",
+   "meaning": "面纱，面罩；遮盖物，掩饰物；掩盖， 掩饰"
+  },
+  {
+   "w": "velocity",
+   "pos": "n.",
+   "meaning": "速度"
+  },
+  {
+   "w": "verge",
+   "pos": "vi.",
+   "meaning": "接近， 濒临；边，边缘"
+  },
+  {
+   "w": "verify",
+   "pos": "vt.",
+   "meaning": "证实， 查证， 证明"
+  },
+  {
+   "w": "versatile",
+   "pos": "adj.",
+   "meaning": "多方面的；通用的"
+  },
+  {
+   "w": "vessel",
+   "pos": "n.",
+   "meaning": "容器；船，飞船；管"
+  },
+  {
+   "w": "vicious",
+   "pos": "adj.",
+   "meaning": "邪恶的；恶性的"
+  },
+  {
+   "w": "visceral",
+   "pos": "adj.",
+   "meaning": "内脏的， 腑脏的； 出自内心的， 发自肺腑的"
+  },
+  {
+   "w": "vision",
+   "pos": "n.",
+   "meaning": "视；想象力；梦幻"
+  },
+  {
+   "w": "ware",
+   "pos": "n.",
+   "meaning": "物品；商品，货物"
+  },
+  {
+   "w": "waver",
+   "pos": "v.",
+   "meaning": "犹豫不决；摇摆"
+  },
+  {
+   "w": "well-known",
+   "pos": "adj.",
+   "meaning": "众所周知的， 著名的"
+  },
+  {
+   "w": "whisker",
+   "pos": "n.",
+   "meaning": "髯，连鬓胡子"
+  },
+  {
+   "w": "winding",
+   "pos": "n.",
+   "meaning": "蜿蜒曲折的路径；蜿蜒曲折的"
+  },
+  {
+   "w": "wishful",
+   "pos": "adj.",
+   "meaning": "一厢情愿的"
+  },
+  {
+   "w": "workman",
+   "pos": "n.",
+   "meaning": "工人， 劳动者， 工匠"
+  },
+  {
+   "w": "worldly",
+   "pos": "adj.",
+   "meaning": "世间的，尘世的"
+  },
+  {
+   "w": "yearly",
+   "pos": "adj.",
+   "meaning": "每年的；一年一度"
+  },
+  {
+   "w": "zinc",
+   "pos": "n.",
+   "meaning": "锌"
+  }
+ ]
+}

@@ -70,6 +70,7 @@
   /* ---------- 状态 ---------- */
   let WORDS = [];          // 词库
   let META = {};
+  let DISTRACTORS = [];    // 词库外的干扰释义池（data/distractors.json，只为凑选项用，不进训练队列）
   const byId = new Map();
   let store = null;        // 持久化状态
   let storeMigrated = false;  // 本次启动是否把旧存档升级过（升级结果要立刻写回，免得旧标签页又读到老值）
@@ -271,17 +272,47 @@
     return 'recognize';
   }
 
+  /** 词性归一：'n./v.' → 'n.'，用来把干扰释义和词按词性配对。 */
+  function posKey(pos) {
+    return String(pos || '').split('/')[0].trim();
+  }
+
   /* ---------- 出题 ---------- */
+  /**
+   * 四选一。
+   * 干扰项特意掺进库外的释义（data/distractors.json）：词库里只有二十来个词时，
+   * 全靠库内互当干扰项，靠排除法就能蒙对，起不到认词作用。
+   * 词性相同的优先配对；库外 1–2 个，其余由库内补，两边都不够时互相兜底。
+   */
   function buildRecognizeQuestion(word) {
+    const key = posKey(word.pos);
     const others = WORDS.filter((w) => w.id !== word.id);
-    // 干扰项优先取同词性的词，不够再用其它词补
-    const samePos = shuffle(others.filter((w) => w.pos === word.pos));
-    const rest = shuffle(others.filter((w) => w.pos !== word.pos));
-    const distractors = samePos.concat(rest).slice(0, 3);
+    const inSame = shuffle(others.filter((w) => posKey(w.pos) === key)).map((w) => w.meaning);
+    const inRest = shuffle(others.filter((w) => posKey(w.pos) !== key)).map((w) => w.meaning);
+    const outSame = shuffle(DISTRACTORS.filter((d) => posKey(d.pos) === key)).map((d) => d.meaning);
+    const outRest = shuffle(DISTRACTORS.filter((d) => posKey(d.pos) !== key)).map((d) => d.meaning);
+
+    const outAll = outSame.concat(outRest);
+    const inAll = inSame.concat(inRest);
+    const wantOutside = outAll.length ? 1 + Math.floor(Math.random() * 2) : 0;   // 每题 1~2 个库外
+
+    const used = new Set([word.meaning]);
+    const distractors = [];
+    const add = (list, limit) => {
+      for (const text of list) {
+        if (distractors.length >= 3 || distractors.length >= limit) break;
+        if (!text || used.has(text)) continue;
+        used.add(text);
+        distractors.push(text);
+      }
+    };
+    add(outAll, wantOutside);   // 先放库外的
+    add(inAll, 3);              // 再用库内的补满
+    add(outAll, 3);             // 库内不够时，库外继续补
 
     const options = shuffle([
       { text: word.meaning, correct: true },
-      ...distractors.map((w) => ({ text: w.meaning, correct: false }))
+      ...distractors.map((text) => ({ text, correct: false }))
     ]);
     return { kind: 'recognize', word, options };
   }
@@ -679,9 +710,7 @@
         if (p.stage === 'new') return false;
         if (p.due <= t) return true;
         return allowCooling && inCooling(p, t);
-      })
-      // 攒得最少的排前面：优先补上离升阶最远的词
-      .sort((a, b) => (progressOf(a.id).credits || []).length - (progressOf(b.id).credits || []).length);
+      });
 
     let dueWords = pick(false);
     if (!dueWords.length) dueWords = pick(true);
@@ -689,7 +718,16 @@
     const newLimit = Math.max(0, Number(store.settings.newLimit) || 0);
     const freshWords = WORDS.filter((w) => progressOf(w.id).stage === 'new').slice(0, newLimit);
 
-    const queue = dueWords.concat(freshWords).map((w) => w.id);
+    // 顺序打乱：以前按「攒得最少的排前面」固定排序，多练几轮就能猜出下一个是谁。
+    // 复习词和新词先各自打乱，再交替穿插 —— 新词别全挤在末尾。
+    const due = shuffle(dueWords);
+    const fresh = shuffle(freshWords);
+    const mixed = [];
+    while (due.length || fresh.length) {
+      if (due.length) mixed.push(due.shift());
+      if (fresh.length) mixed.push(fresh.shift());
+    }
+    const queue = mixed.map((w) => w.id);
 
     if (!queue.length) {
       const allMastered = WORDS.length > 0 && WORDS.every((w) => progressOf(w.id).stage === 'mastered');
@@ -1450,6 +1488,18 @@
     }
 
     WORDS.forEach((w) => byId.set(w.id, w));
+
+    // 库外干扰释义池：拿不到就退化成只用库内词当干扰项，不影响训练
+    try {
+      const dres = await fetch('data/distractors.json', { cache: 'no-cache' });
+      if (dres.ok) {
+        const ddata = await dres.json();
+        DISTRACTORS = Array.isArray(ddata.words) ? ddata.words : [];
+      }
+    } catch (err) {
+      DISTRACTORS = [];
+    }
+
     if (!WORDS.length) {
       $('#session-intro').innerHTML = '<p class="eyebrow">词库是空的</p><h2 class="intro__title">还没有单词</h2><p class="intro__sub">把生词写进 data/words.json 就能开始。</p>';
       return;

@@ -1,5 +1,5 @@
 /* WordDrill service worker —— 静态资源 stale-while-revalidate，导航 network-first */
-const CACHE = 'worddrill-v12';
+const CACHE = 'worddrill-v13';
 const SHELL = [
   './',
   './index.html',
@@ -33,8 +33,8 @@ self.addEventListener('fetch', (e) => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin && !url.host.includes('fonts.g')) return;
 
-  // 词库：优先网络，保证每次拿到最新单词；离线时回退缓存
-  if (url.pathname.endsWith('words.json')) {
+  // data/ 下的数据文件：优先网络，保证每次拿到最新内容；离线时回退缓存
+  if (url.pathname.includes('/data/')) {
     e.respondWith(
       fetch(request)
         .then((res) => {
