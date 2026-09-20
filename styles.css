@@ -60,42 +60,11 @@
   color-scheme: light;
 }
 
-/* ---------- Dark tokens ---------- */
-[data-theme="dark"] {
-  --color-primary: #A78BFA;
-  --color-primary-hover: #C4B5FD;
-  --color-primary-soft: #241C3D;
-  --color-on-primary: #1A1030;
-
-  --color-success: #34D399;
-  --color-success-soft: #0C2A22;
-  --color-success-line: #1B5545;
-
-  --color-danger: #F87171;
-  --color-danger-soft: #2C1618;
-  --color-danger-line: #63282C;
-
-  --color-warning: #FBBF24;
-  --color-warning-soft: #2A2110;
-
-  --color-bg: #0C0D12;
-  --color-fg: #ECEFF5;
-  --color-card: #15171E;
-  --color-muted: #1D1F28;
-  --color-muted-fg: #9AA2B4;
-  --color-border: #282B36;
-  --color-border-strong: #3A3E4C;
-  --color-ring: #A78BFA;
-  --statusbar-bg: #0C0D12;
-  color-scheme: dark;
-
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, .4);
-  --shadow-md: 0 4px 18px -6px rgba(0, 0, 0, .6), 0 1px 2px rgba(0, 0, 0, .4);
-  --shadow-lg: 0 24px 50px -20px rgba(0, 0, 0, .75);
-}
-
+/* ---------- Dark tokens ----------
+   站点只有「跟随系统」一种主题：深浅色由下面这条媒体查询决定，
+   JS 不再写 data-theme，也没有手动切换入口。 */
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
+  :root {
     --color-primary: #A78BFA;
     --color-primary-hover: #C4B5FD;
     --color-primary-soft: #241C3D;
@@ -215,22 +184,6 @@ button { cursor: pointer; background: none; border: none; padding: 0; }
 .nav__item svg { width: 17px; height: 17px; flex: none; }
 .nav__item:hover { background: var(--color-muted); color: var(--color-fg); }
 .nav__item.is-active { background: var(--color-primary-soft); color: var(--color-primary); font-weight: 600; }
-
-.icon-btn {
-  width: var(--tap); height: var(--tap); flex: none;
-  display: grid; place-items: center; border-radius: var(--radius-sm);
-  color: var(--color-muted-fg);
-  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
-}
-.icon-btn:hover { background: var(--color-muted); color: var(--color-fg); }
-.icon-btn svg { width: 19px; height: 19px; }
-.icon-btn .i-moon { display: none; }
-[data-theme="dark"] .icon-btn .i-sun { display: none; }
-[data-theme="dark"] .icon-btn .i-moon { display: block; }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .icon-btn .i-sun { display: none; }
-  :root:not([data-theme="light"]) .icon-btn .i-moon { display: block; }
-}
 
 /* ---------- Layout ---------- */
 #main {

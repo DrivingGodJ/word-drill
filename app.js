@@ -116,7 +116,7 @@
   function defaultStore() {
     return {
       version: STORE_VERSION,
-      settings: { newLimit: 10, threshold: CREDIT_NEED_DEFAULT, speak: true, theme: 'auto' },
+      settings: { newLimit: 10, threshold: CREDIT_NEED_DEFAULT, speak: true },
       settingsAt: 0,                   // 学习参数最后修改时间，用于多设备合并
       cet: { approved: [], rejected: [] },   // 四六级候选词的取舍决定，随进度一起同步
       words: {},                       // id → 进度
@@ -1339,22 +1339,10 @@
     $('#set-speak').checked = !!store.settings.speak;
   }
 
-  /* ---------- 主题 ---------- */
-  function applyTheme() {
-    const t = store.settings.theme || 'auto';
-    document.documentElement.dataset.theme = t;
-    $('#theme-toggle').setAttribute('aria-label',
-      t === 'dark' ? '切换到浅色主题' : t === 'light' ? '切换到跟随系统' : '切换到深色主题');
-  }
-
-  function cycleTheme() {
-    const order = ['auto', 'dark', 'light'];
-    const i = order.indexOf(store.settings.theme || 'auto');
-    store.settings.theme = order[(i + 1) % order.length];
-    saveStore();
-    applyTheme();
-    toast({ auto: '跟随系统', dark: '深色主题', light: '浅色主题' }[store.settings.theme]);
-  }
+  /* ---------- 主题 ----------
+   * 只有「跟随系统」一种模式：深浅色完全由 CSS 的
+   * @media (prefers-color-scheme: dark) 决定，JS 不参与，也就没有切换按钮。
+   */
 
   /* ---------- 发音 ---------- */
   function speak(text) {
@@ -1401,7 +1389,6 @@
       if (session && session.done >= session.total) endSession();
       else nextQuestion();
     });
-    $('#theme-toggle').addEventListener('click', cycleTheme);
 
     $$('.segmented__item').forEach((b) => {
       b.addEventListener('click', () => {
@@ -1444,7 +1431,6 @@
     store = loadStore();
     if (storeMigrated) saveStore();   // 迁移结果立刻落盘：同浏览器的旧标签页不该再读到旧语义的 threshold
     sync = loadSync();
-    applyTheme();
 
     try {
       const res = await fetch('data/words.json', { cache: 'no-cache' });
