@@ -2,7 +2,7 @@
   "meta": {
     "name": "WordDrill",
     "version": 1,
-    "updated": "2026-09-20",
+    "updated": "2026-09-24",
     "source": "FlowUs · page 2220ec94-e0c2-4523-87be-f8277b09d786",
     "note": "词库由 FlowUs 生词页同步而来；新增单词请用 scripts/sync-from-flowus.py 或直接编辑本文件。"
   },
@@ -17,6 +17,20 @@
       "collocations": [
         "an abundance of",
         "in abundance"
+      ],
+      "tags": []
+    },
+    {
+      "id": "aisle",
+      "word": "aisle",
+      "pos": "n.",
+      "meaning": "（教堂、剧院、超市、机舱等的）过道，通道",
+      "example": "Please keep the aisle clear in case of an emergency.",
+      "exampleZh": "请保持过道畅通，以备紧急情况。",
+      "collocations": [
+        "walk down the aisle",
+        "an aisle seat",
+        "keep the aisle clear"
       ],
       "tags": []
     },
@@ -43,6 +57,19 @@
       "tags": [
         "Unit1"
       ]
+    },
+    {
+      "id": "belittle",
+      "word": "belittle",
+      "pos": "vt.",
+      "meaning": "贬低，轻视；使显得微不足道",
+      "example": "Don't belittle her achievements — she worked hard for every one of them.",
+      "exampleZh": "别贬低她的成就，每一个都是她努力换来的。",
+      "collocations": [
+        "belittle sb.'s efforts",
+        "belittle oneself"
+      ],
+      "tags": []
     },
     {
       "id": "bibliography",
@@ -300,6 +327,20 @@
       ]
     },
     {
+      "id": "stroke",
+      "word": "stroke",
+      "pos": "n.",
+      "meaning": "中风；一击，敲击；（游泳的）划水，泳姿；笔画，笔触；钟声",
+      "example": "The painting was finished with a few bold strokes of the brush.",
+      "exampleZh": "这幅画以几笔大胆的笔触完成。",
+      "collocations": [
+        "have a stroke",
+        "a stroke of luck",
+        "brush strokes"
+      ],
+      "tags": []
+    },
+    {
       "id": "sun-drenched",
       "word": "sun-drenched",
       "pos": "adj.",
@@ -310,6 +351,19 @@
       "tags": [
         "Unit1"
       ]
+    },
+    {
+      "id": "tranquil",
+      "word": "tranquil",
+      "pos": "adj.",
+      "meaning": "平静的，宁静的，安宁的",
+      "example": "The lake was utterly tranquil in the early morning light.",
+      "exampleZh": "清晨的阳光下，湖面一片宁静。",
+      "collocations": [
+        "a tranquil lake",
+        "tranquil surroundings"
+      ],
+      "tags": []
     },
     {
       "id": "unveil",
