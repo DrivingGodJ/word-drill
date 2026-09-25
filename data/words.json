@@ -2,7 +2,7 @@
   "meta": {
     "name": "WordDrill",
     "version": 1,
-    "updated": "2026-09-24",
+    "updated": "2026-09-25",
     "source": "FlowUs · page 2220ec94-e0c2-4523-87be-f8277b09d786",
     "note": "词库由 FlowUs 生词页同步而来；新增单词请用 scripts/sync-from-flowus.py 或直接编辑本文件。"
   },
@@ -59,6 +59,34 @@
       ]
     },
     {
+      "id": "aspiration",
+      "word": "aspiration",
+      "pos": "n.",
+      "meaning": "强烈的愿望； 志向， 抱负",
+      "example": "a high level of political aspiration",
+      "exampleZh": "崇高的政治抱负",
+      "collocations": [],
+      "tags": [
+        "CET6"
+      ],
+      "score": 6,
+      "difficulty": 4
+    },
+    {
+      "id": "availability",
+      "word": "availability",
+      "pos": "n.",
+      "meaning": "有效（性）；可得性",
+      "example": "the availability of cheap flights",
+      "exampleZh": "有廉价机票出售",
+      "collocations": [],
+      "tags": [
+        "CET6"
+      ],
+      "score": 6,
+      "difficulty": 4
+    },
+    {
       "id": "belittle",
       "word": "belittle",
       "pos": "vt.",
@@ -82,6 +110,20 @@
       "tags": [
         "CET6"
       ]
+    },
+    {
+      "id": "broaden",
+      "word": "broaden",
+      "pos": "v.",
+      "meaning": "放宽，变阔",
+      "example": "The council decided to broaden the pavement.",
+      "exampleZh": "地方议会决定拓宽人行道。",
+      "collocations": [],
+      "tags": [
+        "CET6"
+      ],
+      "score": 6,
+      "difficulty": 4
     },
     {
       "id": "cobble",

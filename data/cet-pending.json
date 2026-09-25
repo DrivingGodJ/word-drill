@@ -2,12 +2,26 @@
   "updated": "2026-09-25",
   "words": [
     {
-      "id": "aspiration",
-      "word": "aspiration",
+      "id": "consultancy",
+      "word": "consultancy",
       "pos": "n.",
-      "meaning": "强烈的愿望； 志向， 抱负",
-      "example": "a high level of political aspiration",
-      "exampleZh": "崇高的政治抱负",
+      "meaning": "咨询公司",
+      "example": "a consultancy firm",
+      "exampleZh": "咨询公司",
+      "collocations": [],
+      "tags": [
+        "CET4"
+      ],
+      "score": 6,
+      "difficulty": 4
+    },
+    {
+      "id": "cumulative",
+      "word": "cumulative",
+      "pos": "adj.",
+      "meaning": "积累的， 渐增的",
+      "example": "Learning is a cumulative process.",
+      "exampleZh": "学习是个逐渐积累的过程。",
       "collocations": [],
       "tags": [
         "CET6"
@@ -16,12 +30,12 @@
       "difficulty": 4
     },
     {
-      "id": "availability",
-      "word": "availability",
-      "pos": "n.",
-      "meaning": "有效（性）；可得性",
-      "example": "the availability of cheap flights",
-      "exampleZh": "有廉价机票出售",
+      "id": "decidedly",
+      "word": "decidedly",
+      "pos": "adv.",
+      "meaning": "明确地，坚决地",
+      "example": "‘I’m not going to do it,’ said Margaret decidedly.",
+      "exampleZh": "“这件事我不做。” 玛格丽特坚决地说。",
       "collocations": [],
       "tags": [
         "CET6"
@@ -30,12 +44,96 @@
       "difficulty": 4
     },
     {
-      "id": "broaden",
-      "word": "broaden",
-      "pos": "v.",
-      "meaning": "放宽，变阔",
-      "example": "The council decided to broaden the pavement.",
-      "exampleZh": "地方议会决定拓宽人行道。",
+      "id": "detach",
+      "word": "detach",
+      "pos": "vt.",
+      "meaning": "拆卸； 使分开， 使分离",
+      "example": "Please detach and fill out the application form.",
+      "exampleZh": "请撕下申请表并填好。",
+      "collocations": [],
+      "tags": [
+        "CET6"
+      ],
+      "score": 6,
+      "difficulty": 4
+    },
+    {
+      "id": "deviation",
+      "word": "deviation",
+      "pos": "n.",
+      "meaning": "背离，偏离；偏差",
+      "example": "deviation from the normal procedure",
+      "exampleZh": "背离正常的程序",
+      "collocations": [],
+      "tags": [
+        "CET6"
+      ],
+      "score": 6,
+      "difficulty": 4
+    },
+    {
+      "id": "discern",
+      "word": "discern",
+      "pos": "vt.",
+      "meaning": "看出， 察觉出； 识别， 认出",
+      "example": "We could just discern a town in the distance.",
+      "exampleZh": "我们依稀看到远处有一座城镇。",
+      "collocations": [],
+      "tags": [
+        "CET6"
+      ],
+      "score": 6,
+      "difficulty": 4
+    },
+    {
+      "id": "discrepancy",
+      "word": "discrepancy",
+      "pos": "n.",
+      "meaning": "不符合， 不一致",
+      "example": "A modification of the common-origin theory accounts for the density discrepancy .",
+      "exampleZh": "关于共同起源的理论，有一种改进的论点解释了密度的不符。",
+      "collocations": [],
+      "tags": [
+        "CET6"
+      ],
+      "score": 6,
+      "difficulty": 4
+    },
+    {
+      "id": "displace",
+      "word": "displace",
+      "pos": "vt.",
+      "meaning": "取代， 替代； 迫使…离开家园， 使离开原位",
+      "example": "immigrants who displace US workers in the job market",
+      "exampleZh": "在就业市场上取代美国工人的移民",
+      "collocations": [],
+      "tags": [
+        "CET6"
+      ],
+      "score": 6,
+      "difficulty": 4
+    },
+    {
+      "id": "displacement",
+      "word": "displacement",
+      "pos": "n.",
+      "meaning": "移置；免职；置换",
+      "example": "the displacement of traditional agriculture by industrial crops",
+      "exampleZh": "经济作物对传统农业的替代",
+      "collocations": [],
+      "tags": [
+        "CET6"
+      ],
+      "score": 6,
+      "difficulty": 4
+    },
+    {
+      "id": "economically",
+      "word": "economically",
+      "pos": "adv.",
+      "meaning": "在经济上；节约地",
+      "example": "We produce food as economically as possible.",
+      "exampleZh": "我们生产食品时力求节省。",
       "collocations": [],
       "tags": [
         "CET6"
