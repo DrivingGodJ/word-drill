@@ -3,7 +3,7 @@
 
   阶段一（入库）：读学习进度仓库 progress.json 里的 cet.approved / cet.rejected
       （来自网站上的「四六级候选词」确认卡），把批准的词真正写进 data/words.json，
-      受「滚动 7 天最多 7 个」配额限制；被拒的词从此不再出现。
+      受「滚动 2 天最多 7 个」配额限制；被拒的词从此不再出现。
   阶段二（摆候选）：词库里还没开始学的词 < MIN_FRESH 且当前没有待确认的候选时，
       从四六级词书按质量分挑一批（默认 10 个）写进 data/cet-pending.json，
       等用户在网站上勾选确认 —— 脚本绝不自动入库。
@@ -12,6 +12,7 @@
     python3 scripts/add-cet-words.py                     # 两阶段都跑（正常入口）
     python3 scripts/add-cet-words.py --dry-run           # 只看会做什么，不写不提交
     python3 scripts/add-cet-words.py --force             # 跳过「词不够」判断（配额仍生效）
+    # 配额口径：滚动 2 天 7 个（WINDOW_DAYS / LIMIT 两个常量）
     python3 scripts/add-cet-words.py --decisions-file d.json   # 测试用：用本地 JSON 代替进度仓库
 
 候选词要过两道门槛，都满足才摆出来：
@@ -49,8 +50,8 @@ FREQ_CACHE = "en-freq-50k.txt"
 PROGRESS_REPO = "DrivingGodJ/worddrill-data"   # 学习进度（私有仓库）
 PROGRESS_FILE = "progress.json"
 
-WEEKLY_LIMIT = 7                          # 滚动 7 天最多入库的生词数
-WINDOW_DAYS = 7
+WINDOW_DAYS = 2                           # 配额窗口：滚动 2 天
+LIMIT = 7                                 # 每个窗口最多入库的生词数（= 每两天 7 个）
 MIN_FRESH = 15                            # 未开始的词少于这个数才摆新候选
 BATCH_SIZE = 10                           # 一批候选词数量（比配额大，留出否决空间）
 MIN_DIFFICULTY = 2                        # 候选词最低难度分（词频代理）
@@ -310,7 +311,7 @@ def load_state() -> dict:
 
 
 def quota_left(state: dict) -> tuple[int, int]:
-    """返回（剩余配额，最近 7 天已用）。"""
+    """返回（剩余配额，窗口内已用）。窗口 = 最近 WINDOW_DAYS 天，上限 LIMIT 个。"""
     now = datetime.now(timezone.utc)
     used = 0
     for it in state.get("added", []):
@@ -320,7 +321,7 @@ def quota_left(state: dict) -> tuple[int, int]:
             continue
         if now - at <= timedelta(days=WINDOW_DAYS):
             used += 1
-    return max(0, WEEKLY_LIMIT - used), used
+    return max(0, LIMIT - used), used
 
 
 def load_decisions(args) -> tuple[list[str], list[str]]:
@@ -376,6 +377,7 @@ def main() -> None:
     ap = argparse.ArgumentParser(description="四六级补词（先确认再入库）")
     ap.add_argument("--dry-run", action="store_true", help="只显示会做什么，不写不提交")
     ap.add_argument("--force", action="store_true", help="跳过「词不够」判断（配额仍生效）")
+    # 配额：滚动 WINDOW_DAYS 天最多 LIMIT 个
     ap.add_argument("--min-fresh", type=int, default=MIN_FRESH)
     ap.add_argument("--batch-size", type=int, default=BATCH_SIZE)
     ap.add_argument("--decisions-file", help="测试用：用本地 JSON {approved:[], rejected:[]} 代替进度仓库")
@@ -407,7 +409,7 @@ def main() -> None:
     fresh = [w for w in words if w["id"] not in started]
     left, used = quota_left(state)
     print(f"词库 {len(words)} 个词，还没开始学的 {len(fresh)} 个（阈值 {args.min_fresh}）；"
-          f"滚动 7 天配额已用 {used}/{WEEKLY_LIMIT}，剩 {left}")
+          f"滚动 {WINDOW_DAYS} 天配额已用 {used}/{LIMIT}，剩 {left}")
 
     changed = False
     added_names: list[str] = []
@@ -439,11 +441,11 @@ def main() -> None:
             for t in take:
                 print(f"  + {t['word']}  {t['pos']}  {t['meaning']}  [{t['tags'][0]}]")
             if len(to_add) > len(take):
-                print(f"  （还有 {len(to_add) - len(take)} 个批准的词因配额用完，下周再入库）")
+                print(f"  （还有 {len(to_add) - len(take)} 个批准的词因配额用完，{WINDOW_DAYS} 天后再入库）")
         else:
             print("\n阶段一 · 没有待入库的批准词")
 
-        # 决定完的词移出候选列表；因配额没入库的留着下周再入
+        # 决定完的词移出候选列表；因配额没入库的留着下个窗口再入
         decided = set(approved) | set(rejected)
         quota_blocked = {i["id"] for i in to_add[len(take):]}
         remaining = [w for w in pending
@@ -504,7 +506,7 @@ def main() -> None:
         msg = "chore(dict): 更新候选词列表"
     commit_and_push(msg)
     _, used_after = quota_left(state)
-    print(f"\n已提交并推送；本周滚动 7 天配额已用 {used_after}/{WEEKLY_LIMIT}")
+    print(f"\n已提交并推送；滚动 {WINDOW_DAYS} 天配额已用 {used_after}/{LIMIT}")
 
 
 if __name__ == "__main__":
