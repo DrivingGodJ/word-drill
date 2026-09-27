@@ -167,6 +167,22 @@ python3 scripts/sync-from-flowus.py
 
 3. 提交并推送，站点自动更新。
 
+**手动加几个词**用 `scripts/add-words.py`（省得手改 JSON，去重/排序/更新 meta 都自动）：
+
+```bash
+# 一次加多个词：给一段 JSON
+python3 scripts/add-words.py --json '[{"word":"barren","pos":"adj.","meaning":"贫瘠的，荒芜的",
+  "example":"Years of over-farming had left the soil barren.","exampleZh":"多年的过度耕作让这片土地变得贫瘠。",
+  "collocations":["barren land"]}]'
+
+# 或者写个文本列表（每行「词 | 词性 | 释义」，续行写例句/搭配）
+python3 scripts/add-words.py --list words.txt
+```
+
+它会跳过已存在的词、把词库按字母序重排、更新 `meta.updated`，
+顺手把干扰池 `data/distractors.json` 里跟词库重复的词/释义剔掉（否则会拿正确释义当干扰项），
+最后自动 commit + push。想先看看改什么就加 `--dry-run`，只想改文件不提交就加 `--no-commit`。
+
 也可以直接编辑 `data/words.json`。每条的结构：
 
 ### 四六级自动补词（先确认，再入库）
