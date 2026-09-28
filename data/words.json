@@ -2,7 +2,7 @@
   "meta": {
     "name": "WordDrill",
     "version": 1,
-    "updated": "2026-09-27",
+    "updated": "2026-09-28",
     "source": "FlowUs · page 2220ec94-e0c2-4523-87be-f8277b09d786",
     "note": "词库由 FlowUs 生词页同步而来；新增单词请用 scripts/sync-from-flowus.py 或直接编辑本文件。"
   },
@@ -166,6 +166,20 @@
       "tags": []
     },
     {
+      "id": "consultancy",
+      "word": "consultancy",
+      "pos": "n.",
+      "meaning": "咨询公司",
+      "example": "a consultancy firm",
+      "exampleZh": "咨询公司",
+      "collocations": [],
+      "tags": [
+        "CET4"
+      ],
+      "score": 6,
+      "difficulty": 4
+    },
+    {
       "id": "courier",
       "word": "courier",
       "pos": "n./v.",
@@ -182,6 +196,20 @@
       ]
     },
     {
+      "id": "cumulative",
+      "word": "cumulative",
+      "pos": "adj.",
+      "meaning": "积累的， 渐增的",
+      "example": "Learning is a cumulative process.",
+      "exampleZh": "学习是个逐渐积累的过程。",
+      "collocations": [],
+      "tags": [
+        "CET6"
+      ],
+      "score": 6,
+      "difficulty": 4
+    },
+    {
       "id": "dazzle",
       "word": "dazzle",
       "pos": "v.",
@@ -195,6 +223,76 @@
       "tags": [
         "Unit1"
       ]
+    },
+    {
+      "id": "decidedly",
+      "word": "decidedly",
+      "pos": "adv.",
+      "meaning": "明确地，坚决地",
+      "example": "‘I’m not going to do it,’ said Margaret decidedly.",
+      "exampleZh": "“这件事我不做。” 玛格丽特坚决地说。",
+      "collocations": [],
+      "tags": [
+        "CET6"
+      ],
+      "score": 6,
+      "difficulty": 4
+    },
+    {
+      "id": "detach",
+      "word": "detach",
+      "pos": "vt.",
+      "meaning": "拆卸； 使分开， 使分离",
+      "example": "Please detach and fill out the application form.",
+      "exampleZh": "请撕下申请表并填好。",
+      "collocations": [],
+      "tags": [
+        "CET6"
+      ],
+      "score": 6,
+      "difficulty": 4
+    },
+    {
+      "id": "deviation",
+      "word": "deviation",
+      "pos": "n.",
+      "meaning": "背离，偏离；偏差",
+      "example": "deviation from the normal procedure",
+      "exampleZh": "背离正常的程序",
+      "collocations": [],
+      "tags": [
+        "CET6"
+      ],
+      "score": 6,
+      "difficulty": 4
+    },
+    {
+      "id": "discern",
+      "word": "discern",
+      "pos": "vt.",
+      "meaning": "看出， 察觉出； 识别， 认出",
+      "example": "We could just discern a town in the distance.",
+      "exampleZh": "我们依稀看到远处有一座城镇。",
+      "collocations": [],
+      "tags": [
+        "CET6"
+      ],
+      "score": 6,
+      "difficulty": 4
+    },
+    {
+      "id": "discrepancy",
+      "word": "discrepancy",
+      "pos": "n.",
+      "meaning": "不符合， 不一致",
+      "example": "A modification of the common-origin theory accounts for the density discrepancy .",
+      "exampleZh": "关于共同起源的理论，有一种改进的论点解释了密度的不符。",
+      "collocations": [],
+      "tags": [
+        "CET6"
+      ],
+      "score": 6,
+      "difficulty": 4
     },
     {
       "id": "distort",
