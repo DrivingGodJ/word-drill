@@ -2,7 +2,7 @@
   "meta": {
     "name": "WordDrill",
     "version": 1,
-    "updated": "2026-09-28",
+    "updated": "2026-09-30",
     "source": "FlowUs · page 2220ec94-e0c2-4523-87be-f8277b09d786",
     "note": "词库由 FlowUs 生词页同步而来；新增单词请用 scripts/sync-from-flowus.py 或直接编辑本文件。"
   },
@@ -295,6 +295,34 @@
       "difficulty": 4
     },
     {
+      "id": "displace",
+      "word": "displace",
+      "pos": "vt.",
+      "meaning": "取代， 替代； 迫使…离开家园， 使离开原位",
+      "example": "immigrants who displace US workers in the job market",
+      "exampleZh": "在就业市场上取代美国工人的移民",
+      "collocations": [],
+      "tags": [
+        "CET6"
+      ],
+      "score": 6,
+      "difficulty": 4
+    },
+    {
+      "id": "displacement",
+      "word": "displacement",
+      "pos": "n.",
+      "meaning": "移置；免职；置换",
+      "example": "the displacement of traditional agriculture by industrial crops",
+      "exampleZh": "经济作物对传统农业的替代",
+      "collocations": [],
+      "tags": [
+        "CET6"
+      ],
+      "score": 6,
+      "difficulty": 4
+    },
+    {
       "id": "distort",
       "word": "distort",
       "pos": "vi./vt.",
@@ -305,6 +333,20 @@
       "tags": [
         "CET6"
       ]
+    },
+    {
+      "id": "economically",
+      "word": "economically",
+      "pos": "adv.",
+      "meaning": "在经济上；节约地",
+      "example": "We produce food as economically as possible.",
+      "exampleZh": "我们生产食品时力求节省。",
+      "collocations": [],
+      "tags": [
+        "CET6"
+      ],
+      "score": 6,
+      "difficulty": 4
     },
     {
       "id": "embark",

@@ -1,27 +1,13 @@
 {
-  "updated": "2026-09-29",
+  "updated": "2026-09-30",
   "words": [
     {
-      "id": "displace",
-      "word": "displace",
-      "pos": "vt.",
-      "meaning": "取代， 替代； 迫使…离开家园， 使离开原位",
-      "example": "immigrants who displace US workers in the job market",
-      "exampleZh": "在就业市场上取代美国工人的移民",
-      "collocations": [],
-      "tags": [
-        "CET6"
-      ],
-      "score": 6,
-      "difficulty": 4
-    },
-    {
-      "id": "displacement",
-      "word": "displacement",
+      "id": "expenditure",
+      "word": "expenditure",
       "pos": "n.",
-      "meaning": "移置；免职；置换",
-      "example": "the displacement of traditional agriculture by industrial crops",
-      "exampleZh": "经济作物对传统农业的替代",
+      "meaning": "经费， 支出额； 花费， 支出， 消耗",
+      "example": "huge cuts in public expenditure",
+      "exampleZh": "大幅度削减公共开支",
       "collocations": [],
       "tags": [
         "CET6"
@@ -30,12 +16,124 @@
       "difficulty": 4
     },
     {
-      "id": "economically",
-      "word": "economically",
-      "pos": "adv.",
-      "meaning": "在经济上；节约地",
-      "example": "We produce food as economically as possible.",
-      "exampleZh": "我们生产食品时力求节省。",
+      "id": "finite",
+      "word": "finite",
+      "pos": "adj.",
+      "meaning": "有限的， 有限制的； 限定的",
+      "example": "the earth’s finite resources",
+      "exampleZh": "地球有限的资源",
+      "collocations": [],
+      "tags": [
+        "CET6"
+      ],
+      "score": 6,
+      "difficulty": 4
+    },
+    {
+      "id": "fluorescent",
+      "word": "fluorescent",
+      "pos": "adj.",
+      "meaning": "荧光的， 发荧光的",
+      "example": "a fluorescent pink T-shirt",
+      "exampleZh": "发亮的粉红色 T 恤衫",
+      "collocations": [],
+      "tags": [
+        "CET6"
+      ],
+      "score": 6,
+      "difficulty": 4
+    },
+    {
+      "id": "harmonious",
+      "word": "harmonious",
+      "pos": "adj.",
+      "meaning": "和谐的，协调的",
+      "example": "The decor is a harmonious blend of traditional and modern.",
+      "exampleZh": "这种装饰风格是传统与现代的和谐统一。",
+      "collocations": [],
+      "tags": [
+        "CET6"
+      ],
+      "score": 6,
+      "difficulty": 4
+    },
+    {
+      "id": "heighten",
+      "word": "heighten",
+      "pos": "v.",
+      "meaning": "提高， 加强",
+      "example": "There are fears that the march will heighten racial tension.",
+      "exampleZh": "有人担心这次游行会加深种族间的紧张局势。",
+      "collocations": [],
+      "tags": [
+        "CET6"
+      ],
+      "score": 6,
+      "difficulty": 4
+    },
+    {
+      "id": "idealism",
+      "word": "idealism",
+      "pos": "n.",
+      "meaning": "唯心主义；理想主义",
+      "example": "religious idealism",
+      "exampleZh": "宗教的理想主义",
+      "collocations": [],
+      "tags": [
+        "CET6"
+      ],
+      "score": 6,
+      "difficulty": 4
+    },
+    {
+      "id": "impart",
+      "word": "impart",
+      "pos": "vt.",
+      "meaning": "告知， 透露； 赋予， 给予",
+      "example": "She had information that she couldn’t wait to impart.",
+      "exampleZh": "她得到了消息，迫不及待地想告诉别人。",
+      "collocations": [],
+      "tags": [
+        "CET6"
+      ],
+      "score": 6,
+      "difficulty": 4
+    },
+    {
+      "id": "implicit",
+      "word": "implicit",
+      "pos": "adj.",
+      "meaning": "不言明的， 含蓄的； 内含的， 固有的； 无疑问的",
+      "example": "...an implicit warning to the Moroccans not to continue or repeat the military actions they began a week ago.",
+      "exampleZh": "…叫摩洛哥人不要继续或重复一周前开始的军事行动的含蓄警告。",
+      "collocations": [],
+      "tags": [
+        "CET6"
+      ],
+      "score": 6,
+      "difficulty": 4
+    },
+    {
+      "id": "inclusive",
+      "word": "inclusive",
+      "pos": "adj.",
+      "meaning": "包括一切的， 包括一切费用在内的； 所有数目包括在内的",
+      "example": "Not everyone shares his vision of an inclusive America.",
+      "exampleZh": "不是所有人都同意他的观点，认为美国是个包容性很强的国家。",
+      "collocations": [],
+      "tags": [
+        "CET6"
+      ],
+      "score": 6,
+      "difficulty": 4
+    },
+    {
+      "id": "incompatible",
+      "word": "incompatible",
+      "pos": "adj.",
+      "meaning": "不相容的",
+      "example": "Politeness and truth are often mutually incompatible.",
+      "exampleZh": "礼貌和实话往往互不相容。",
       "collocations": [],
       "tags": [
         "CET6"
