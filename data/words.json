@@ -2,7 +2,7 @@
   "meta": {
     "name": "WordDrill",
     "version": 1,
-    "updated": "2026-09-30",
+    "updated": "2026-10-03",
     "source": "FlowUs · page 2220ec94-e0c2-4523-87be-f8277b09d786",
     "note": "词库由 FlowUs 生词页同步而来；新增单词请用 scripts/sync-from-flowus.py 或直接编辑本文件。"
   },
@@ -365,6 +365,48 @@
       ]
     },
     {
+      "id": "expenditure",
+      "word": "expenditure",
+      "pos": "n.",
+      "meaning": "经费， 支出额； 花费， 支出， 消耗",
+      "example": "huge cuts in public expenditure",
+      "exampleZh": "大幅度削减公共开支",
+      "collocations": [],
+      "tags": [
+        "CET6"
+      ],
+      "score": 6,
+      "difficulty": 4
+    },
+    {
+      "id": "finite",
+      "word": "finite",
+      "pos": "adj.",
+      "meaning": "有限的， 有限制的； 限定的",
+      "example": "the earth’s finite resources",
+      "exampleZh": "地球有限的资源",
+      "collocations": [],
+      "tags": [
+        "CET6"
+      ],
+      "score": 6,
+      "difficulty": 4
+    },
+    {
+      "id": "fluorescent",
+      "word": "fluorescent",
+      "pos": "adj.",
+      "meaning": "荧光的， 发荧光的",
+      "example": "a fluorescent pink T-shirt",
+      "exampleZh": "发亮的粉红色 T 恤衫",
+      "collocations": [],
+      "tags": [
+        "CET6"
+      ],
+      "score": 6,
+      "difficulty": 4
+    },
+    {
       "id": "foray",
       "word": "foray",
       "pos": "n.",
@@ -390,6 +432,20 @@
       ]
     },
     {
+      "id": "harmonious",
+      "word": "harmonious",
+      "pos": "adj.",
+      "meaning": "和谐的，协调的",
+      "example": "The decor is a harmonious blend of traditional and modern.",
+      "exampleZh": "这种装饰风格是传统与现代的和谐统一。",
+      "collocations": [],
+      "tags": [
+        "CET6"
+      ],
+      "score": 6,
+      "difficulty": 4
+    },
+    {
       "id": "hassle",
       "word": "hassle",
       "pos": "n./v.",
@@ -405,6 +461,48 @@
       "tags": [
         "Unit1"
       ]
+    },
+    {
+      "id": "heighten",
+      "word": "heighten",
+      "pos": "v.",
+      "meaning": "提高， 加强",
+      "example": "There are fears that the march will heighten racial tension.",
+      "exampleZh": "有人担心这次游行会加深种族间的紧张局势。",
+      "collocations": [],
+      "tags": [
+        "CET6"
+      ],
+      "score": 6,
+      "difficulty": 4
+    },
+    {
+      "id": "idealism",
+      "word": "idealism",
+      "pos": "n.",
+      "meaning": "唯心主义；理想主义",
+      "example": "religious idealism",
+      "exampleZh": "宗教的理想主义",
+      "collocations": [],
+      "tags": [
+        "CET6"
+      ],
+      "score": 6,
+      "difficulty": 4
+    },
+    {
+      "id": "impart",
+      "word": "impart",
+      "pos": "vt.",
+      "meaning": "告知， 透露； 赋予， 给予",
+      "example": "She had information that she couldn’t wait to impart.",
+      "exampleZh": "她得到了消息，迫不及待地想告诉别人。",
+      "collocations": [],
+      "tags": [
+        "CET6"
+      ],
+      "score": 6,
+      "difficulty": 4
     },
     {
       "id": "instructional",
