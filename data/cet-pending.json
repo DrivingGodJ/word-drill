@@ -1,13 +1,13 @@
 {
-  "updated": "2026-10-05",
+  "updated": "2026-10-06",
   "words": [
     {
-      "id": "implicit",
-      "word": "implicit",
-      "pos": "adj.",
-      "meaning": "不言明的， 含蓄的； 内含的， 固有的； 无疑问的",
-      "example": "...an implicit warning to the Moroccans not to continue or repeat the military actions they began a week ago.",
-      "exampleZh": "…叫摩洛哥人不要继续或重复一周前开始的军事行动的含蓄警告。",
+      "id": "inertia",
+      "word": "inertia",
+      "pos": "n.",
+      "meaning": "不活动， 惰性； 惯性",
+      "example": "political inertia",
+      "exampleZh": "政治上的保守",
       "collocations": [],
       "tags": [
         "CET6"
@@ -16,12 +16,12 @@
       "difficulty": 4
     },
     {
-      "id": "inclusive",
-      "word": "inclusive",
+      "id": "intrinsic",
+      "word": "intrinsic",
       "pos": "adj.",
-      "meaning": "包括一切的， 包括一切费用在内的； 所有数目包括在内的",
-      "example": "Not everyone shares his vision of an inclusive America.",
-      "exampleZh": "不是所有人都同意他的观点，认为美国是个包容性很强的国家。",
+      "meaning": "固有的； 本质的； 内在的",
+      "example": "the intrinsic interest of the subject",
+      "exampleZh": "该话题本身的趣味",
       "collocations": [],
       "tags": [
         "CET6"
@@ -30,12 +30,110 @@
       "difficulty": 4
     },
     {
-      "id": "incompatible",
-      "word": "incompatible",
+      "id": "leakage",
+      "word": "leakage",
+      "pos": "n.",
+      "meaning": "漏，泄漏；漏出物",
+      "example": "a leakage of toxic waste into the sea",
+      "exampleZh": "有毒废物的泄漏入海",
+      "collocations": [],
+      "tags": [
+        "CET6"
+      ],
+      "score": 6,
+      "difficulty": 4
+    },
+    {
+      "id": "marginal",
+      "word": "marginal",
       "pos": "adj.",
-      "meaning": "不相容的",
-      "example": "Politeness and truth are often mutually incompatible.",
-      "exampleZh": "礼貌和实话往往互不相容。",
+      "meaning": "微小的， 少量的； 不重要的； 仅以微弱多数票获胜的； 记在页边的， 有旁注的",
+      "example": "a marginal improvement in profits",
+      "exampleZh": "利润的小幅提高",
+      "collocations": [],
+      "tags": [
+        "CET6"
+      ],
+      "score": 6,
+      "difficulty": 4
+    },
+    {
+      "id": "metabolic",
+      "word": "metabolic",
+      "pos": "adj.",
+      "meaning": "代谢作用的， 新陈代谢的",
+      "example": "the metabolic activity of the brain",
+      "exampleZh": "大脑的新陈代谢活动",
+      "collocations": [],
+      "tags": [
+        "CET6"
+      ],
+      "score": 6,
+      "difficulty": 4
+    },
+    {
+      "id": "nominal",
+      "word": "nominal",
+      "pos": "adj.",
+      "meaning": "名义上的， 有名无实的； 很少的， 象征性的； 名词性的",
+      "example": "the nominal head of the rebellion",
+      "exampleZh": "这次叛乱名义上的领导人",
+      "collocations": [],
+      "tags": [
+        "CET6"
+      ],
+      "score": 6,
+      "difficulty": 4
+    },
+    {
+      "id": "preparatory",
+      "word": "preparatory",
+      "pos": "adj.",
+      "meaning": "预备的",
+      "example": "preparatory drawings",
+      "exampleZh": "草图",
+      "collocations": [],
+      "tags": [
+        "CET6"
+      ],
+      "score": 6,
+      "difficulty": 4
+    },
+    {
+      "id": "prevalent",
+      "word": "prevalent",
+      "pos": "adj.",
+      "meaning": "流行的， 普遍的",
+      "example": "the prevalent belief in astrology",
+      "exampleZh": "对占星术的普遍相信",
+      "collocations": [],
+      "tags": [
+        "CET6"
+      ],
+      "score": 6,
+      "difficulty": 4
+    },
+    {
+      "id": "preventable",
+      "word": "preventable",
+      "pos": "adj.",
+      "meaning": "可预防的",
+      "example": "Forty thousand children a day die from preventable diseases.",
+      "exampleZh": "每天有四万儿童死于本可以防止的疾病。",
+      "collocations": [],
+      "tags": [
+        "CET4"
+      ],
+      "score": 6,
+      "difficulty": 4
+    },
+    {
+      "id": "proficient",
+      "word": "proficient",
+      "pos": "adj.",
+      "meaning": "熟练的，精通的",
+      "example": "a proficient typist",
+      "exampleZh": "熟练的打字员",
       "collocations": [],
       "tags": [
         "CET6"

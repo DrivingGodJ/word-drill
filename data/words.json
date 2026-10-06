@@ -2,7 +2,7 @@
   "meta": {
     "name": "WordDrill",
     "version": 1,
-    "updated": "2026-10-03",
+    "updated": "2026-10-06",
     "source": "FlowUs · page 2220ec94-e0c2-4523-87be-f8277b09d786",
     "note": "词库由 FlowUs 生词页同步而来；新增单词请用 scripts/sync-from-flowus.py 或直接编辑本文件。"
   },
@@ -497,6 +497,48 @@
       "meaning": "告知， 透露； 赋予， 给予",
       "example": "She had information that she couldn’t wait to impart.",
       "exampleZh": "她得到了消息，迫不及待地想告诉别人。",
+      "collocations": [],
+      "tags": [
+        "CET6"
+      ],
+      "score": 6,
+      "difficulty": 4
+    },
+    {
+      "id": "implicit",
+      "word": "implicit",
+      "pos": "adj.",
+      "meaning": "不言明的， 含蓄的； 内含的， 固有的； 无疑问的",
+      "example": "...an implicit warning to the Moroccans not to continue or repeat the military actions they began a week ago.",
+      "exampleZh": "…叫摩洛哥人不要继续或重复一周前开始的军事行动的含蓄警告。",
+      "collocations": [],
+      "tags": [
+        "CET6"
+      ],
+      "score": 6,
+      "difficulty": 4
+    },
+    {
+      "id": "inclusive",
+      "word": "inclusive",
+      "pos": "adj.",
+      "meaning": "包括一切的， 包括一切费用在内的； 所有数目包括在内的",
+      "example": "Not everyone shares his vision of an inclusive America.",
+      "exampleZh": "不是所有人都同意他的观点，认为美国是个包容性很强的国家。",
+      "collocations": [],
+      "tags": [
+        "CET6"
+      ],
+      "score": 6,
+      "difficulty": 4
+    },
+    {
+      "id": "incompatible",
+      "word": "incompatible",
+      "pos": "adj.",
+      "meaning": "不相容的",
+      "example": "Politeness and truth are often mutually incompatible.",
+      "exampleZh": "礼貌和实话往往互不相容。",
       "collocations": [],
       "tags": [
         "CET6"
