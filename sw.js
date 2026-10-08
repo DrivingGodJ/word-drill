@@ -1,10 +1,10 @@
 /* WordDrill service worker —— 静态资源 stale-while-revalidate，导航 network-first */
-const CACHE = 'worddrill-v16';
+const CACHE = 'worddrill-v17';
 const SHELL = [
   './',
   './index.html',
-  './styles.css?v=5',
-  './app.js?v=5',
+  './styles.css?v=6',
+  './app.js?v=6',
   './vendor/ts-fsrs-5.4.2.js',
   './data/words.json',
   './data/distractors.json',

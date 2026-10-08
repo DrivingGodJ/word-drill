@@ -13,3 +13,4 @@ jobs:
           node-version: 22
       - run: node --check app.js && node --check sw.js
       - run: node scripts/check-learning.cjs
+      - run: python3 scripts/check-cet.py

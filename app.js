@@ -927,15 +927,28 @@
     box.hidden = false;
     box.innerHTML = `
       <h2 class="cet-review__title">四六级候选词 · 要加入词库吗？</h2>
-      <p class="cet-review__sub">补词脚本按真题覆盖挑出来的新词，勾上想要的、去掉不想要的；确认后由脚本自动入库（不用等这一页刷新）。</p>
+      <p class="cet-review__sub">优先选词书有真题记录、带完整例句的难词。勾选想学的词；取消勾选的词以后不再推荐。补词量按学习节奏和复习积压调整，7 个是参考量；暂时加不了的词会保留，等下一次补词任务处理。</p>
+      ${!(sync.enabled && sync.token && sync.owner && sync.repo) ? '<p class="cet-review__sub">开启设置里的 GitHub 同步后，补词任务才能收到你的选择。</p>' : ''}
       <ul class="cet-review__list">
         ${pending.map((w) => `
           <li class="cet-review__item">
-            <input type="checkbox" checked data-cet-id="${esc(w.id)}" id="cet-${esc(w.id)}">
-            <label for="cet-${esc(w.id)}"><span class="cet-review__word">${esc(w.word)}</span>
-              <span class="cet-review__pos">${esc(w.pos || '')}</span></label>
+            <label class="cet-review__choice" for="cet-${esc(w.id)}">
+              <input type="checkbox" checked data-cet-id="${esc(w.id)}" id="cet-${esc(w.id)}">
+              <span class="cet-review__word">${esc(w.word)}</span>
+              <span class="cet-review__pos">${esc(w.pos || '')}</span>
+              <span class="cet-review__tag">${esc((w.tags && w.tags[0]) || 'CET')}</span>
+            </label>
             <span class="cet-review__meaning">${esc(w.meaning)}</span>
-            <span class="cet-review__tag">${esc((w.tags && w.tags[0]) || 'CET')}</span>
+            <details class="cet-review__details">
+              <summary>查看例句、搭配与来源</summary>
+              ${w.phonetic ? `<p>/${esc(w.phonetic)}/</p>` : ''}
+              <p>${esc(w.example || '')}<br><span class="cet-review__translation">${esc(w.exampleZh || '')}</span></p>
+              ${(w.collocations || []).length ? `<p>搭配：${w.collocations.map(esc).join('；')}</p>` : ''}
+              <p>${esc(w.exampleSource || '词书例句')}。例句与真题收录记录分别展示。</p>
+              ${Array.isArray(w.selection?.examSources) && w.selection.examSources.length
+                ? `<p>词书记录的真题来源（${w.selection.examSources.length} 条）：${w.selection.examSources.map(esc).join('；')}</p><p><a href="https://github.com/kajweb/dict" target="_blank" rel="noopener noreferrer">查看词书来源</a></p>`
+                : '<p>旧候选的例句与来源会由补词任务补齐。</p>'}
+            </details>
           </li>`).join('')}
       </ul>
       <div class="cet-review__actions">
@@ -952,7 +965,7 @@
       box.hidden = true;
       box.innerHTML = '';
       toast(approvedIds.length
-        ? `已选 ${approvedIds.length} 个，稍后自动加入词库`
+        ? `已选 ${approvedIds.length} 个，等待同步和下一次补词任务`
         : '这批候选词已跳过，之后会换新的来');
       // 决定要尽快让补词脚本看到：开着同步就立刻推一次
       if (sync.enabled && sync.token && sync.owner && sync.repo) syncNow({ silent: true });

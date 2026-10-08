@@ -1,5 +1,6 @@
 # 词书下载缓存（体积大且不需要进仓库）
 scripts/.cache-cet/
+__pycache__/
 
 # macOS
 .DS_Store

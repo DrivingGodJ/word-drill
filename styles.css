@@ -520,13 +520,13 @@ button { cursor: pointer; background: none; border: none; padding: 0; }
 .cet-review__sub { margin: 0 0 var(--s-4); font-size: .8125rem; color: var(--color-muted-fg); }
 .cet-review__list { list-style: none; margin: 0 0 var(--s-4); padding: 0; display: grid; gap: var(--s-2); }
 .cet-review__item {
-  display: flex; align-items: baseline; gap: var(--s-3);
+  display: grid; gap: var(--s-2); min-width: 0;
   padding: var(--s-2) var(--s-3);
   border: 1px solid var(--color-border); border-radius: var(--radius-md);
-  cursor: pointer;
 }
+.cet-review__choice { display: flex; align-items: center; flex-wrap: wrap; gap: var(--s-2); min-height: 32px; cursor: pointer; }
 .cet-review__item input { accent-color: var(--color-primary); flex: none; align-self: center; }
-.cet-review__word { font-weight: 600; }
+.cet-review__word { font-weight: 600; overflow-wrap: anywhere; }
 .cet-review__pos { color: var(--color-muted-fg); font-size: .75rem; }
 .cet-review__meaning { color: var(--color-muted-fg); font-size: .875rem; flex: 1; min-width: 0; }
 .cet-review__tag {
@@ -534,6 +534,10 @@ button { cursor: pointer; background: none; border: none; padding: 0; }
   background: var(--color-primary-soft); color: var(--color-primary);
 }
 .cet-review__actions { display: flex; gap: var(--s-3); flex-wrap: wrap; }
+.cet-review__details { font-size: .8125rem; color: var(--color-muted-fg); overflow-wrap: anywhere; }
+.cet-review__details summary { cursor: pointer; min-height: 32px; display: list-item; align-content: center; }
+.cet-review__details p { margin: var(--s-2) 0; line-height: 1.6; }
+.cet-review__translation { color: var(--color-muted-fg); }
 
 /* ---------- Responsive ---------- */
 @media (max-width: 640px) {
