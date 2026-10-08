@@ -20,7 +20,9 @@
 
 ## 多设备同步
 
-进度存进一个**私有** GitHub 仓库，每台设备打开时拉取合并、练完自动推回。
+进度存进一个**私有** GitHub 仓库，每答完一题自动上传，打开、切回页面或恢复网络时拉取合并。前台闲置时每分钟检查一次；切回窗口的重复事件在 15 秒内只检查一次。
+
+正在答题时在副本上合并后上传，保留当前题目的阶段和评分依据，结束本轮再把远端变化合并到本机。请求进行时又答了题，会补同步最新变化；页面进入后台也会尝试补同步。断网时先保存本机，恢复网络后重试。浏览器被立即强制关闭时仍可能来不及上传，下次打开会继续合并。
 
 ### 为什么是「另一个私有仓库」而不是本仓库
 
@@ -118,6 +120,8 @@ FSRS 决定每个词的复习间隔：独立答对记 `Good`，答错或借助�
 node scripts/check-learning.cjs
 # 可选：用自己的旧版导出验证逐字段保留；文件不要提交到公开仓库
 node scripts/check-learning.cjs /private/path/progress-before.json
+# 同时用最新远端导出检查手机到电脑的拉取；仍然只在内存中模拟网络
+node scripts/check-learning.cjs /private/path/legacy.json /private/path/latest-remote.json
 ```
 
 研究来源与实现取舍见 [改进说明](docs/learning-upgrade.md)。

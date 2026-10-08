@@ -7,6 +7,7 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const storage = new Map();
 const elements = new Map();
+const documentEvents = {}, windowEvents = {}, intervals = [];
 const element = (key) => {
   if (!elements.has(key)) elements.set(key, {
     value: '', hidden: false, disabled: false, style: {}, dataset: {},
@@ -18,12 +19,16 @@ const element = (key) => {
   return elements.get(key);
 };
 const context = vm.createContext({
-  document: { querySelector: element, querySelectorAll: () => [], addEventListener() {} },
+  document: { querySelector: element, querySelectorAll: () => [], visibilityState: 'visible',
+    addEventListener: (type, fn) => { documentEvents[type] = fn; } },
   localStorage: { getItem: (key) => storage.get(key) || null, setItem: (key, value) => storage.set(key, value) },
-  navigator: {}, location: { protocol: 'http:', hash: '' }, window: {},
+  navigator: {}, location: { protocol: 'http:', hash: '' },
+  window: { addEventListener: (type, fn) => { windowEvents[type] = fn; } },
+  setInterval: (fn) => intervals.push(fn),
   setTimeout() {}, clearTimeout() {}, requestAnimationFrame() {}, console,
   testNow: +new Date('2026-10-08T12:00:00+08:00'),
-  TextDecoder, atob: (value) => Buffer.from(value, 'base64').toString('binary')
+  TextDecoder, TextEncoder, atob: (value) => Buffer.from(value, 'base64').toString('binary'),
+  btoa: (value) => Buffer.from(value, 'binary').toString('base64')
 });
 vm.runInContext(fs.readFileSync(path.join(root, 'vendor/ts-fsrs-5.4.2.js'), 'utf8'), context);
 const source = fs.readFileSync(path.join(root, 'app.js'), 'utf8')
@@ -32,6 +37,8 @@ const source = fs.readFileSync(path.join(root, 'app.js'), 'utf8')
     defaultStore, readStore, migrateStore, loadStore, grade, mergeRemote, buildPayload,
     newAllowance, normalMemory, normalize, hasFillExample, dayKey, startSession, remoteRead,
     nextQuestion, answer, revealOptions, onPickOption, speak, canSpeak, bindEvents,
+    syncNow, autoSync, bindAutoSync, endSession, getSync: () => sync, isSyncing: () => syncing,
+    setSync: (config) => { sync = config; }, setSession: (s) => { session = s; },
     getStore: () => store, setStore: (s) => { store = readStore(s); },
     getSession: () => session,
     setWords: (words) => { WORDS = words; byId.clear(); words.forEach(w => byId.set(w.id, w)); }
@@ -39,6 +46,12 @@ const source = fs.readFileSync(path.join(root, 'app.js'), 'utf8')
 vm.runInContext(source, context);
 const app = context.check;
 const plain = (obj) => JSON.parse(JSON.stringify(obj));
+const waitFor = async (predicate) => {
+  for (let i = 0; !predicate(); i++) {
+    assert.ok(i < 1000, 'async sync check did not finish');
+    await Promise.resolve();
+  }
+};
 const DAY = 86400000;
 const initialTime = context.testNow;
 const rec = (stage = 'recognize') => ({ stage, credits: [initialTime - 40 * DAY, initialTime - DAY],
@@ -269,5 +282,104 @@ assert.equal(app.getSession().practice, true);
     sha: 'check', content: Buffer.from(JSON.stringify({ version: 5, words: { invalid: null } })).toString('base64')
   }) });
   await assert.rejects(() => app.remoteRead(), /格式/);
+  // A desktop left open must pull the phone's newer records on return and while idle.
+  app.setSession(null);
+  app.setSync({ enabled: true, token: 'test-only', owner: 'test', repo: 'private',
+    branch: 'main', path: 'progress.json', deviceId: 'desktop' });
+  const phone = process.argv[3] ? JSON.parse(fs.readFileSync(process.argv[3], 'utf8')) : {
+    ...plain(app.defaultStore()), words: { phone: { ...rec('write'), lastSeen: initialTime } },
+    stats: { answers: 636, correct: 600, sessions: 28, streakDays: 7, lastDate: '2026-10-08' }
+  };
+  let cloud = plain(phone), sha = 1, reads = 0, writes = 0;
+  let holdWrite, releaseWrite, conflictOnce = false;
+  context.fetch = async (url, options = {}) => {
+    if (!url.startsWith('https://api.github.com/')) return { ok: true, json: async () => ({ words: [] }) };
+    if (options.method !== 'PUT') {
+      reads++;
+      return { ok: true, json: async () => ({ sha: String(sha), content: Buffer.from(JSON.stringify(cloud)).toString('base64') }) };
+    }
+    const body = JSON.parse(options.body);
+    if (holdWrite) { holdWrite = false; await new Promise(resolve => { releaseWrite = resolve; }); }
+    if (conflictOnce) { conflictOnce = false; sha++; cloud.words.concurrent = rec(); return { ok: false, status: 409 }; }
+    assert.equal(body.sha, String(sha));
+    cloud = JSON.parse(Buffer.from(body.content, 'base64').toString('utf8'));
+    sha++; writes++;
+    return { ok: true, json: async () => ({}) };
+  };
+  reset({ desktopOnly: rec() });
+  await app.autoSync();
+  for (const [id, p] of Object.entries(app.readStore(phone).words)) {
+    assert.deepEqual(plain(app.getStore().words[id]), plain(p), `phone progress ${id}`);
+  }
+  assert.ok(cloud.words.desktopOnly, 'phone pull also preserves desktop-only progress');
+  assert.equal(app.getStore().stats.answers, phone.stats.answers);
+  const unchangedWrites = writes;
+  await app.syncNow({ silent: true });
+  assert.equal(writes, unchangedWrites, 'identical progress produces no empty commit');
+  app.bindAutoSync();
+  for (const [trigger, id] of [[windowEvents.focus, 'focus'], [windowEvents.pageshow, 'pageshow'],
+    [intervals[0], 'poll'], [documentEvents.visibilitychange, 'visible'], [windowEvents.online, 'online']]) {
+    cloud.words[id] = rec(); sha++; context.testNow += 16000;
+    await trigger();
+    await waitFor(() => !app.isSyncing());
+    assert.ok(app.getStore().words[id], `${id} triggers a remote pull`);
+  }
+  const previousReads = reads;
+  await app.autoSync();
+  assert.equal(reads, previousReads, 'focus and visibility events are throttled');
+  context.document.visibilityState = 'hidden';
+  await app.autoSync(true);
+  assert.equal(reads, previousReads, 'hidden pages do not poll');
+  context.document.visibilityState = 'visible';
+
+  // Each answer uploads even before ending the round. A late answer queues another upload.
+  reset({ alpha: rec(), beta: rec() });
+  app.setWords(trainingWords);
+  app.startSession('review');
+  const activeBefore = plain(app.getStore());
+  const currentId = app.getSession().current.word.id;
+  cloud.words[currentId] = { ...rec('write'), lastSeen: initialTime + DAY };
+  sha++;
+  await app.syncNow({ silent: true });
+  assert.deepEqual(plain(app.getStore()), activeBefore, 'pulling during a quiz never changes the grading stage');
+  assert.ok(cloud.words.focus && cloud.words.desktopOnly, 'active-quiz upload preserves remote-only records');
+  assert.equal(await app.autoSync(true), undefined, 'idle pull waits until the quiz ends');
+  holdWrite = true;
+  app.answer(true, 'correct');
+  await waitFor(() => !!releaseWrite);
+  assert.equal(app.getSession().done, 1);
+  app.nextQuestion();
+  app.answer(true, 'correct');
+  releaseWrite();
+  await waitFor(() => !app.isSyncing());
+  assert.equal(cloud.words[app.getSession().current.word.id].lastSeen, context.testNow, 'last answer was not dropped while a write was in flight');
+  assert.ok(cloud.words.focus, 'queued writes keep records learned on the other device');
+  app.endSession();
+  await waitFor(() => !app.isSyncing());
+  assert.ok(app.getStore().words.focus, 'remote records become local when the quiz ends');
+  conflictOnce = true;
+  app.getStore().words.conflictLocal = rec();
+  await app.syncNow({ silent: true });
+  assert.ok(cloud.words.concurrent && cloud.words.conflictLocal, 'a 409 retries and preserves both devices');
+
+  // A private-repository permission failure must never be treated as an empty remote file.
+  const beforeFailure = plain(app.getStore());
+  let deniedWrites = 0;
+  context.fetch = async (url, options = {}) => {
+    if (options.method === 'PUT') deniedWrites++;
+    return { ok: false, status: 404 };
+  };
+  await app.syncNow({ silent: true });
+  assert.match(app.getSync().lastResult, /404/);
+  assert.equal(deniedWrites, 0);
+  assert.deepEqual(plain(app.getStore()), beforeFailure);
+  context.fetch = async (url) => url.includes('/contents/')
+    ? { ok: false, status: 404 }
+    : { ok: true, json: async () => ({ permissions: { push: true }, full_name: 'test/private', private: true }) };
+  assert.equal(await app.remoteRead(), null, 'an accessible branch with no file still allows first sync');
+  context.fetch = async (url) => url.includes('/branches/') || url.includes('/contents/')
+    ? { ok: false, status: 404 }
+    : { ok: true, json: async () => ({ permissions: { push: true } }) };
+  await assert.rejects(() => app.remoteRead(), /分支 main 不存在/, 'a wrong branch cannot create an empty progress file');
   console.log(`Learning checks passed; ${Object.keys(old.words).length} legacy records preserved.`);
 })().catch((error) => { console.error(error); process.exitCode = 1; });

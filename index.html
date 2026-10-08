@@ -252,7 +252,8 @@
     <div class="card settings-card">
       <h2 class="card__title">多设备同步</h2>
       <p class="card__desc">
-        进度存进一个<strong>私有</strong> GitHub 仓库，手机和电脑打开就自动合并。
+        进度存进一个<strong>私有</strong> GitHub 仓库，每答完一题自动上传；打开或切回页面时自动合并。
+        前台闲置时每分钟检查一次，正在答题时保留当前题目，结束本轮再拉取合并。
         两台设备各练各的词不会互相覆盖 —— 按每个词「最后练习时间」取新的那条，对错次数取较大值。
       </p>
 
@@ -318,6 +319,6 @@
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
 <script src="vendor/ts-fsrs-5.4.2.js"></script>
-<script src="app.js?v=7"></script>
+<script src="app.js?v=8"></script>
 </body>
 </html>
