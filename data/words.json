@@ -657,6 +657,20 @@
       "difficulty": 4
     },
     {
+      "id": "inertia",
+      "word": "inertia",
+      "pos": "n.",
+      "meaning": "不活动， 惰性； 惯性",
+      "example": "political inertia",
+      "exampleZh": "政治上的保守",
+      "collocations": [],
+      "tags": [
+        "CET6"
+      ],
+      "score": 6,
+      "difficulty": 4
+    },
+    {
       "id": "instructional",
       "word": "instructional",
       "pos": "adj.",
@@ -667,6 +681,48 @@
       "tags": [
         "CET6"
       ]
+    },
+    {
+      "id": "intrinsic",
+      "word": "intrinsic",
+      "pos": "adj.",
+      "meaning": "固有的； 本质的； 内在的",
+      "example": "the intrinsic interest of the subject",
+      "exampleZh": "该话题本身的趣味",
+      "collocations": [],
+      "tags": [
+        "CET6"
+      ],
+      "score": 6,
+      "difficulty": 4
+    },
+    {
+      "id": "leakage",
+      "word": "leakage",
+      "pos": "n.",
+      "meaning": "漏，泄漏；漏出物",
+      "example": "a leakage of toxic waste into the sea",
+      "exampleZh": "有毒废物的泄漏入海",
+      "collocations": [],
+      "tags": [
+        "CET6"
+      ],
+      "score": 6,
+      "difficulty": 4
+    },
+    {
+      "id": "marginal",
+      "word": "marginal",
+      "pos": "adj.",
+      "meaning": "微小的， 少量的； 不重要的； 仅以微弱多数票获胜的； 记在页边的， 有旁注的",
+      "example": "a marginal improvement in profits",
+      "exampleZh": "利润的小幅提高",
+      "collocations": [],
+      "tags": [
+        "CET6"
+      ],
+      "score": 6,
+      "difficulty": 4
     },
     {
       "id": "metropolis",
