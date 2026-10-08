@@ -57,6 +57,8 @@
   let storeMigrated = false;  // 本次启动是否把旧存档升级过（升级结果要立刻写回，免得旧标签页又读到老值）
   let sync = null;         // 多设备同步配置（token 只在本机）
   let syncing = false;
+  let syncQueued = false;
+  let lastAutoSyncAt = 0;
   let session = null;      // 当前会话
   let libFilter = 'all';
   let libQuery = '';
@@ -428,7 +430,12 @@
   async function remoteRead() {
     const url = `${syncApiUrl()}?ref=${encodeURIComponent(sync.branch)}&t=${now()}`;
     const res = await fetch(url, { headers: syncHeaders(), cache: 'no-store' });
-    if (res.status === 404) return null;
+    if (res.status === 404) {
+      // 私有仓库未授权、分支错误也返回 404，不能一律当作首次创建文件。
+      const diagnosis = await diagnoseSync();
+      if (diagnosis.mode === 'error') throw new Error(diagnosis.text);
+      return null;
+    }
     if (!res.ok) throw syncHttpError(res.status);
     const j = await res.json();
     let data;
@@ -558,19 +565,19 @@
     memory: normalMemory(r.memory)
   });
 
-  function buildPayload() {
+  function buildPayload(target = store) {
     const settings = {};
-    for (const k of SYNCED_SETTINGS) settings[k] = store.settings[k];
+    for (const k of SYNCED_SETTINGS) settings[k] = target.settings[k];
     return {
       version: STORE_VERSION,      // 声明本条记录的判定语义版本，对面据此决定要不要采纳 settings
       app: 'worddrill',
       deviceId: sync.deviceId,
       syncedAt: now(),
-      settingsAt: store.settingsAt || 0,
+      settingsAt: target.settingsAt || 0,
       settings,
-      cet: store.cet || { approved: [], rejected: [] },
-      stats: store.stats,
-      words: store.words
+      cet: target.cet || { approved: [], rejected: [] },
+      stats: target.stats,
+      words: target.words
     };
   }
 
@@ -586,18 +593,18 @@
    * - 阶段 / 已攒天数 / 到期时间取「最后练习时间（lastSeen）」较新的一条 —— 位置以最近练过的那台设备为准
    * - 对错次数取两端较大值，而不是相加 —— 两台设备可能从同一份基线各自练习，相加会重复计数
    */
-  function mergeRemote(remote) {
+  function mergeRemote(remote, target = store) {
     if (!remote || typeof remote !== 'object') return false;
     if (Number(remote.version) > STORE_VERSION) throw new Error('远端进度来自更新版本，请刷新本站后同步');
     readStore(remote);
     let changed = false;
 
     const rw = (remote.words && typeof remote.words === 'object') ? remote.words : {};
-    for (const id of new Set([...Object.keys(rw), ...Object.keys(store.words)])) {
-      const mine = store.words[id];
+    for (const id of new Set([...Object.keys(rw), ...Object.keys(target.words)])) {
+      const mine = target.words[id];
       const theirs = rw[id];
       if (!theirs) continue;
-      if (!mine) { store.words[id] = Object.assign(normalRec(theirs), { lastSeen: theirs.lastSeen || 0 }); changed = true; continue; }
+      if (!mine) { target.words[id] = Object.assign(normalRec(theirs), { lastSeen: theirs.lastSeen || 0 }); changed = true; continue; }
 
       const newer = (theirs.lastSeen || 0) > (mine.lastSeen || 0) ? theirs : mine;
       const merged = normalRec(newer);
@@ -606,7 +613,7 @@
       merged.correct = Math.max(mine.correct || 0, theirs.correct || 0);
       merged.wrong = Math.max(mine.wrong || 0, theirs.wrong || 0);
       if (JSON.stringify(merged) !== JSON.stringify(normalRec(mine))) {
-        store.words[id] = merged;
+        target.words[id] = merged;
         changed = true;
       }
     }
@@ -616,32 +623,32 @@
     // 不能让旧版「一个月内 15 天」的门槛覆盖新升阶规则。
     const remoteModel = Number(remote.version) || 1;
     const settingsOk = remoteModel >= STORE_VERSION;
-    if (settingsOk && (remote.settingsAt || 0) > (store.settingsAt || 0) && remote.settings) {
+    if (settingsOk && (remote.settingsAt || 0) > (target.settingsAt || 0) && remote.settings) {
       for (const k of SYNCED_SETTINGS) {
         const v = clampSetting(k, remote.settings[k]);
-        if (v !== undefined && store.settings[k] !== v) { store.settings[k] = v; changed = true; }
+        if (v !== undefined && target.settings[k] !== v) { target.settings[k] = v; changed = true; }
       }
-      store.settingsAt = remote.settingsAt || 0;
+      target.settingsAt = remote.settingsAt || 0;
       changed = true;
     }
 
     const rs = remote.stats || {};
     for (const k of ['answers', 'correct', 'sessions', 'streakDays']) {
-      const v = Math.max(store.stats[k] || 0, rs[k] || 0);
-      if (v !== (store.stats[k] || 0)) { store.stats[k] = v; changed = true; }
+      const v = Math.max(target.stats[k] || 0, rs[k] || 0);
+      if (v !== (target.stats[k] || 0)) { target.stats[k] = v; changed = true; }
     }
-    if (rs.lastDate && (!store.stats.lastDate || rs.lastDate > store.stats.lastDate)) {
-      store.stats.lastDate = rs.lastDate;
+    if (rs.lastDate && (!target.stats.lastDate || rs.lastDate > target.stats.lastDate)) {
+      target.stats.lastDate = rs.lastDate;
       changed = true;
     }
 
     // 候选词的取舍决定：两端取并集（决定是不可撤销的标记，合并只会增多）
     const rc = remote.cet;
     if (rc && typeof rc === 'object') {
-      store.cet = store.cet || { approved: [], rejected: [] };
+      target.cet = target.cet || { approved: [], rejected: [] };
       for (const k of ['approved', 'rejected']) {
         for (const id of (Array.isArray(rc[k]) ? rc[k] : [])) {
-          if (!store.cet[k].includes(id)) { store.cet[k].push(id); changed = true; }
+          if (!target.cet[k].includes(id)) { target.cet[k].push(id); changed = true; }
         }
       }
     }
@@ -675,24 +682,29 @@
    */
   async function syncNow(opts) {
     const silent = !!(opts && opts.silent);
-    if (syncing) return null;
     if (!sync.enabled || !sync.token || !sync.owner || !sync.repo) {
       if (!silent) toast('先把仓库和 token 填好');
       return null;
     }
+    if (syncing) { syncQueued = true; return null; }
     syncing = true;
     setSyncStatus('同步中…');
     try {
-      let changed = false, pushed = false;
+      let changed = false, pushed = false, deferred = false;
       for (let attempt = 0; attempt < 3; attempt++) {
         const remote = await remoteRead();
         if (remote?.data && Number(remote.data.version || 1) < STORE_VERSION) {
           keepBackup(JSON.stringify(remote.data));
         }
         const remoteSig = (remote && remote.data) ? payloadSig(remote.data) : '';
-        if (mergeRemote(remote && remote.data)) { changed = true; saveStore(); }
+        // 答题中仍上传进度，但先在副本上合并，不能改变当前题目的阶段和评分依据。
+        const target = session ? readStore(JSON.parse(JSON.stringify(store))) : store;
+        if (mergeRemote(remote && remote.data, target)) {
+          if (target === store) { changed = true; saveStore(); }
+          else deferred = true;
+        }
 
-        const payload = buildPayload();
+        const payload = buildPayload(target);
         if (remoteSig && remoteSig === payloadSig(payload)) break;   // 两端一致，不用产生一次提交
         try {
           await remoteWrite(payload, remote ? remote.sha : null);
@@ -704,7 +716,8 @@
         }
       }
       sync.lastSyncAt = now();
-      sync.lastResult = changed ? (pushed ? '双向合并' : '已拉取') : (pushed ? '已上传' : '已是最新');
+      sync.lastResult = deferred ? (pushed ? '已上传，远端变化将在本轮结束后合并' : '远端有更新，本轮结束后合并')
+        : changed ? (pushed ? '双向合并' : '已拉取') : (pushed ? '已上传' : '已是最新');
       saveSync();
       setSyncStatus(describeSync(), 'ok');
       if (changed) { applySettingsToUI(); refreshIntro(); renderLibrary(); refreshCetReview(); }
@@ -718,7 +731,28 @@
       return null;
     } finally {
       syncing = false;
+      // 网络请求进行时又答了题或结束了本轮，必须补同步最后一次变化。
+      if (syncQueued) { syncQueued = false; await syncNow({ silent: true }); }
     }
+  }
+
+  function autoSync(force = false) {
+    if (document.visibilityState === 'hidden' || session || syncing) return;
+    if (!sync.enabled || !sync.token || !sync.owner || !sync.repo) return;
+    if (!force && now() - lastAutoSyncAt < 15 * 1000) return;
+    lastAutoSyncAt = now();
+    return syncNow({ silent: true });
+  }
+
+  function bindAutoSync() {
+    setInterval(() => { if (!session) { refreshIntro(); autoSync(); } }, MIN);
+    window.addEventListener('focus', () => { refreshIntro(); autoSync(); });
+    window.addEventListener('pageshow', () => autoSync());
+    window.addEventListener('online', () => autoSync(true));
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') syncNow({ silent: true });
+      else autoSync();
+    });
   }
 
   /* ---------- 会话 ---------- */
@@ -842,6 +876,8 @@
     const nextBtn = $('#btn-next');
     if (nextBtn && !nextBtn.hidden && !nextBtn.disabled) nextBtn.focus({ preventScroll: true });
     updateProgress();
+    // 每题先保存本机，再尽快同步；关闭页面前不必等到整轮结束。
+    syncNow({ silent: true });
   }
 
   function endSession() {
@@ -1457,7 +1493,7 @@
     $('#sync-token').value = sync.token || '';
     $('#sync-enabled').checked = !!sync.enabled;
     $('#sync-device').textContent = sync.deviceId;
-    setSyncStatus(describeSync(), /失败/.test(sync.lastResult || ''));
+    setSyncStatus(describeSync(), /失败/.test(sync.lastResult || '') ? 'error' : sync.lastSyncAt ? 'ok' : '');
     $('#btn-sync-now').disabled = !sync.enabled;
   }
 
@@ -1695,14 +1731,13 @@
     applySyncToUI();
     refreshIntro();
     showPanel('intro');
-    setInterval(() => { if (!session) refreshIntro(); }, MIN);
-    window.addEventListener('focus', refreshIntro);
+    bindAutoSync();
 
     const hash = location.hash.replace('#', '');
     if (['library', 'settings'].includes(hash)) switchView(hash);
 
     // 打开就同步一次：把另一台设备上练的进度合并进来（不阻塞首屏，失败也不打扰）
-    if (sync.enabled && sync.token && sync.owner && sync.repo) syncNow({ silent: true });
+    autoSync();
 
     // 四六级候选词确认卡（async，不阻塞首屏；同步合并后 syncNow 里会再刷一次）
     refreshCetReview();
