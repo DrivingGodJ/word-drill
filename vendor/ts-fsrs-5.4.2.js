@@ -828,7 +828,7 @@
        * The formula used is :
        * $$ S_0(G) = w_{G-1}$$
        * $$S_0 = \max \lbrace S_0,0.1\rbrace $$
-    
+
        * @param g Grade (rating at Anki) [1.again,2.hard,3.good,4.easy]
        * @return Stability (interval when R=90%)
        */

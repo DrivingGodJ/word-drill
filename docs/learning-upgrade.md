@@ -30,7 +30,7 @@ Stars 是当日 GitHub API 快照，用来识别成熟项目，不能代表算�
 
 ## 第三方依赖
 
-`vendor/ts-fsrs-5.4.2.js` 为 npm 官方 `ts-fsrs@5.4.2` 的 `dist/index.umd.js` 原文件，许可证在 `vendor/ts-fsrs.LICENSE`。下载包验证 SHA-512 integrity：
+`vendor/ts-fsrs-5.4.2.js` 为 npm 官方 `ts-fsrs@5.4.2` 的 `dist/index.umd.js` 浏览器构建（仅清理行末空白），许可证在 `vendor/ts-fsrs.LICENSE`。下载包验证 SHA-512 integrity：
 
 ```
 sha512-z4qop4pzTcyTzuJ566d9EaX/4bZZzhYfeaPImfVr+xcYT65c5oBgFDijUhCE/D+C78eaolHIhKRZ04/RwF+v2g==
