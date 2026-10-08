@@ -11,7 +11,7 @@ const element = (key) => {
   if (!elements.has(key)) elements.set(key, {
     value: '', hidden: false, disabled: false, style: {}, dataset: {},
     classList: { add() {}, remove() {}, toggle() {}, contains() { return false; } },
-    addEventListener() {}, setAttribute() {}, focus() {},
+    events: {}, addEventListener(type, fn) { this.events[type] = fn; }, setAttribute() {}, focus() {},
     querySelector: (selector) => element(key + selector),
     querySelectorAll: () => [], insertAdjacentHTML() {}
   });
@@ -31,6 +31,7 @@ const source = fs.readFileSync(path.join(root, 'app.js'), 'utf8')
   .replace("document.addEventListener('DOMContentLoaded', boot);", `globalThis.check = {
     defaultStore, readStore, migrateStore, loadStore, grade, mergeRemote, buildPayload,
     newAllowance, normalMemory, normalize, hasFillExample, dayKey, startSession, remoteRead,
+    nextQuestion, answer, revealOptions, onPickOption, speak, canSpeak, bindEvents,
     getStore: () => store, setStore: (s) => { store = readStore(s); },
     getSession: () => session,
     setWords: (words) => { WORDS = words; byId.clear(); words.forEach(w => byId.set(w.id, w)); }
@@ -153,8 +154,111 @@ assert.equal(app.normalMemory({ stability: NaN }), undefined);
 assert.equal(app.normalize('  HELLO   WORLD '), 'hello world');
 assert.notEqual(app.normalize('car123'), app.normalize('car'));
 assert.notEqual(app.normalize('icecream'), app.normalize('ice cream'));
-assert.ok(app.hasFillExample({ word: 'car', example: 'A car arrived.' }));
-assert.equal(app.hasFillExample({ word: 'car', example: 'A carpet arrived.' }), false);
+assert.ok(app.hasFillExample({ word: 'car', example: 'A car arrived at the station.' }));
+assert.equal(app.hasFillExample({ word: 'car', example: 'A carpet arrived at the station.' }), false);
+assert.equal(app.hasFillExample({ word: 'car', example: 'A car arrived.' }), false);
+assert.equal(app.hasFillExample({ word: 'car', example: 'A car at the station' }), false);
+
+// Recall precedes visible choices; assisted correctness never becomes independent evidence.
+const trainingWords = ['alpha', 'beta', 'gamma', 'delta', 'epsilon', 'zeta'].map(id => ({
+  id, word: id, meaning: `meaning-${id}`, pos: 'n.', example: `The ${id} is used in this example.`, exampleZh: `translation-${id}`
+}));
+app.setWords(trainingWords);
+reset(Object.fromEntries(trainingWords.map(w => [w.id, rec()])));
+app.startSession('review');
+app.bindEvents();
+const first = app.getSession().current;
+const correctIndex = first.options.findIndex(o => o.correct);
+assert.equal(first.optionsReady, false);
+const firstIndex = app.getSession().index;
+elements.get('#btn-next').events.click();
+assert.equal(app.getSession().index, firstIndex, 'cannot skip an unanswered question');
+assert.match(elements.get('#quiz-body').innerHTML, /id="recognize-options"[^>]*hidden/);
+app.onPickOption(first, correctIndex);
+assert.equal(app.getStore().stats.answers, 0, 'cannot grade choices before a recall attempt');
+app.revealOptions(first, true);
+assert.equal(elements.get('#recognize-options').hidden, false);
+app.onPickOption(first, correctIndex);
+assert.equal(app.getStore().stats.correct, 1, 'assisted correctness remains in historical totals');
+assert.equal(app.getSession().correct, 0, 'session rate measures independent correctness');
+assert.equal(app.getSession().aided.has(first.word.id), true);
+assert.equal(first.requeued, true);
+assert.equal(app.getSession().queue[app.getSession().index + 3], first.word.id);
+const scheduled = plain(app.getStore().words[first.word.id]);
+for (let i = 0; i < 3; i++) {
+  app.nextQuestion();
+  const q = app.getSession().current;
+  app.revealOptions(q, false);
+  app.onPickOption(q, q.options.findIndex(o => o.correct));
+}
+app.nextQuestion();
+assert.equal(app.getSession().current.word.id, first.word.id);
+assert.equal(app.getSession().current.retry, true);
+app.revealOptions(app.getSession().current, false);
+app.answer(true, first.word.meaning);
+const afterRetry = app.getStore().words[first.word.id];
+for (const key of ['stage', 'credits', 'due', 'memory', 'introducedAt']) {
+  assert.deepEqual(plain(afterRetry[key] ?? null), plain(scheduled[key] ?? null), `retry preserves ${key}`);
+}
+assert.equal(afterRetry.correct, scheduled.correct + 1);
+
+// A short queue does not loop a single just-seen answer; correction still teaches the spelling.
+app.setWords(trainingWords.slice(0, 1));
+reset({ alpha: rec('write') });
+app.startSession('review');
+app.answer(false, 'alfa');
+assert.equal(app.getSession().queue.length, 1);
+assert.equal(app.getSession().current.requeued, undefined);
+assert.match(elements.get('#feedback').innerHTML, /本轮不立即重复/);
+const beforeCorrection = plain(app.getStore());
+elements.get('#correction-input').value = 'alpha';
+elements.get('#correction-form').events.submit({ preventDefault() {} });
+assert.equal(elements.get('#btn-next').disabled, false);
+assert.deepEqual(plain(app.getStore()), beforeCorrection, 'correction is not another grade');
+
+// Context and listening transfer exercises preserve the formal memory card and daily quota.
+app.setWords(trainingWords.concat([{ id: 'fragment', word: 'fragment', meaning: '片段', example: 'a fragment' }]));
+reset({ alpha: rec(), fragment: rec(), beta: { ...rec('new'), introducedAt: initialTime } });
+app.startSession('context');
+assert.equal(app.getSession().practice, true);
+assert.equal(app.getSession().current.kind, 'fill');
+assert.equal(app.getSession().queue.length, 2, 'exclude unstarted words and sentence fragments');
+assert.match(elements.get('#quiz-body').innerHTML, /id="context-translation" hidden/);
+const contextId = app.getSession().current.word.id;
+const beforeContext = plain(app.getStore().words[contextId]);
+app.answer(true, contextId);
+for (const key of ['stage', 'credits', 'due', 'memory', 'introducedAt']) {
+  assert.deepEqual(plain(app.getStore().words[contextId][key] ?? null), plain(beforeContext[key] ?? null));
+}
+assert.equal(app.canSpeak(), false);
+const previousSession = app.getSession();
+app.startSession('listen');
+assert.equal(app.getSession(), previousSession, 'unsupported speech must not start an unusable quiz');
+let utterance;
+context.SpeechSynthesisUtterance = function(text) { this.text = text; };
+context.window.speechSynthesis = { cancel() {}, speak(u) { utterance = u; } };
+app.startSession('listen');
+assert.equal(app.getSession().current.kind, 'listen');
+const listenQ = app.getSession().current;
+assert.equal(elements.get('#quiz-body').innerHTML.includes(listenQ.word.meaning), false);
+const beforeListen = plain(app.getStore().words[listenQ.word.id]);
+elements.get('#btn-listen-play').events.click();
+assert.equal(utterance.text, listenQ.word.word);
+assert.equal(utterance.lang, 'en-US');
+utterance.onerror({ error: 'canceled' });
+assert.doesNotMatch(elements.get('#listen-status').textContent, /播放失败/);
+utterance.onerror();
+assert.match(elements.get('#listen-status').textContent, /播放失败/);
+app.answer(true, listenQ.word.word);
+assert.equal(app.getStore().words[listenQ.word.id].due, beforeListen.due);
+assert.deepEqual(plain(app.getStore().words[listenQ.word.id].credits), beforeListen.credits);
+
+// The summary can drill an assisted-only word even when there is no historical mistake.
+reset({ alpha: { ...rec(), wrong: 0 } });
+app.setWords(trainingWords);
+app.startSession('mistakes', ['alpha']);
+assert.deepEqual(plain(app.getSession().queue), ['alpha']);
+assert.equal(app.getSession().practice, true);
 // Corrupt remote progress must stop the read/write cycle before merging any data.
 (async () => {
   context.fetch = async () => ({ ok: true, json: async () => ({

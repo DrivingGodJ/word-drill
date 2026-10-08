@@ -310,7 +310,7 @@
       { text: word.meaning, correct: true },
       ...distractors.map((text) => ({ text, correct: false }))
     ]);
-    return { kind: 'recognize', word, options };
+    return { kind: 'recognize', word, options, optionsReady: false };
   }
 
   function buildSpellQuestion(word) {
@@ -322,7 +322,9 @@
   }
 
   const fillPattern = (word) => new RegExp(`\\b${word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi');
-  const hasFillExample = (word) => !!word.example && fillPattern(word.word).test(word.example);
+  const hasFillExample = (word) => !!word.example && fillPattern(word.word).test(word.example)
+    && word.example.trim().split(/\s+/).length >= 5
+    && /[.!?]["”’']?$/.test(word.example.trim()) && !/…|\.{3}|_/.test(word.example);
 
   /** 生成拼写提示：保留首字母与词内空格，其余用 · 占位。 */
   function letterHint(target) {
@@ -723,11 +725,16 @@
   /** 到期复习优先；加练与错词练习不改变复习时间或升阶证据。 */
   function startSession(mode = 'learn', ids = null) {
     const t = now();
-    const practice = mode === 'practice' || mode === 'mistakes';
+    const practice = ['practice', 'mistakes', 'context', 'listen'].includes(mode);
+    if (mode === 'listen' && !canSpeak()) { toast('当前浏览器不支持发音，请使用语境填空或自由加练'); return; }
     let selected;
     if (practice) {
-      selected = shuffle(WORDS.filter((w) => mode === 'mistakes'
-        ? progressOf(w.id).wrong > 0 && (!ids || ids.includes(w.id)) : progressOf(w.id).stage !== 'new'));
+      selected = shuffle(WORDS.filter((w) => {
+        const p = progressOf(w.id);
+        if (mode === 'mistakes') return ids ? ids.includes(w.id) : p.wrong > 0;
+        if (p.stage === 'new' && !p.introducedAt) return false;
+        return mode !== 'context' || hasFillExample(w);
+      }));
     } else {
       const due = shuffle(WORDS.filter((w) => {
         const p = progressOf(w.id);
@@ -742,7 +749,8 @@
     const queue = selected.slice(0, REQUESTS_PER_ROUND).map((w) => w.id);
 
     if (!queue.length) {
-      toast(mode === 'mistakes' ? '还没有错词记录' : '本轮没有可练的词，可以稍后复习或自由加练');
+      toast(mode === 'context' ? '已学词里还没有可填空的完整例句，可以先练认词或拼写'
+        : mode === 'mistakes' ? '还没有待巩固词' : '本轮没有可练的词，可以稍后复习或自由加练');
       return;
     }
 
@@ -757,6 +765,7 @@
       practice,
       mode,
       missed: new Set(),
+      aided: new Set(),
       startedAt: t,
       results: new Map(),   // id → {before, after, promoted, demoted}
       requeued: 0
@@ -779,15 +788,18 @@
     const stage = progressOf(id).stage;
     const type = quizTypeFor(stage);
     let q;
-    if (type === 'spell') {
-      // 巩固期的词穿插例句填空，检验是否真的会用
-      q = (stage === 'mastered' && hasFillExample(word) && Math.random() < 0.45)
-        ? buildFillQuestion(word)
-        : buildSpellQuestion(word);
+    if (session.mode === 'context') {
+      q = buildFillQuestion(word);
+    } else if (session.mode === 'listen') {
+      q = { kind: 'listen', word, hint: letterHint(word.word) };
+    } else if (type === 'spell') {
+      // 正式复习保持一致的提问方式；语境与听写单独加练。
+      q = buildSpellQuestion(word);
     } else {
       q = WORDS.length >= 4 ? buildRecognizeQuestion(word) : buildSpellQuestion(word);
     }
 
+    q.retry = session.results.has(id);
     session.current = q;
     session.answered = false;
     renderQuiz(q);
@@ -796,10 +808,11 @@
   function answer(isCorrect, userAnswer) {
     if (!session || session.answered) return;
     const word = session.current.word;
-    const r = grade(word.id, isCorrect, !!session.current.aided, session.practice);
+    const q = session.current;
+    const r = grade(word.id, isCorrect, !!q.aided, session.practice || q.retry);
     session.answered = true;
     session.done++;
-    if (isCorrect) session.correct++;
+    if (isCorrect && !q.aided) session.correct++;
 
     // 保留首次状态与整轮错词；之后答对不能掩盖本轮曾经答错。
     const previous = session.results.get(word.id);
@@ -810,14 +823,18 @@
     }
     session.results.set(word.id, r);
 
-    // 答错 → 本次稍后重来一遍，趁热打铁。
-    // 即时回练不记新的跨天证据。
-    if (!isCorrect) {
-      session.missed.add(word.id);
-      const insertAt = Math.min(session.queue.length, session.index + 3);
-      session.queue.splice(insertAt, 0, word.id);
-      session.requeued++;
-      session.total = Math.min(session.queue.length, REQUESTS_PER_ROUND);
+    // 提示后答对也需要巩固。至少隔开 3 题；队列太短则按原计划再复习。
+    // 同一轮回练只记练习统计，不能把短时记住的答案当作正式复习证据。
+    if (!isCorrect || q.aided) {
+      if (!isCorrect) session.missed.add(word.id);
+      if (q.aided) session.aided.add(word.id);
+      const insertAt = session.index + 3;
+      if (insertAt <= session.queue.length && insertAt < REQUESTS_PER_ROUND) {
+        session.queue.splice(insertAt, 0, word.id);
+        session.requeued++;
+        session.total = Math.min(session.queue.length, REQUESTS_PER_ROUND);
+        q.requeued = true;
+      }
     }
 
     renderFeedback(session.current, isCorrect, userAnswer, r);
@@ -833,6 +850,7 @@
       correct: session.correct,
       results: session.results,
       missed: session.missed,
+      aided: session.aided,
       elapsed: now() - session.startedAt,
       practice: session.practice
     } : null;
@@ -897,8 +915,17 @@
       `升阶：至少 ${creditNeed()} 个不同日子独立答对，并达到认词 7 天 / 拼写 21 天的记忆稳定性。答错保留之前的积累。`;
     $('#btn-start').disabled = totalToday === 0;
     $('#btn-review').disabled = due === 0;
-    $('#btn-practice').disabled = !WORDS.some((w) => progressOf(w.id).stage !== 'new');
     $('#btn-mistakes').disabled = !WORDS.some((w) => progressOf(w.id).wrong > 0);
+    const learned = WORDS.filter((w) => {
+      const p = progressOf(w.id);
+      return p.stage !== 'new' || p.introducedAt;
+    });
+    $('#btn-practice').disabled = !learned.length;
+    $('#btn-context').disabled = !learned.some(hasFillExample);
+    $('#btn-listen').disabled = !learned.length || !canSpeak();
+    $('#application-hint').textContent = !canSpeak()
+      ? '当前浏览器不支持发音，仍可练语境填空。练习不改变升阶与复习时间。'
+      : '练习已学词的语境和声音；不改变升阶与复习时间。听写使用设备合成语音。';
   }
 
   /* ---------- 四六级候选词确认卡 ----------
@@ -996,7 +1023,8 @@
   function renderQuiz(q) {
     const stage = progressOf(q.word.id).stage;
     const badge = $('#stage-badge');
-    badge.textContent = STAGE_BADGE[stage] || '认词';
+    badge.textContent = q.retry ? '本轮回练' : session.mode === 'context' ? '语境加练'
+      : session.mode === 'listen' ? '听写加练' : STAGE_BADGE[stage] || '认词';
     badge.dataset.stage = stage;
 
     $('#feedback').innerHTML = '';
@@ -1007,10 +1035,15 @@
     if (q.kind === 'recognize') {
       body.innerHTML = `
         <div class="prompt">
-          <p class="prompt__label">选出正确的中文释义</p>
+          <p class="prompt__label" id="recognize-label">先在心里回想词义，再核对选项</p>
           <p class="prompt__word">${esc(q.word.word)}</p>
         </div>
-        <div class="options" role="group" aria-label="释义选项">
+        <div class="btn-row" id="recall-actions">
+          <button class="btn btn--primary" id="btn-recalled" type="button">想起了，核对选项</button>
+          <button class="btn btn--ghost" id="btn-recall-help" type="button">没想起，借助选项</button>
+        </div>
+        <p class="hint" id="recall-hint">借助选项后答对会安排再复习，不记升阶天数。</p>
+        <div class="options" id="recognize-options" role="group" aria-label="释义选项" hidden>
           ${q.options.map((o, i) => `
             <button class="option" type="button" data-index="${i}">
               <span class="option__key" aria-hidden="true">${i + 1}</span>
@@ -1018,35 +1051,49 @@
               <span class="option__mark" aria-hidden="true"></span>
             </button>`).join('')}
         </div>`;
+      $('#btn-recalled').addEventListener('click', () => revealOptions(q, false));
+      $('#btn-recall-help').addEventListener('click', () => revealOptions(q, true));
       $$('.option', body).forEach((btn) => {
         btn.addEventListener('click', () => onPickOption(q, Number(btn.dataset.index)));
       });
+      $('#btn-recalled').focus({ preventScroll: true });
     } else {
       const isFill = q.kind === 'fill';
+      const isListen = q.kind === 'listen';
       body.innerHTML = `
         <div class="prompt">
-          <p class="prompt__label">${isFill ? '把这个词填回例句' : '根据中文写出英文单词'}</p>
+          <p class="prompt__label">${isFill ? '读例句，填入已学过的词' : isListen ? '听发音，写出英文单词' : '根据中文写出英文单词'}</p>
           ${isFill
             ? `<p class="prompt__blank">${blankExample(q.word.example, q.word.word)}</p>
-               <p class="prompt__blank" style="margin-top:8px;background:none;padding:0">${esc(q.word.exampleZh)}</p>`
+               <p class="prompt__blank" id="context-translation" hidden>${esc(q.word.exampleZh || '')}</p>`
+            : isListen ? `<button class="btn btn--ghost" id="btn-listen-play" type="button">播放单词</button>
+                <p class="hint" id="listen-status" role="status">可以重复播放；本题练习听音辨词。</p>`
             : `<p class="prompt__zh">${esc(q.word.meaning)}</p>`}
         </div>
         <form class="spell" id="spell-form" novalidate>
           <div class="spell__row">
-            <label class="sr-only" for="spell-input">输入英文单词</label>
+            <label class="sr-only" for="spell-input">${isFill ? '填入英文单词' : isListen ? '输入听到的英文单词' : '输入英文单词'}</label>
             <input class="spell__input" id="spell-input" type="text"
                    autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
                    placeholder="输入英文…">
             <button class="btn btn--primary" type="submit">提交</button>
           </div>
-          <button class="btn btn--ghost" id="btn-hint" type="button">看首字母提示</button>
+          <button class="btn btn--ghost" id="btn-hint" type="button">${isFill ? '看中文和首字母提示' : '看首字母提示'}</button>
           <p class="spell__letters" id="spell-hint" hidden>${esc(q.hint)} · 提示后答对不记升阶天数</p>
         </form>`;
       const form = $('#spell-form');
       const input = $('#spell-input');
+      if (isListen) $('#btn-listen-play').addEventListener('click', () => {
+        $('#listen-status').textContent = '可以重复播放；本题练习听音辨词。';
+        speak(q.word.word, () => {
+          if (session?.current === q && !session.answered) $('#listen-status').textContent = '播放失败，可以重试或结束本次，改练语境填空。';
+        });
+        input.focus();
+      });
       $('#btn-hint').addEventListener('click', () => {
         q.aided = true;
         $('#spell-hint').hidden = false;
+        if (isFill) $('#context-translation').hidden = false;
         $('#btn-hint').hidden = true;
         input.focus();
       });
@@ -1072,9 +1119,21 @@
   const normalize = (s) => String(s).normalize('NFKC').trim().toLowerCase()
     .replace(/[‘’]/g, "'").replace(/\s+/g, ' ');
 
+  function revealOptions(q, aided) {
+    if (!session || session.current !== q || session.answered || q.optionsReady) return;
+    q.optionsReady = true;
+    q.aided = aided;
+    $('#recall-actions').hidden = true;
+    $('#recall-hint').hidden = true;
+    $('#recognize-label').textContent = aided ? '借助选项学习词义，再选出释义' : '选出释义，核对刚才的回忆';
+    $('#recognize-options').hidden = false;
+    $('.option')?.focus({ preventScroll: true });
+  }
+
   function onPickOption(q, index) {
-    if (session.answered) return;
+    if (!session || session.current !== q || session.answered || !q.optionsReady) return;
     const chosen = q.options[index];
+    if (!chosen) return;
     const buttons = $$('.option');
     buttons.forEach((btn, i) => {
       btn.disabled = true;
@@ -1116,12 +1175,13 @@
     const have = (r.after.credits || []).length;
     const nextDue = formatDue(r.after.due);
     let creditNote;
+    const retryNote = q.requeued ? '本轮隔开 3 题再练' : '本轮不立即重复';
     if (r.practice) {
-      creditNote = '<p class="fb__credit">自由加练 · 不改变升阶天数与下次复习时间</p>';
+      creditNote = `<p class="fb__credit">${q.retry ? '本轮回练' : '自由加练'} · 不改变升阶天数与下次复习时间</p>`;
     } else if (!isCorrect) {
-      creditNote = `<p class="fb__credit fb__credit--bad">保留之前的 ${have} 天积累 · 本轮稍后重练 · 下次复习 ${nextDue}</p>`;
+      creditNote = `<p class="fb__credit fb__credit--bad">保留之前的 ${have} 天积累 · ${retryNote} · 下次复习 ${nextDue}</p>`;
     } else if (r.aided) {
-      creditNote = `<p class="fb__credit">借助提示答对，本次不记升阶天数 · 下次复习 ${nextDue}</p>`;
+      creditNote = `<p class="fb__credit">提示后答对，本次不记升阶天数 · ${retryNote} · 下次复习 ${nextDue}</p>`;
     } else if (r.before.stage === 'new') {
       creditNote = `<p class="fb__credit">进入「认词中」· 下次复习 ${nextDue}</p>`;
     } else if (r.promoted) {
@@ -1142,14 +1202,16 @@
       <div class="fb ${isCorrect ? 'fb--ok' : 'fb--no'}">
         <p class="fb__head">
           ${isCorrect ? iconCheck() : iconCross()}
-          ${isCorrect ? (q.kind === 'recognize' ? '认对了' : '拼对了') : (q.kind === 'recognize' ? '认错了' : '拼错了')}
+          ${isCorrect ? (q.aided ? '提示后答对' : q.kind === 'recognize' ? '认对了' : '拼对了') : (q.kind === 'recognize' ? '认错了' : '拼错了')}
         </p>
         <p class="fb__word">${esc(w.word)} <span class="prompt__pos">${esc(w.pos || '')}</span></p>
         <p class="fb__meaning">${esc(w.meaning)}</p>
         ${userLine}
-        <div class="fb__ex">
+          <div class="fb__ex">
           <p class="fb__ex-en">${highlight(w.example, w.word)}</p>
           <p class="fb__ex-zh">${esc(w.exampleZh || '')}</p>
+          ${w.exampleSource ? `<p class="hint">${esc(w.exampleSource)}</p>` : ''}
+          ${(w.collocations || []).length ? `<p class="fb__ex-zh">搭配：${w.collocations.map(esc).join('；')}</p>` : ''}
         </div>
         ${stageNote}
         ${creditNote}
@@ -1179,7 +1241,7 @@
         }
         input.disabled = true;
         $('#correction-form button').disabled = true;
-        $('#correction-hint').textContent = '已订正，稍后还会再练这个词。';
+        $('#correction-hint').textContent = q.requeued ? '已订正，本轮隔开几题后再练。' : '已订正，之后按复习计划再练。';
         next.disabled = false;
         next.focus({ preventScroll: true });
       });
@@ -1204,7 +1266,7 @@
 
     $('#summary-stats').innerHTML = `
       <div class="stat"><span class="stat__num">${stats.done}</span><span class="stat__label">答题</span></div>
-      <div class="stat"><span class="stat__num">${rate}%</span><span class="stat__label">正确率</span></div>
+      <div class="stat"><span class="stat__num">${rate}%</span><span class="stat__label">独立答对率</span></div>
       <div class="stat"><span class="stat__num">${gained.length}</span><span class="stat__label">攒到天数</span></div>`;
 
     const rows = [];
@@ -1212,6 +1274,9 @@
     if (gained.length) rows.push(`<div class="summary__row"><b>${gained.length} 个</b> 词攒到了新的一天 <span class="tag tag--up">↑</span></div>`);
     summaryMistakes = [...stats.missed];
     if (summaryMistakes.length) rows.push(`<div class="summary__row">本轮错词：<b>${summaryMistakes.map((id) => esc(byId.get(id)?.word || id)).join('、')}</b></div>`);
+    const aidedWords = [...stats.aided];
+    if (aidedWords.length) rows.push(`<div class="summary__row">提示后仍需巩固：<b>${aidedWords.map((id) => esc(byId.get(id)?.word || id)).join('、')}</b></div>`);
+    summaryMistakes = [...new Set(summaryMistakes.concat(aidedWords))];
     $('#btn-summary-mistakes').hidden = !summaryMistakes.length;
     rows.push(`<div class="summary__row">用时 ${Math.max(1, Math.round(stats.elapsed / MIN))} 分钟${stats.practice ? ' · 自由加练，不影响复习计划' : ''}</div>`);
     if (advanced.length) {
@@ -1480,15 +1545,20 @@
    */
 
   /* ---------- 发音 ---------- */
-  function speak(text) {
-    if (!('speechSynthesis' in window)) return;
+  const canSpeak = () => 'speechSynthesis' in window && typeof SpeechSynthesisUtterance === 'function';
+  function speak(text, onError = null) {
+    if (!canSpeak()) { onError?.(); return; }
     try {
       window.speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(text);
       u.lang = 'en-US';
       u.rate = 0.9;
+      if (onError) u.onerror = (event) => {
+        // 重播会主动取消上一段语音，不应当显示为播放失败。
+        if (!['canceled', 'interrupted'].includes(event?.error)) onError();
+      };
       window.speechSynthesis.speak(u);
-    } catch { /* 静默失败：不影响答题 */ }
+    } catch { onError?.(); }
   }
 
   /* ---------- 视图切换 ---------- */
@@ -1519,11 +1589,14 @@
     $('#btn-start').addEventListener('click', () => startSession());
     $('#btn-review').addEventListener('click', () => startSession('review'));
     $('#btn-practice').addEventListener('click', () => startSession('practice'));
+    $('#btn-context').addEventListener('click', () => startSession('context'));
+    $('#btn-listen').addEventListener('click', () => startSession('listen'));
     $('#btn-mistakes').addEventListener('click', () => startSession('mistakes'));
     $('#btn-summary-mistakes').addEventListener('click', () => startSession('mistakes', summaryMistakes));
     $('#btn-again').addEventListener('click', () => { showPanel('intro'); refreshIntro(); startSession(); });
     $('#btn-end').addEventListener('click', endSession);
     $('#btn-next').addEventListener('click', () => {
+      if (!session || !session.answered) return;
       if (session && session.done >= session.total) endSession();
       else nextQuestion();
     });
@@ -1550,7 +1623,7 @@
       const tag = document.activeElement?.tagName;
       const typing = tag === 'INPUT';
 
-      if (!session.answered && /^[1-4]$/.test(e.key) && !typing) {
+      if (!session.answered && session.current.optionsReady && /^[1-4]$/.test(e.key) && !typing) {
         const btn = $$('.option')[Number(e.key) - 1];
         if (btn && !btn.disabled) { e.preventDefault(); btn.click(); }
       }
