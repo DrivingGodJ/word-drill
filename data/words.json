@@ -2,7 +2,7 @@
   "meta": {
     "name": "WordDrill",
     "version": 1,
-    "updated": "2026-10-06",
+    "updated": "2026-10-08",
     "source": "FlowUs · page 2220ec94-e0c2-4523-87be-f8277b09d786",
     "note": "词库由 FlowUs 生词页同步而来；新增单词请用 scripts/sync-from-flowus.py 或直接编辑本文件。"
   },
@@ -73,6 +73,22 @@
       "difficulty": 4
     },
     {
+      "id": "assure",
+      "word": "assure",
+      "pos": "v.",
+      "meaning": "向…保证；使确信；使放心",
+      "example": "The manager listened attentively to our concerns and assured us that they would be addressed promptly.",
+      "exampleZh": "经理认真听取了我们的顾虑，并向我们保证会尽快处理。",
+      "collocations": [
+        "assure sb. of sth.",
+        "rest assured",
+        "assure you that"
+      ],
+      "tags": [
+        "Unit2"
+      ]
+    },
+    {
       "id": "availability",
       "word": "availability",
       "pos": "n.",
@@ -122,6 +138,21 @@
       "collocations": [],
       "tags": [
         "CET6"
+      ]
+    },
+    {
+      "id": "bittersweet",
+      "word": "bittersweet",
+      "pos": "adj.",
+      "meaning": "苦中有乐的；喜忧参半的",
+      "example": "Saying goodbye to her childhood home was a bittersweet moment for her.",
+      "exampleZh": "告别童年的家对她来说是一个喜忧参半的时刻。",
+      "collocations": [
+        "a bittersweet moment",
+        "bittersweet memories"
+      ],
+      "tags": [
+        "Unit2"
       ]
     },
     {
@@ -178,6 +209,22 @@
       ],
       "score": 6,
       "difficulty": 4
+    },
+    {
+      "id": "cooperative",
+      "word": "cooperative",
+      "pos": "n.",
+      "meaning": "合作社；合作性组织；合作企业",
+      "example": "The farmers formed a cooperative to market their organic produce collectively.",
+      "exampleZh": "农民们成立了一个合作社，共同销售他们的有机农产品。",
+      "collocations": [
+        "agriculture cooperative",
+        "consumer cooperative",
+        "credit cooperative"
+      ],
+      "tags": [
+        "Unit2"
+      ]
     },
     {
       "id": "courier",
@@ -237,6 +284,22 @@
       ],
       "score": 6,
       "difficulty": 4
+    },
+    {
+      "id": "descend",
+      "word": "descend",
+      "pos": "v.",
+      "meaning": "下来；下降；下去",
+      "example": "With only the faint glow of moonlight to guide us, we carefully descend the staircase in the dark.",
+      "exampleZh": "只有微弱的月光指引，我们在黑暗中小心翼翼地走下楼梯。",
+      "collocations": [
+        "descend the stairs",
+        "descend from",
+        "descend into"
+      ],
+      "tags": [
+        "Unit2"
+      ]
     },
     {
       "id": "detach",
@@ -365,6 +428,22 @@
       ]
     },
     {
+      "id": "eradicate",
+      "word": "eradicate",
+      "pos": "vt.",
+      "meaning": "根除；消灭；杜绝",
+      "example": "The newly developed vaccine aims to eradicate the disease in the affected regions.",
+      "exampleZh": "新研发的疫苗旨在根除疫区的这种疾病。",
+      "collocations": [
+        "eradicate poverty",
+        "eradicate malaria",
+        "eradicate corruption"
+      ],
+      "tags": [
+        "Unit2"
+      ]
+    },
+    {
       "id": "expenditure",
       "word": "expenditure",
       "pos": "n.",
@@ -377,6 +456,22 @@
       ],
       "score": 6,
       "difficulty": 4
+    },
+    {
+      "id": "fertile",
+      "word": "fertile",
+      "pos": "adj.",
+      "meaning": "肥沃的；富饶的；（创造力）丰富多产的",
+      "example": "The fertile volcanic soil on the island allows for the growth of unique crops not found elsewhere.",
+      "exampleZh": "岛上肥沃的火山土壤使当地得以生长别处没有的独特作物。",
+      "collocations": [
+        "fertile land",
+        "fertile soil",
+        "a fertile imagination"
+      ],
+      "tags": [
+        "Unit2"
+      ]
     },
     {
       "id": "finite",
@@ -429,6 +524,21 @@
       "collocations": [],
       "tags": [
         "CET6"
+      ]
+    },
+    {
+      "id": "hail",
+      "word": "hail",
+      "pos": "vt.",
+      "meaning": "把…称赞为；把…誉为；赞扬",
+      "example": "The crowd hailed the hero for his bravery in saving the child from the fire.",
+      "exampleZh": "人群赞扬这位英雄从火中救出孩子的英勇行为。",
+      "collocations": [
+        "hail sb. as",
+        "be hailed as"
+      ],
+      "tags": [
+        "Unit2"
       ]
     },
     {
@@ -571,6 +681,22 @@
       "tags": []
     },
     {
+      "id": "nestle",
+      "word": "nestle",
+      "pos": "v.",
+      "meaning": "位处，坐落（于安全、隐蔽之处）；依偎",
+      "example": "There is a small, picturesque village nestled in the peaceful valley, tucked away between the rolling hills.",
+      "exampleZh": "一座风景如画的小村庄坐落于宁静的山谷中，隐没在连绵起伏的群山之间。",
+      "collocations": [
+        "nestle in",
+        "nestle among",
+        "nestled in the valley"
+      ],
+      "tags": [
+        "Unit2"
+      ]
+    },
+    {
       "id": "periodical",
       "word": "periodical",
       "pos": "adj./n.",
@@ -607,6 +733,21 @@
       ]
     },
     {
+      "id": "relocate",
+      "word": "relocate",
+      "pos": "v.",
+      "meaning": "迁移；搬迁；重新安置",
+      "example": "The company decided to relocate its headquarters to a more central location.",
+      "exampleZh": "公司决定将总部迁往更中心的地段。",
+      "collocations": [
+        "relocate to",
+        "relocate its headquarters"
+      ],
+      "tags": [
+        "Unit2"
+      ]
+    },
+    {
       "id": "resolute",
       "word": "resolute",
       "pos": "adj.",
@@ -618,6 +759,22 @@
         "a resolute decision"
       ],
       "tags": []
+    },
+    {
+      "id": "revenue",
+      "word": "revenue",
+      "pos": "n.",
+      "meaning": "（商业或税务方面的）收入，收益；税收",
+      "example": "The increase in revenue allowed the city to improve public services, including upgrading public transportation and renovating schools.",
+      "exampleZh": "收入的增长使该市得以改善公共服务，包括升级公共交通和翻新学校。",
+      "collocations": [
+        "generate revenue",
+        "revenue stream",
+        "net revenue"
+      ],
+      "tags": [
+        "Unit2"
+      ]
     },
     {
       "id": "rim",
@@ -676,6 +833,22 @@
       "tags": []
     },
     {
+      "id": "subsidy",
+      "word": "subsidy",
+      "pos": "n.",
+      "meaning": "津贴，补贴，补助金",
+      "example": "The government provided subsidies to farmers affected by the drought, enabling them to sustain their livelihoods.",
+      "exampleZh": "政府向受旱灾影响的农民提供了补贴，使他们能够维持生计。",
+      "collocations": [
+        "government subsidy",
+        "agricultural subsidy",
+        "provide subsidies"
+      ],
+      "tags": [
+        "Unit2"
+      ]
+    },
+    {
       "id": "sun-drenched",
       "word": "sun-drenched",
       "pos": "adj.",
@@ -699,6 +872,21 @@
         "tranquil surroundings"
       ],
       "tags": []
+    },
+    {
+      "id": "trek",
+      "word": "trek",
+      "pos": "n.",
+      "meaning": "（尤指徒步的）艰苦长途旅行",
+      "example": "They embarked on a trek through the mountains, exploring remote villages along the way.",
+      "exampleZh": "他们开始了穿越群山的艰苦跋涉，沿途探访偏远的村庄。",
+      "collocations": [
+        "a grueling trek",
+        "embark on a trek"
+      ],
+      "tags": [
+        "Unit2"
+      ]
     },
     {
       "id": "unveil",
