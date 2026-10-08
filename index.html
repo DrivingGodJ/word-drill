@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap">
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="styles.css?v=5">
 <link rel="manifest" href="manifest.webmanifest">
 <!-- iOS「添加到主屏幕」不认 SVG 图标，必须是 PNG（180×180 且不透明）；
      也读不了 manifest 里的 short_name，主屏名字只认 apple-mobile-web-app-title。 -->
@@ -43,19 +43,19 @@
     </div>
 
     <nav class="nav" aria-label="主导航">
-      <button class="nav__item is-active" data-view="learn" aria-current="page">
+      <button class="nav__item is-active" data-view="learn" aria-current="page" aria-label="训练">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/>
         </svg>
         <span>训练</span>
       </button>
-      <button class="nav__item" data-view="library">
+      <button class="nav__item" data-view="library" aria-label="词库">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>
         </svg>
         <span>词库</span>
       </button>
-      <button class="nav__item" data-view="settings">
+      <button class="nav__item" data-view="settings" aria-label="设置">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <circle cx="12" cy="12" r="3"/>
           <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
@@ -79,7 +79,7 @@
     <div class="panel panel--intro card" id="session-intro">
       <p class="eyebrow">今日训练</p>
       <h2 class="intro__title">先认得出，再写得出。</h2>
-      <p class="intro__sub">每个词要过两关：先能在四个释义里认出它，再能凭中文拼出它。每关都要在<strong>一个月</strong>内有足够多的<strong>日子</strong>答对过才放行 —— 一天里刷再多遍也只算一天。</p>
+      <p class="intro__sub">先能认出释义，再能独立拼写。根据每个词的记忆情况安排复习；跨天答对、记忆稳定后再升关。偶尔忘记也保留之前的积累。</p>
 
       <div class="stat-row" id="intro-stats">
         <div class="stat">
@@ -102,6 +102,11 @@
         </svg>
         开始训练
       </button>
+      <div class="btn-row">
+        <button class="btn btn--ghost" id="btn-review" type="button">只复习</button>
+        <button class="btn btn--ghost" id="btn-mistakes" type="button">错词巩固</button>
+        <button class="btn btn--ghost" id="btn-practice" type="button">自由加练</button>
+      </div>
       <p class="hint" id="intro-hint"></p>
       <p class="hint" id="intro-rule"></p>
     </div>
@@ -138,6 +143,7 @@
       <div class="summary__list" id="summary-list"></div>
       <div class="summary__actions">
         <button class="btn btn--primary" id="btn-again" type="button">再来一轮</button>
+        <button class="btn btn--ghost" id="btn-summary-mistakes" type="button" hidden>重练本轮错词</button>
         <button class="btn btn--ghost" data-view="library" type="button">看词库</button>
       </div>
     </div>
@@ -163,6 +169,7 @@
         <button class="segmented__item" data-filter="recognize" type="button">认词中</button>
         <button class="segmented__item" data-filter="write" type="button">拼写中</button>
         <button class="segmented__item" data-filter="mastered" type="button">已掌握</button>
+        <button class="segmented__item" data-filter="mistakes" type="button">错词</button>
       </div>
       <label class="search">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
@@ -183,9 +190,9 @@
 
     <div class="card settings-card">
       <h2 class="card__title">每日新词上限</h2>
-      <p class="card__desc">控制一轮训练里最多引入几个没见过的词。复习词不受此限制。</p>
+      <p class="card__desc">控制一个自然日最多引入几个新词，多轮训练共享配额。到期复习优先，每轮最多 40 题。</p>
       <div class="field">
-        <input type="range" id="set-newlimit" min="0" max="40" step="1" value="10">
+        <input type="range" id="set-newlimit" aria-label="每日新词上限" min="0" max="40" step="1" value="10">
         <output id="set-newlimit-out" for="set-newlimit">10</output>
       </div>
     </div>
@@ -193,19 +200,28 @@
     <div class="card settings-card">
       <h2 class="card__title">升阶判级</h2>
       <p class="card__desc">
-        一个词要在<strong>一个月</strong>内累计有多少天答对过，才允许升到下一阶段。
-        一天内可以反复刷同一个词，但一天只记一次 —— 这里要的是「多少天」，不是「刷了多少遍」。
+        每关至少要在多少个<strong>不同日子</strong>独立答对。还需达到记忆稳定性：认词 7 天，拼写 21 天。
+        当天重复、提前加练和借助提示不增加升阶天数；答错只撤销当天证据，保留之前的积累。
       </p>
       <div class="field">
-        <input type="range" id="set-threshold" min="1" max="30" step="1" value="15">
-        <output id="set-threshold-out" for="set-threshold">15</output>
+        <input type="range" id="set-threshold" aria-label="升阶最少答对天数" min="2" max="10" step="1" value="3">
+        <output id="set-threshold-out" for="set-threshold">3</output>
       </div>
-      <p class="hint">当前：一个月内答对 <b id="set-threshold-text">15</b> 天升阶 · 中途答错一次，已攒天数全部清零 · 这一项会跟着「多设备同步」一起走，改动哪台以哪台为准</p>
+      <p class="hint">当前：至少 <b id="set-threshold-text">3</b> 天独立答对，再结合记忆稳定性升阶。既有天数保留，不再限定一个月。</p>
+    </div>
+
+    <div class="card settings-card">
+      <h2 class="card__title">复习记忆目标</h2>
+      <p class="card__desc">FSRS 根据作答调整每个词的复习间隔。目标越高，复习越频繁；建议先使用 90%。修改后从下一次作答生效。</p>
+      <div class="field">
+        <input type="range" id="set-retention" aria-label="复习目标记忆率" min="80" max="95" step="1" value="90">
+        <output id="set-retention-out" for="set-retention">90%</output>
+      </div>
     </div>
 
     <div class="card settings-card">
       <h2 class="card__title">发音</h2>
-      <p class="card__desc">答题时朗读英文单词（使用系统语音，不联网）。</p>
+      <p class="card__desc">认词时朗读；拼写题作答后朗读，避免提前透露答案（使用系统语音）。</p>
       <label class="switch">
         <input type="checkbox" id="set-speak" checked>
         <span class="switch__track" aria-hidden="true"><span class="switch__thumb"></span></span>
@@ -215,9 +231,10 @@
 
     <div class="card settings-card">
       <h2 class="card__title">进度数据</h2>
-      <p class="card__desc">学习进度保存在本机浏览器。换设备或换浏览器时，用导出/导入搬运。</p>
+      <p class="card__desc">学习进度保存在本机浏览器。升级前会自动备份旧进度；可导出备份留存。换设备或换浏览器时，用导出/导入搬运。</p>
       <div class="btn-row">
         <button class="btn btn--ghost" id="btn-export" type="button">导出进度</button>
+        <button class="btn btn--ghost" id="btn-backup" type="button">导出升级前备份</button>
         <label class="btn btn--ghost" for="import-file">导入进度</label>
         <input type="file" id="import-file" accept="application/json,.json" hidden>
         <button class="btn btn--danger" id="btn-reset" type="button">清空进度</button>
@@ -287,11 +304,12 @@
 </main>
 
 <footer class="footer">
-  <p>WordDrill · 词库与进度都在本地，不上传任何数据。</p>
+  <p>WordDrill · 默认本地保存；开启同步后进度存入你的私有仓库。</p>
 </footer>
 
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
-<script src="app.js"></script>
+<script src="vendor/ts-fsrs-5.4.2.js"></script>
+<script src="app.js?v=5"></script>
 </body>
 </html>

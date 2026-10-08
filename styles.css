@@ -391,7 +391,7 @@ button { cursor: pointer; background: none; border: none; padding: 0; }
 .tag--up { color: var(--color-success); }
 .tag--down { color: var(--color-danger); }
 .tag--same { color: var(--color-muted-fg); }
-.summary__actions { display: flex; gap: var(--s-3); margin-top: var(--s-6); }
+.summary__actions { display: flex; flex-wrap: wrap; gap: var(--s-3); margin-top: var(--s-6); }
 
 /* ---------- Library ---------- */
 .mastery-summary { margin-bottom: var(--s-5); }
