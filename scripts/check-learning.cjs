@@ -342,6 +342,7 @@ assert.equal(app.getSession().practice, true);
   sha++;
   await app.syncNow({ silent: true });
   assert.deepEqual(plain(app.getStore()), activeBefore, 'pulling during a quiz never changes the grading stage');
+  assert.match(app.getSync().lastResult, /本轮结束后合并/);
   assert.ok(cloud.words.focus && cloud.words.desktopOnly, 'active-quiz upload preserves remote-only records');
   assert.equal(await app.autoSync(true), undefined, 'idle pull waits until the quiz ends');
   holdWrite = true;

@@ -690,7 +690,7 @@
     syncing = true;
     setSyncStatus('同步中…');
     try {
-      let changed = false, pushed = false;
+      let changed = false, pushed = false, deferred = false;
       for (let attempt = 0; attempt < 3; attempt++) {
         const remote = await remoteRead();
         if (remote?.data && Number(remote.data.version || 1) < STORE_VERSION) {
@@ -699,9 +699,9 @@
         const remoteSig = (remote && remote.data) ? payloadSig(remote.data) : '';
         // 答题中仍上传进度，但先在副本上合并，不能改变当前题目的阶段和评分依据。
         const target = session ? readStore(JSON.parse(JSON.stringify(store))) : store;
-        if (mergeRemote(remote && remote.data, target) && target === store) {
-          changed = true;
-          saveStore();
+        if (mergeRemote(remote && remote.data, target)) {
+          if (target === store) { changed = true; saveStore(); }
+          else deferred = true;
         }
 
         const payload = buildPayload(target);
@@ -716,7 +716,8 @@
         }
       }
       sync.lastSyncAt = now();
-      sync.lastResult = changed ? (pushed ? '双向合并' : '已拉取') : (pushed ? '已上传' : '已是最新');
+      sync.lastResult = deferred ? (pushed ? '已上传，远端变化将在本轮结束后合并' : '远端有更新，本轮结束后合并')
+        : changed ? (pushed ? '双向合并' : '已拉取') : (pushed ? '已上传' : '已是最新');
       saveSync();
       setSyncStatus(describeSync(), 'ok');
       if (changed) { applySettingsToUI(); refreshIntro(); renderLibrary(); refreshCetReview(); }
