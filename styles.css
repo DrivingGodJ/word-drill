@@ -128,6 +128,7 @@ body::before {
   pointer-events: none;
 }
 
+[hidden] { display: none !important; }
 svg { display: block; }
 button, input, select, textarea { font: inherit; color: inherit; }
 button { cursor: pointer; background: none; border: none; padding: 0; }
@@ -161,7 +162,7 @@ button { cursor: pointer; background: none; border: none; padding: 0; }
 .topbar__inner {
   max-width: 960px; margin: 0 auto;
   padding: var(--s-3) var(--s-5);
-  display: flex; align-items: center; gap: var(--s-4);
+  display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-4);
 }
 
 .brand { display: flex; align-items: center; gap: var(--s-2); margin-right: auto; }
@@ -262,6 +263,11 @@ button { cursor: pointer; background: none; border: none; padding: 0; }
 
 .hint { font-size: .8125rem; color: var(--color-muted-fg); margin-top: var(--s-3); }
 
+.application { margin-top: var(--s-5); text-align: left; }
+.application summary { min-height: var(--tap); display: list-item; padding: var(--s-3) 0; cursor: pointer; }
+.application .btn-row { margin-top: var(--s-3); }
+#recall-actions .btn { white-space: normal; padding: var(--s-3) var(--s-4); }
+
 /* ---------- Quiz ---------- */
 .quiz__head {
   display: flex; align-items: center; justify-content: space-between;
@@ -325,10 +331,11 @@ button { cursor: pointer; background: none; border: none; padding: 0; }
 .option.is-dim { opacity: .5; }
 
 /* spelling */
-.spell { display: grid; gap: var(--s-3); }
+.spell { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s-3); }
+.spell .btn { white-space: normal; padding: var(--s-3) var(--s-4); }
 .spell__row { display: flex; gap: var(--s-3); }
 .spell__input {
-  flex: 1; min-height: 52px; padding: 0 var(--s-4);
+  flex: 1; min-width: 0; width: 100%; min-height: 52px; padding: 0 var(--s-4);
   border: 1.5px solid var(--color-border-strong); border-radius: var(--radius-md);
   background: var(--color-card); font-size: 1.125rem; font-weight: 600; letter-spacing: .01em;
   transition: border-color var(--dur) var(--ease);
@@ -336,7 +343,7 @@ button { cursor: pointer; background: none; border: none; padding: 0; }
 .spell__input:focus { border-color: var(--color-primary); outline: none; }
 .spell__input.is-correct { border-color: var(--color-success); background: var(--color-success-soft); }
 .spell__input.is-wrong { border-color: var(--color-danger); background: var(--color-danger-soft); }
-.spell__letters { font-family: var(--font-mono); font-size: .875rem; color: var(--color-muted-fg); letter-spacing: .16em; }
+.spell__letters { font-family: var(--font-mono); font-size: .875rem; color: var(--color-muted-fg); letter-spacing: .16em; overflow-wrap: anywhere; }
 .spell__actions { display: flex; gap: var(--s-3); }
 
 /* feedback */
@@ -391,7 +398,7 @@ button { cursor: pointer; background: none; border: none; padding: 0; }
 .tag--up { color: var(--color-success); }
 .tag--down { color: var(--color-danger); }
 .tag--same { color: var(--color-muted-fg); }
-.summary__actions { display: flex; gap: var(--s-3); margin-top: var(--s-6); }
+.summary__actions { display: flex; flex-wrap: wrap; gap: var(--s-3); margin-top: var(--s-6); }
 
 /* ---------- Library ---------- */
 .mastery-summary { margin-bottom: var(--s-5); }
@@ -520,13 +527,13 @@ button { cursor: pointer; background: none; border: none; padding: 0; }
 .cet-review__sub { margin: 0 0 var(--s-4); font-size: .8125rem; color: var(--color-muted-fg); }
 .cet-review__list { list-style: none; margin: 0 0 var(--s-4); padding: 0; display: grid; gap: var(--s-2); }
 .cet-review__item {
-  display: flex; align-items: baseline; gap: var(--s-3);
+  display: grid; gap: var(--s-2); min-width: 0;
   padding: var(--s-2) var(--s-3);
   border: 1px solid var(--color-border); border-radius: var(--radius-md);
-  cursor: pointer;
 }
+.cet-review__choice { display: flex; align-items: center; flex-wrap: wrap; gap: var(--s-2); min-height: 32px; cursor: pointer; }
 .cet-review__item input { accent-color: var(--color-primary); flex: none; align-self: center; }
-.cet-review__word { font-weight: 600; }
+.cet-review__word { font-weight: 600; overflow-wrap: anywhere; }
 .cet-review__pos { color: var(--color-muted-fg); font-size: .75rem; }
 .cet-review__meaning { color: var(--color-muted-fg); font-size: .875rem; flex: 1; min-width: 0; }
 .cet-review__tag {
@@ -534,6 +541,10 @@ button { cursor: pointer; background: none; border: none; padding: 0; }
   background: var(--color-primary-soft); color: var(--color-primary);
 }
 .cet-review__actions { display: flex; gap: var(--s-3); flex-wrap: wrap; }
+.cet-review__details { font-size: .8125rem; color: var(--color-muted-fg); overflow-wrap: anywhere; }
+.cet-review__details summary { cursor: pointer; min-height: 32px; display: list-item; align-content: center; }
+.cet-review__details p { margin: var(--s-2) 0; line-height: 1.6; }
+.cet-review__translation { color: var(--color-muted-fg); }
 
 /* ---------- Responsive ---------- */
 @media (max-width: 640px) {

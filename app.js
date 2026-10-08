@@ -1,7 +1,7 @@
 /* ============================================================
    WordDrill — app
    两阶段记忆模型：认（Recognition）→ 写（Production）
-   调度：简化 SM-2（强度 0-5 → 间隔 10min / 1 / 3 / 7 / 16 / 35 天）
+   调度：FSRS-6；认词与拼写分别积累，升关后开始新的记忆卡
    ============================================================ */
 (() => {
   'use strict';
@@ -20,37 +20,18 @@
   const HOUR = 60 * MIN;
   const DAY = 24 * HOUR;
 
-  /**
-   * 「长期记住」判定模型 —— 核心不是「当场答对几次」，而是「跨了多少个不同的日子」。
-   *
-   * 一个词在当前阶段，于一个自然月（PASS_WINDOW = 30 天）内累计有 threshold 天答对过，
-   * 才允许升到下一阶段。
-   *
-   * 三条规则：
-   * 1. **一天内可以反复刷**：答对后只是进入一个 20 分钟冷却（CREDIT_DUE），
-   *    冷却过去它又会回到队列，当天想练几遍都行。
-   * 2. **一天只记一次**：不论当天刷多少遍，`credits` 里最多只留当天的第一条记录。
-   * 3. **答错全部清零**：任何一次答错都会清空已攒的全部天数（含当天），重新计数一个月。
-   *    也就是「当天答对过才记这一天，之后又答错就整个作废」。
-   */
-  const PASS_WINDOW = 30 * DAY;
-  /** 攒天数期间答对后的冷却：过去就能再刷一遍（一天内可反复练，但只记 1 天） */
-  const CREDIT_DUE = 20 * MIN;
-  /** 已掌握后的维护间隔：不再需要攒，只需偶尔回访 */
-  const MASTERED_DUE = 3 * DAY;
-  /** 攒天数期间答错后的最短重来间隔（当轮还会回流一次） */
-  const LAPSE_DUE = 3 * MIN;
-  /** 新词首次答对即进入「认词中」，这一关不需要攒 */
-  const CREDIT_NEED_MIN = 1, CREDIT_NEED_MAX = 30, CREDIT_NEED_DEFAULT = 15;
+  // 答对天数保留，不再过期或因一次答错清零。升阶还要求 FSRS 的稳定性达标。
+  const PROMOTION_STABILITY = { recognize: 7, write: 21 };
+  const CREDIT_NEED_MIN = 2, CREDIT_NEED_MAX = 10, CREDIT_NEED_DEFAULT = 3;
   const REQUESTS_PER_ROUND = 40;   // 单轮最大题量，避免无限循环
 
   /* ---------- 多设备同步（GitHub 私有仓库当存储） ---------- */
   const SYNC_KEY = 'worddrill.sync.v1';
   const SYNC_API = 'https://api.github.com';
   /** 学习参数才同步；主题/发音是设备偏好，各设备自己存 */
-  const SYNCED_SETTINGS = ['newLimit', 'threshold'];
+  const SYNCED_SETTINGS = ['newLimit', 'threshold', 'retention'];
   /** 学习参数的合法区间，必须和设置页滑块的 min/max 一致，否则同步进来的值会让界面与实际不一致 */
-  const SETTING_RANGE = { newLimit: [0, 40], threshold: [CREDIT_NEED_MIN, CREDIT_NEED_MAX] };
+  const SETTING_RANGE = { newLimit: [0, 40], threshold: [CREDIT_NEED_MIN, CREDIT_NEED_MAX], retention: [80, 95] };
 
   function clampSetting(k, v) {
     const r = SETTING_RANGE[k];
@@ -62,7 +43,7 @@
   function normalizeSettings(s) {
     for (const k of Object.keys(SETTING_RANGE)) {
       const c = clampSetting(k, s[k]);
-      if (c !== undefined) s[k] = c;
+      s[k] = c === undefined ? defaultStore().settings[k] : c;
     }
     return s;
   }
@@ -79,6 +60,7 @@
   let session = null;      // 当前会话
   let libFilter = 'all';
   let libQuery = '';
+  let summaryMistakes = [];
 
   /* ---------- 工具 ---------- */
   const $ = (sel, root = document) => root.querySelector(sel);
@@ -112,12 +94,13 @@
   }
 
   /* ---------- 持久化 ---------- */
-  const STORE_VERSION = 4;   // v2 两周内天数 → v3 一个月内 15 天 + 当天可刷 → v4 修「旧同步值覆盖新判定」
+  const STORE_VERSION = 5;   // v5 FSRS + 累计跨天证据；保留所有词条与统计
+  const BACKUP_KEY = 'worddrill.backup.before-v5';
 
   function defaultStore() {
     return {
       version: STORE_VERSION,
-      settings: { newLimit: 10, threshold: CREDIT_NEED_DEFAULT, speak: true },
+      settings: { newLimit: 10, threshold: CREDIT_NEED_DEFAULT, retention: 90, speak: true },
       settingsAt: 0,                   // 学习参数最后修改时间，用于多设备合并
       cet: { approved: [], rejected: [] },   // 四六级候选词的取舍决定，随进度一起同步
       words: {},                       // id → 进度
@@ -125,46 +108,54 @@
     };
   }
 
-  /**
-   * 把旧版存档升级到当前语义。
-   *
-   * threshold 的含义改过三次（「连续答对几次」→「两周内有几天」→「一个月内有几天」→
-   * 「一个月内有几天 + 当天可反复刷」），旧值在新语义下都不等价，一律置成新默认。
-   *
-   * 同时把 settingsAt 顶到现在 —— 否则本机刚拿到的正确默认值会被仓库里那条
-   * 「旧语义、但时间戳不比我旧」的 threshold 挡回去（同步合并是按 settingsAt 比新旧的）。
-   */
+  /** 只改新的学习参数；词条的阶段、天数、次数、到期时间和统计原样保留。 */
   function migrateStore(s, fromVersion) {
     if ((fromVersion || 1) >= STORE_VERSION) return false;
     s.version = STORE_VERSION;
     s.settings.threshold = CREDIT_NEED_DEFAULT;
+    s.settings.retention = 90;
     s.settingsAt = now();
     return true;
   }
 
-  function loadStore() {
-    try {
-      const raw = localStorage.getItem(STORE_KEY);
-      if (!raw) return defaultStore();
-      const parsed = JSON.parse(raw);
-      const merged = Object.assign(defaultStore(), parsed, {
-        settings: Object.assign(defaultStore().settings, parsed.settings || {}),
-        stats: Object.assign(defaultStore().stats, parsed.stats || {}),
-        words: parsed.words || {}
-      });
-      if (migrateStore(merged, parsed.version)) storeMigrated = true;
-      // 候选词取舍记录的结构保护（旧存档没有这个字段）
-      if (!merged.cet || typeof merged.cet !== 'object'
-          || !Array.isArray(merged.cet.approved) || !Array.isArray(merged.cet.rejected)) {
-        merged.cet = { approved: [], rejected: [] };
-      }
-      // 老记录里的 strength / streak 已经没有意义，统一补上 credits
-      for (const id of Object.keys(merged.words)) merged.words[id] = normalRec(merged.words[id]);
-      normalizeSettings(merged.settings);
-      return merged;
-    } catch {
-      return defaultStore();
+  function readStore(parsed) {
+    if (!parsed || typeof parsed !== 'object' || !parsed.words
+        || typeof parsed.words !== 'object' || Array.isArray(parsed.words)) {
+      throw new Error('进度文件格式不对');
     }
+    if (Number(parsed.version) > STORE_VERSION) throw new Error('进度来自更新版本，请先更新本站');
+    const merged = Object.assign(defaultStore(), parsed, {
+      settings: Object.assign(defaultStore().settings, parsed.settings || {}),
+      stats: Object.assign(defaultStore().stats, parsed.stats || {}),
+      words: Object.fromEntries(Object.entries(parsed.words).map(([id, p]) => {
+        if (!p || typeof p !== 'object' || !STAGES.includes(p.stage || 'new')) {
+          throw new Error('词条进度格式不对');
+        }
+        return [id, normalRec(p)];
+      }))
+    });
+    if (!merged.cet || !Array.isArray(merged.cet.approved) || !Array.isArray(merged.cet.rejected)) {
+      merged.cet = { approved: [], rejected: [] };
+    }
+    normalizeSettings(merged.settings);
+    return merged;
+  }
+
+  function keepBackup(raw) {
+    if (raw && !localStorage.getItem(BACKUP_KEY)) localStorage.setItem(BACKUP_KEY, raw);
+  }
+
+  function loadStore() {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (!raw) return defaultStore();
+    const parsed = JSON.parse(raw);
+    const merged = readStore(parsed);
+    if ((parsed.version || 1) < STORE_VERSION) {
+      // 备份失败时抛出并停止启动，不能覆盖唯一一份旧进度。
+      keepBackup(raw);
+      storeMigrated = migrateStore(merged, parsed.version);
+    }
+    return merged;
   }
 
   function saveStore() {
@@ -179,7 +170,7 @@
   function progressOf(id) {
     return store.words[id] || {
       stage: 'new', credits: [],
-      correct: 0, wrong: 0, due: 0, lastSeen: 0
+      correct: 0, wrong: 0, due: 0, lastSeen: 0, introducedAt: 0
     };
   }
 
@@ -190,80 +181,85 @@
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   };
 
-  /** 当前设置要求的「一个月内答对的天数」。 */
+  /** 当前设置要求的最少独立答对天数。 */
   const creditNeed = () =>
     Math.min(CREDIT_NEED_MAX, Math.max(CREDIT_NEED_MIN, Number(store.settings.threshold) || CREDIT_NEED_DEFAULT));
-
-  /** 丢掉滚出一个月窗口的旧记录 —— 这就是「一个月内」的实现。 */
-  const pruneCredits = (list, at) => (list || []).filter((ts) => at - ts <= PASS_WINDOW);
 
   /** 是否还需要攒天数（已掌握的词不再需要）。 */
   const needsCredits = (stage) => stage === 'recognize' || stage === 'write';
 
-  /**
-   * 这个词是不是「今天练过、还在冷却里」—— 用来支持一天之内反复刷同一个词。
-   *
-   * 注意必须看 `lastSeen`（最后一次作答时间）而不是 `credits`：
-   * 新词首次答对只是升到「认词中」、并不记天，credits 仍是空的，
-   * 只看 credits 会导致刚练完的词当天回不来。
-   * 已掌握的词不算在内 —— 它们按维护间隔走，不需要一天刷好几遍。
-   */
-  function inCooling(p, t) {
-    if (!needsCredits(p.stage)) return false;
-    if (!(p.due > t)) return false;
-    return !!p.lastSeen && dayKey(p.lastSeen) === dayKey(t);
+  function scheduler() {
+    return FSRS.fsrs({ request_retention: store.settings.retention / 100,
+      enable_fuzz: false, enable_short_term: true, learning_steps: ['1m', '10m'], relearning_steps: ['10m'] });
+  }
+
+  function schedule(p, rating, at) {
+    // 旧存档没有完整作答历史：从第一次新作答建立记忆卡，不伪造历史评分。
+    const card = p.memory || FSRS.createEmptyCard(new Date(at));
+    const result = scheduler().next(card, new Date(at), rating).card;
+    return { ...result, due: +result.due, last_review: +result.last_review };
+  }
+
+  function newAllowance(t = now()) {
+    const started = Object.values(store.words).filter((p) => p.introducedAt && dayKey(p.introducedAt) === dayKey(t)).length;
+    return Math.max(0, store.settings.newLimit - started);
   }
 
   /**
    * 判定一次作答并推进状态。
-   * @returns {{before:object, after:object, promoted:boolean, demoted:boolean, credited:boolean, cleared:number}}
+   * @returns {{before:object, after:object, promoted:boolean, demoted:boolean, credited:boolean}}
    */
-  function grade(id, isCorrect) {
+  function grade(id, isCorrect, aided = false, practice = false) {
     const before = progressOf(id);
-    const after = Object.assign({}, before, { credits: pruneCredits(before.credits, now()) });
+    const after = { ...before, credits: [...before.credits] };
+    const at = now();
     const need = creditNeed();
-    let promoted = false, demoted = false, credited = false, cleared = 0;
+    let promoted = false, demoted = false, credited = false;
 
-    after.lastSeen = now();
+    after.lastSeen = at;
+    if (!practice && before.stage === 'new' && !after.introducedAt) after.introducedAt = at;
     store.stats.answers++;
     if (isCorrect) store.stats.correct++;
+    if (isCorrect) after.correct++;
+    else after.wrong++;
 
-    if (isCorrect) {
-      after.correct++;
-
+    if (!practice) {
+      // 提示后答对不等于独立回忆成功，按 Again 重学，避免虚增间隔。
+      after.memory = schedule(before, isCorrect && !aided ? FSRS.Rating.Good : FSRS.Rating.Again, at);
+      after.due = after.memory.due;
+    }
+    if (isCorrect && !practice && !aided) {
       if (after.stage === 'new') {
-        // 新词只要认对一次就进入「认词中」；攒次数从这一关才开始
         after.stage = 'recognize';
         after.credits = [];
         promoted = true;
-      } else {
-        // 一天只记一次：当天已经记过就不再追加（一天内可以反复刷，但只算 1 天）
-        if (!after.credits.some((ts) => dayKey(ts) === dayKey(after.lastSeen))) {
-          after.credits.push(after.lastSeen);
+      } else if (needsCredits(after.stage) && before.due <= at) {
+        if (!after.credits.some((ts) => dayKey(ts) === dayKey(at))) {
+          after.credits.push(at);
           credited = true;
         }
-        if (after.credits.length >= need && needsCredits(after.stage)) {
-          if (after.stage === 'recognize') { after.stage = 'write'; promoted = true; after.credits = []; }
-          else if (after.stage === 'write') { after.stage = 'mastered'; promoted = true; after.credits = []; }
+        if (credited && after.credits.length >= need
+            && after.memory.stability >= PROMOTION_STABILITY[after.stage]
+            && after.memory.state === FSRS.State.Review) {
+          after.stage = after.stage === 'recognize' ? 'write' : 'mastered';
+          after.credits = [];
+          promoted = true;
+          if (after.stage === 'write') {
+            // 认得不代表会拼：拼写关建立自己的记忆卡。
+            after.memory = undefined;
+            after.due = at + 10 * MIN;
+          }
         }
       }
-    } else {
-      after.wrong++;
-      cleared = after.credits.length;
-      after.credits = [];                       // 答错说明没记住，已攒次数清零重来
+    } else if (!isCorrect && !practice) {
+      // 只撤销今天的证据，之前跨天答对的积累保留。
+      after.credits = after.credits.filter((ts) => dayKey(ts) !== dayKey(at));
       if (after.stage === 'mastered') { after.stage = 'write'; demoted = true; }
     }
 
-    // 间隔调度
-    let base;
-    if (!isCorrect) base = LAPSE_DUE;                       // 当轮稍后回流，趁热打铁
-    else if (after.stage === 'mastered') base = MASTERED_DUE; // 已掌握：只做维护
-    else base = CREDIT_DUE;                                  // 攒天数：20 分钟后可再刷
-    after.due = now() + base;
-
     store.words[id] = after;
     saveStore();
-    return { before, after, promoted, demoted, credited, cleared, need };
+    return { before, after, promoted, demoted, credited, aided, practice, need };
   }
 
   /** 根据当前阶段决定出题方式。 */
@@ -314,7 +310,7 @@
       { text: word.meaning, correct: true },
       ...distractors.map((text) => ({ text, correct: false }))
     ]);
-    return { kind: 'recognize', word, options };
+    return { kind: 'recognize', word, options, optionsReady: false };
   }
 
   function buildSpellQuestion(word) {
@@ -324,6 +320,11 @@
   function buildFillQuestion(word) {
     return { kind: 'fill', word, hint: letterHint(word.word) };
   }
+
+  const fillPattern = (word) => new RegExp(`\\b${word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi');
+  const hasFillExample = (word) => !!word.example && fillPattern(word.word).test(word.example)
+    && word.example.trim().split(/\s+/).length >= 5
+    && /[.!?]["”’']?$/.test(word.example.trim()) && !/…|\.{3}|_/.test(word.example);
 
   /** 生成拼写提示：保留首字母与词内空格，其余用 · 占位。 */
   function letterHint(target) {
@@ -346,7 +347,7 @@
   /** 例句挖空。 */
   function blankExample(example, target) {
     const safe = esc(example);
-    const re = new RegExp(esc(target).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+    const re = fillPattern(esc(target));
     return safe.replace(re, '<b>______</b>');
   }
 
@@ -430,8 +431,10 @@
     if (res.status === 404) return null;
     if (!res.ok) throw syncHttpError(res.status);
     const j = await res.json();
-    let data = null;
-    try { data = JSON.parse(b64Decode(j.content)); } catch { data = null; }
+    let data;
+    try { data = JSON.parse(b64Decode(j.content)); }
+    catch { throw new Error('远端进度无法解析，已暂停同步并保留原文件'); }
+    readStore(data);  // 验证成功后才能合并或覆盖；损坏的远端不能当作空进度。
     return { sha: j.sha, data };
   }
 
@@ -534,11 +537,25 @@
     }
   }
 
+  function normalMemory(m) {
+    if (!m || typeof m !== 'object') return undefined;
+    const card = {};
+    for (const key of ['due', 'last_review', 'stability', 'difficulty', 'elapsed_days', 'scheduled_days', 'reps', 'lapses', 'state', 'learning_steps']) {
+      const n = key === 'due' || key === 'last_review' ? +new Date(m[key]) : Number(m[key]);
+      if (!Number.isFinite(n) || n < 0) return undefined;
+      card[key] = n;
+    }
+    if (card.state < 1 || card.state > 3 || card.stability <= 0 || card.difficulty < 1 || card.difficulty > 10) return undefined;
+    return card;
+  }
+
   const normalRec = (r) => ({
     stage: r.stage || 'new',
     credits: Array.isArray(r.credits) ? r.credits.filter((t) => typeof t === 'number' && isFinite(t)) : [],
     due: r.due || 0, lastSeen: r.lastSeen || 0,
-    correct: r.correct || 0, wrong: r.wrong || 0
+    correct: r.correct || 0, wrong: r.wrong || 0,
+    introducedAt: r.introducedAt || 0,
+    memory: normalMemory(r.memory)
   });
 
   function buildPayload() {
@@ -571,6 +588,8 @@
    */
   function mergeRemote(remote) {
     if (!remote || typeof remote !== 'object') return false;
+    if (Number(remote.version) > STORE_VERSION) throw new Error('远端进度来自更新版本，请刷新本站后同步');
+    readStore(remote);
     let changed = false;
 
     const rw = (remote.words && typeof remote.words === 'object') ? remote.words : {};
@@ -582,6 +601,8 @@
 
       const newer = (theirs.lastSeen || 0) > (mine.lastSeen || 0) ? theirs : mine;
       const merged = normalRec(newer);
+      merged.introducedAt = Math.min(mine.introducedAt || Infinity, theirs.introducedAt || Infinity);
+      if (!Number.isFinite(merged.introducedAt)) merged.introducedAt = 0;
       merged.correct = Math.max(mine.correct || 0, theirs.correct || 0);
       merged.wrong = Math.max(mine.wrong || 0, theirs.wrong || 0);
       if (JSON.stringify(merged) !== JSON.stringify(normalRec(mine))) {
@@ -592,7 +613,7 @@
 
     // 学习参数只在「两边语义版本一致」时互相同步。
     // 旧版本客户端（payload 里 version 落后）存的 threshold 是另一套含义的数字，
-    // 采纳它会把本机刚迁移好的新默认值顶掉 —— 这正是「设置里明明该是 15 天，却显示 5 天」的原因。
+    // 不能让旧版「一个月内 15 天」的门槛覆盖新升阶规则。
     const remoteModel = Number(remote.version) || 1;
     const settingsOk = remoteModel >= STORE_VERSION;
     if (settingsOk && (remote.settingsAt || 0) > (store.settingsAt || 0) && remote.settings) {
@@ -601,6 +622,7 @@
         if (v !== undefined && store.settings[k] !== v) { store.settings[k] = v; changed = true; }
       }
       store.settingsAt = remote.settingsAt || 0;
+      changed = true;
     }
 
     const rs = remote.stats || {};
@@ -664,6 +686,9 @@
       let changed = false, pushed = false;
       for (let attempt = 0; attempt < 3; attempt++) {
         const remote = await remoteRead();
+        if (remote?.data && Number(remote.data.version || 1) < STORE_VERSION) {
+          keepBackup(JSON.stringify(remote.data));
+        }
         const remoteSig = (remote && remote.data) ? payloadSig(remote.data) : '';
         if (mergeRemote(remote && remote.data)) { changed = true; saveStore(); }
 
@@ -697,41 +722,35 @@
   }
 
   /* ---------- 会话 ---------- */
-  /**
-   * 开始一轮训练。
-   * 没有到期的词时，自动把「今天已经练过、还在冷却里」的词再带上 ——
-   * 这样一天之内可以反复刷同一个词（不管从「开始训练」还是「再来一轮」进来都一样）。
-   */
-  function startSession() {
+  /** 到期复习优先；加练与错词练习不改变复习时间或升阶证据。 */
+  function startSession(mode = 'learn', ids = null) {
     const t = now();
-    const pick = (allowCooling) => WORDS
-      .filter((w) => {
+    const practice = ['practice', 'mistakes', 'context', 'listen'].includes(mode);
+    if (mode === 'listen' && !canSpeak()) { toast('当前浏览器不支持发音，请使用语境填空或自由加练'); return; }
+    let selected;
+    if (practice) {
+      selected = shuffle(WORDS.filter((w) => {
         const p = progressOf(w.id);
-        if (p.stage === 'new') return false;
-        if (p.due <= t) return true;
-        return allowCooling && inCooling(p, t);
-      });
-
-    let dueWords = pick(false);
-    if (!dueWords.length) dueWords = pick(true);
-
-    const newLimit = Math.max(0, Number(store.settings.newLimit) || 0);
-    const freshWords = WORDS.filter((w) => progressOf(w.id).stage === 'new').slice(0, newLimit);
-
-    // 顺序打乱：以前按「攒得最少的排前面」固定排序，多练几轮就能猜出下一个是谁。
-    // 复习词和新词先各自打乱，再交替穿插 —— 新词别全挤在末尾。
-    const due = shuffle(dueWords);
-    const fresh = shuffle(freshWords);
-    const mixed = [];
-    while (due.length || fresh.length) {
-      if (due.length) mixed.push(due.shift());
-      if (fresh.length) mixed.push(fresh.shift());
+        if (mode === 'mistakes') return ids ? ids.includes(w.id) : p.wrong > 0;
+        if (p.stage === 'new' && !p.introducedAt) return false;
+        return mode !== 'context' || hasFillExample(w);
+      }));
+    } else {
+      const due = shuffle(WORDS.filter((w) => {
+        const p = progressOf(w.id);
+        return (p.stage !== 'new' || p.introducedAt) && p.due <= t;
+      })).sort((a, b) => progressOf(a.id).due - progressOf(b.id).due);
+      const fresh = mode === 'review' ? [] : shuffle(WORDS.filter((w) => {
+        const p = progressOf(w.id);
+        return p.stage === 'new' && !p.introducedAt;
+      })).slice(0, newAllowance(t));
+      selected = due.concat(fresh);
     }
-    const queue = mixed.map((w) => w.id);
+    const queue = selected.slice(0, REQUESTS_PER_ROUND).map((w) => w.id);
 
     if (!queue.length) {
-      const allMastered = WORDS.length > 0 && WORDS.every((w) => progressOf(w.id).stage === 'mastered');
-      toast(allMastered ? '全部单词已掌握，暂时没有待复习的' : '暂时没有到期的词，过一会儿再来');
+      toast(mode === 'context' ? '已学词里还没有可填空的完整例句，可以先练认词或拼写'
+        : mode === 'mistakes' ? '还没有待巩固词' : '本轮没有可练的词，可以稍后复习或自由加练');
       return;
     }
 
@@ -743,6 +762,11 @@
       correct: 0,
       current: null,
       answered: false,
+      practice,
+      mode,
+      missed: new Set(),
+      aided: new Set(),
+      startedAt: t,
       results: new Map(),   // id → {before, after, promoted, demoted}
       requeued: 0
     };
@@ -764,15 +788,18 @@
     const stage = progressOf(id).stage;
     const type = quizTypeFor(stage);
     let q;
-    if (type === 'spell') {
-      // 巩固期的词穿插例句填空，检验是否真的会用
-      q = (stage === 'mastered' && Math.random() < 0.45)
-        ? buildFillQuestion(word)
-        : buildSpellQuestion(word);
+    if (session.mode === 'context') {
+      q = buildFillQuestion(word);
+    } else if (session.mode === 'listen') {
+      q = { kind: 'listen', word, hint: letterHint(word.word) };
+    } else if (type === 'spell') {
+      // 正式复习保持一致的提问方式；语境与听写单独加练。
+      q = buildSpellQuestion(word);
     } else {
       q = WORDS.length >= 4 ? buildRecognizeQuestion(word) : buildSpellQuestion(word);
     }
 
+    q.retry = session.results.has(id);
     session.current = q;
     session.answered = false;
     renderQuiz(q);
@@ -781,27 +808,39 @@
   function answer(isCorrect, userAnswer) {
     if (!session || session.answered) return;
     const word = session.current.word;
-    const r = grade(word.id, isCorrect);
+    const q = session.current;
+    const r = grade(word.id, isCorrect, !!q.aided, session.practice || q.retry);
     session.answered = true;
     session.done++;
-    if (isCorrect) session.correct++;
+    if (isCorrect && !q.aided) session.correct++;
 
-    // 记录（同一词多轮取最后一次）
+    // 保留首次状态与整轮错词；之后答对不能掩盖本轮曾经答错。
+    const previous = session.results.get(word.id);
+    if (previous) {
+      r.before = previous.before;
+      r.promoted = previous.promoted || r.promoted;
+      r.demoted = previous.demoted || r.demoted;
+    }
     session.results.set(word.id, r);
 
-    // 答错 → 本次稍后重来一遍，趁热打铁。
-    // 答对则本轮不再出现：它的冷却（20 分钟）还没过，当天再刷要走下一轮。
-    if (!isCorrect) {
-      const insertAt = Math.min(session.queue.length, session.index + 3);
-      session.queue.splice(insertAt, 0, word.id);
-      session.requeued++;
-      session.total = session.queue.length;
+    // 提示后答对也需要巩固。至少隔开 3 题；队列太短则按原计划再复习。
+    // 同一轮回练只记练习统计，不能把短时记住的答案当作正式复习证据。
+    if (!isCorrect || q.aided) {
+      if (!isCorrect) session.missed.add(word.id);
+      if (q.aided) session.aided.add(word.id);
+      const insertAt = session.index + 3;
+      if (insertAt <= session.queue.length && insertAt < REQUESTS_PER_ROUND) {
+        session.queue.splice(insertAt, 0, word.id);
+        session.requeued++;
+        session.total = Math.min(session.queue.length, REQUESTS_PER_ROUND);
+        q.requeued = true;
+      }
     }
 
     renderFeedback(session.current, isCorrect, userAnswer, r);
     // 把焦点交给「继续」，这样键盘作答后直接按 Enter / 空格就能推进
     const nextBtn = $('#btn-next');
-    if (nextBtn && !nextBtn.hidden) nextBtn.focus({ preventScroll: true });
+    if (nextBtn && !nextBtn.hidden && !nextBtn.disabled) nextBtn.focus({ preventScroll: true });
     updateProgress();
   }
 
@@ -809,7 +848,11 @@
     const stats = session ? {
       done: session.done,
       correct: session.correct,
-      results: session.results
+      results: session.results,
+      missed: session.missed,
+      aided: session.aided,
+      elapsed: now() - session.startedAt,
+      practice: session.practice
     } : null;
     session = null;
 
@@ -820,9 +863,11 @@
     }
 
     // 记录学习天数
-    const today = new Date().toISOString().slice(0, 10);
+    const today = dayKey(now());
     if (store.stats.lastDate !== today) {
-      const y = new Date(Date.now() - DAY).toISOString().slice(0, 10);
+      const yesterday = new Date(now());
+      yesterday.setDate(yesterday.getDate() - 1);
+      const y = dayKey(+yesterday);
       store.stats.streakDays = store.stats.lastDate === y ? (store.stats.streakDays || 0) + 1 : 1;
       store.stats.lastDate = today;
     }
@@ -848,7 +893,7 @@
     let due = 0, fresh = 0, mastered = 0, recognize = 0, write = 0;
     for (const w of WORDS) {
       const p = progressOf(w.id);
-      if (p.stage === 'new') fresh++;
+      if (p.stage === 'new' && !p.introducedAt) fresh++;
       else {
         if (p.due <= t) due++;
         if (p.stage === 'mastered') mastered++;
@@ -857,21 +902,30 @@
       }
     }
     $('#stat-due').textContent = due;
-    $('#stat-new').textContent = Math.min(fresh, Number(store.settings.newLimit) || 0);
+    const remaining = Math.min(fresh, newAllowance(t));
+    $('#stat-new').textContent = remaining;
     $('#stat-mastered').textContent = mastered;
 
-    const totalToday = due + Math.min(fresh, Number(store.settings.newLimit) || 0);
-    const cooling = WORDS.some((w) => inCooling(progressOf(w.id), t));
+    const totalToday = due + remaining;
     $('#intro-hint').textContent = totalToday
-      ? `本轮约 ${totalToday} 个词 · 认词 ${recognize} · 拼写 ${write} · 已掌握 ${mastered}`
+      ? `本轮最多 ${Math.min(totalToday, REQUESTS_PER_ROUND)} 个词 · 待复习 ${due} · 今日可加新词 ${remaining}`
       : (!WORDS.length ? '词库还是空的。'
-        : cooling ? '今天的词都记上了，正在冷却 —— 也可以直接再练一遍（同一天只记 1 天）。'
-        : '暂时没有到期的词。');
+        : '暂时没有到期的词；自由加练不会提前推迟下次复习。');
     $('#intro-rule').textContent =
-      `升阶规则：一个月内累计有 ${creditNeed()} 天答对（当天可反复刷，只记 1 天）· `
-      + `答错则已攒天数全部清零 · 已掌握后每 ${Math.round(MASTERED_DUE / DAY)} 天回访一次`;
-    // 冷却中的词也能重练，所以这种情况下不能让「开始训练」变成灰的
-    $('#btn-start').disabled = totalToday === 0 && !cooling;
+      `升阶：至少 ${creditNeed()} 个不同日子独立答对，并达到认词 7 天 / 拼写 21 天的记忆稳定性。答错保留之前的积累。`;
+    $('#btn-start').disabled = totalToday === 0;
+    $('#btn-review').disabled = due === 0;
+    $('#btn-mistakes').disabled = !WORDS.some((w) => progressOf(w.id).wrong > 0);
+    const learned = WORDS.filter((w) => {
+      const p = progressOf(w.id);
+      return p.stage !== 'new' || p.introducedAt;
+    });
+    $('#btn-practice').disabled = !learned.length;
+    $('#btn-context').disabled = !learned.some(hasFillExample);
+    $('#btn-listen').disabled = !learned.length || !canSpeak();
+    $('#application-hint').textContent = !canSpeak()
+      ? '当前浏览器不支持发音，仍可练语境填空。练习不改变升阶与复习时间。'
+      : '练习已学词的语境和声音；不改变升阶与复习时间。听写使用设备合成语音。';
   }
 
   /* ---------- 四六级候选词确认卡 ----------
@@ -900,15 +954,28 @@
     box.hidden = false;
     box.innerHTML = `
       <h2 class="cet-review__title">四六级候选词 · 要加入词库吗？</h2>
-      <p class="cet-review__sub">补词脚本按真题覆盖挑出来的新词，勾上想要的、去掉不想要的；确认后由脚本自动入库（不用等这一页刷新）。</p>
+      <p class="cet-review__sub">优先选词书有真题记录、带完整例句的难词。勾选想学的词；取消勾选的词以后不再推荐。补词量按学习节奏和复习积压调整，7 个是参考量；暂时加不了的词会保留，等下一次补词任务处理。</p>
+      ${!(sync.enabled && sync.token && sync.owner && sync.repo) ? '<p class="cet-review__sub">开启设置里的 GitHub 同步后，补词任务才能收到你的选择。</p>' : ''}
       <ul class="cet-review__list">
         ${pending.map((w) => `
           <li class="cet-review__item">
-            <input type="checkbox" checked data-cet-id="${esc(w.id)}" id="cet-${esc(w.id)}">
-            <label for="cet-${esc(w.id)}"><span class="cet-review__word">${esc(w.word)}</span>
-              <span class="cet-review__pos">${esc(w.pos || '')}</span></label>
+            <label class="cet-review__choice" for="cet-${esc(w.id)}">
+              <input type="checkbox" checked data-cet-id="${esc(w.id)}" id="cet-${esc(w.id)}">
+              <span class="cet-review__word">${esc(w.word)}</span>
+              <span class="cet-review__pos">${esc(w.pos || '')}</span>
+              <span class="cet-review__tag">${esc((w.tags && w.tags[0]) || 'CET')}</span>
+            </label>
             <span class="cet-review__meaning">${esc(w.meaning)}</span>
-            <span class="cet-review__tag">${esc((w.tags && w.tags[0]) || 'CET')}</span>
+            <details class="cet-review__details">
+              <summary>查看例句、搭配与来源</summary>
+              ${w.phonetic ? `<p>/${esc(w.phonetic)}/</p>` : ''}
+              <p>${esc(w.example || '')}<br><span class="cet-review__translation">${esc(w.exampleZh || '')}</span></p>
+              ${(w.collocations || []).length ? `<p>搭配：${w.collocations.map(esc).join('；')}</p>` : ''}
+              <p>${esc(w.exampleSource || '词书例句')}。例句与真题收录记录分别展示。</p>
+              ${Array.isArray(w.selection?.examSources) && w.selection.examSources.length
+                ? `<p>词书记录的真题来源（${w.selection.examSources.length} 条）：${w.selection.examSources.map(esc).join('；')}</p><p><a href="https://github.com/kajweb/dict" target="_blank" rel="noopener noreferrer">查看词书来源</a></p>`
+                : '<p>旧候选的例句与来源会由补词任务补齐。</p>'}
+            </details>
           </li>`).join('')}
       </ul>
       <div class="cet-review__actions">
@@ -925,7 +992,7 @@
       box.hidden = true;
       box.innerHTML = '';
       toast(approvedIds.length
-        ? `已选 ${approvedIds.length} 个，稍后自动加入词库`
+        ? `已选 ${approvedIds.length} 个，等待同步和下一次补词任务`
         : '这批候选词已跳过，之后会换新的来');
       // 决定要尽快让补词脚本看到：开着同步就立刻推一次
       if (sync.enabled && sync.token && sync.owner && sync.repo) syncNow({ silent: true });
@@ -956,20 +1023,27 @@
   function renderQuiz(q) {
     const stage = progressOf(q.word.id).stage;
     const badge = $('#stage-badge');
-    badge.textContent = STAGE_BADGE[stage] || '认词';
+    badge.textContent = q.retry ? '本轮回练' : session.mode === 'context' ? '语境加练'
+      : session.mode === 'listen' ? '听写加练' : STAGE_BADGE[stage] || '认词';
     badge.dataset.stage = stage;
 
     $('#feedback').innerHTML = '';
     $('#btn-next').hidden = true;
+    $('#btn-next').disabled = false;
 
     const body = $('#quiz-body');
     if (q.kind === 'recognize') {
       body.innerHTML = `
         <div class="prompt">
-          <p class="prompt__label">选出正确的中文释义</p>
+          <p class="prompt__label" id="recognize-label">先在心里回想词义，再核对选项</p>
           <p class="prompt__word">${esc(q.word.word)}</p>
         </div>
-        <div class="options" role="group" aria-label="释义选项">
+        <div class="btn-row" id="recall-actions">
+          <button class="btn btn--primary" id="btn-recalled" type="button">想起了，核对选项</button>
+          <button class="btn btn--ghost" id="btn-recall-help" type="button">没想起，借助选项</button>
+        </div>
+        <p class="hint" id="recall-hint">借助选项后答对会安排再复习，不记升阶天数。</p>
+        <div class="options" id="recognize-options" role="group" aria-label="释义选项" hidden>
           ${q.options.map((o, i) => `
             <button class="option" type="button" data-index="${i}">
               <span class="option__key" aria-hidden="true">${i + 1}</span>
@@ -977,31 +1051,52 @@
               <span class="option__mark" aria-hidden="true"></span>
             </button>`).join('')}
         </div>`;
+      $('#btn-recalled').addEventListener('click', () => revealOptions(q, false));
+      $('#btn-recall-help').addEventListener('click', () => revealOptions(q, true));
       $$('.option', body).forEach((btn) => {
         btn.addEventListener('click', () => onPickOption(q, Number(btn.dataset.index)));
       });
+      $('#btn-recalled').focus({ preventScroll: true });
     } else {
       const isFill = q.kind === 'fill';
+      const isListen = q.kind === 'listen';
       body.innerHTML = `
         <div class="prompt">
-          <p class="prompt__label">${isFill ? '把这个词填回例句' : '根据中文写出英文单词'}</p>
+          <p class="prompt__label">${isFill ? '读例句，填入已学过的词' : isListen ? '听发音，写出英文单词' : '根据中文写出英文单词'}</p>
           ${isFill
             ? `<p class="prompt__blank">${blankExample(q.word.example, q.word.word)}</p>
-               <p class="prompt__blank" style="margin-top:8px;background:none;padding:0">${esc(q.word.exampleZh)}</p>`
+               <p class="prompt__blank" id="context-translation" hidden>${esc(q.word.exampleZh || '')}</p>`
+            : isListen ? `<button class="btn btn--ghost" id="btn-listen-play" type="button">播放单词</button>
+                <p class="hint" id="listen-status" role="status">可以重复播放；本题练习听音辨词。</p>`
             : `<p class="prompt__zh">${esc(q.word.meaning)}</p>`}
         </div>
         <form class="spell" id="spell-form" novalidate>
           <div class="spell__row">
-            <label class="sr-only" for="spell-input">输入英文单词</label>
+            <label class="sr-only" for="spell-input">${isFill ? '填入英文单词' : isListen ? '输入听到的英文单词' : '输入英文单词'}</label>
             <input class="spell__input" id="spell-input" type="text"
                    autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
                    placeholder="输入英文…">
             <button class="btn btn--primary" type="submit">提交</button>
           </div>
-          <p class="spell__letters">${esc(q.hint)} <span aria-hidden="true">·</span> ${q.word.word.replace(/[^a-z]/gi, '').length} 个字母</p>
+          <button class="btn btn--ghost" id="btn-hint" type="button">${isFill ? '看中文和首字母提示' : '看首字母提示'}</button>
+          <p class="spell__letters" id="spell-hint" hidden>${esc(q.hint)} · 提示后答对不记升阶天数</p>
         </form>`;
       const form = $('#spell-form');
       const input = $('#spell-input');
+      if (isListen) $('#btn-listen-play').addEventListener('click', () => {
+        $('#listen-status').textContent = '可以重复播放；本题练习听音辨词。';
+        speak(q.word.word, () => {
+          if (session?.current === q && !session.answered) $('#listen-status').textContent = '播放失败，可以重试或结束本次，改练语境填空。';
+        });
+        input.focus();
+      });
+      $('#btn-hint').addEventListener('click', () => {
+        q.aided = true;
+        $('#spell-hint').hidden = false;
+        if (isFill) $('#context-translation').hidden = false;
+        $('#btn-hint').hidden = true;
+        input.focus();
+      });
       form.addEventListener('submit', (e) => {
         e.preventDefault();
         if (session.answered) return;
@@ -1016,15 +1111,29 @@
       setTimeout(() => input.focus(), 40);
     }
 
-    if (store.settings.speak && q.kind !== 'fill') speak(q.word.word);
+    // 默写前不朗读答案；认词可以听音，拼写只在作答后发音。
+    if (store.settings.speak && q.kind === 'recognize') speak(q.word.word);
     updateProgress();
   }
 
-  const normalize = (s) => String(s).toLowerCase().replace(/[^a-z]/g, '');
+  const normalize = (s) => String(s).normalize('NFKC').trim().toLowerCase()
+    .replace(/[‘’]/g, "'").replace(/\s+/g, ' ');
+
+  function revealOptions(q, aided) {
+    if (!session || session.current !== q || session.answered || q.optionsReady) return;
+    q.optionsReady = true;
+    q.aided = aided;
+    $('#recall-actions').hidden = true;
+    $('#recall-hint').hidden = true;
+    $('#recognize-label').textContent = aided ? '借助选项学习词义，再选出释义' : '选出释义，核对刚才的回忆';
+    $('#recognize-options').hidden = false;
+    $('.option')?.focus({ preventScroll: true });
+  }
 
   function onPickOption(q, index) {
-    if (session.answered) return;
+    if (!session || session.current !== q || session.answered || !q.optionsReady) return;
     const chosen = q.options[index];
+    if (!chosen) return;
     const buttons = $$('.option');
     buttons.forEach((btn, i) => {
       btn.disabled = true;
@@ -1061,28 +1170,29 @@
       stageNote = `<p class="fb__stage" style="color:var(--color-danger)">↓ 退回${STAGE_BADGE[r.after.stage] || '认词'}关，再巩固一下</p>`;
     }
 
-    // 攒天数进度：让「一个月内攒够多少天」这件事在每次作答后都看得见
+    // 独立答对天数与下一次复习时间在每次作答后可见。
     const need = r.need || creditNeed();
     const have = (r.after.credits || []).length;
-    const cool = Math.round(CREDIT_DUE / MIN);
+    const nextDue = formatDue(r.after.due);
     let creditNote;
-    if (!isCorrect) {
-      creditNote = r.cleared
-        ? `<p class="fb__credit fb__credit--bad">答错 → 已攒的 ${r.cleared} 天全部清零，重新计数一个月</p>`
-        : `<p class="fb__credit fb__credit--bad">答错 → 这一关重新计数一个月</p>`;
+    const retryNote = q.requeued ? '本轮隔开 3 题再练' : '本轮不立即重复';
+    if (r.practice) {
+      creditNote = `<p class="fb__credit">${q.retry ? '本轮回练' : '自由加练'} · 不改变升阶天数与下次复习时间</p>`;
+    } else if (!isCorrect) {
+      creditNote = `<p class="fb__credit fb__credit--bad">保留之前的 ${have} 天积累 · ${retryNote} · 下次复习 ${nextDue}</p>`;
+    } else if (r.aided) {
+      creditNote = `<p class="fb__credit">提示后答对，本次不记升阶天数 · ${retryNote} · 下次复习 ${nextDue}</p>`;
     } else if (r.before.stage === 'new') {
-      creditNote = `<p class="fb__credit">进入「认词中」，接下来要在一个月内攒够 ${need} 天答对</p>`;
+      creditNote = `<p class="fb__credit">进入「认词中」· 下次复习 ${nextDue}</p>`;
     } else if (r.promoted) {
       creditNote = r.after.stage === 'mastered'
-        ? `<p class="fb__credit">一个月内攒满 ${need} 天 → 已掌握 ✓</p>`
-        : `<p class="fb__credit">一个月内攒满 ${need} 天 → 升入「${STAGE_BADGE[r.after.stage]}」关，重新开始攒</p>`;
+        ? `<p class="fb__credit">跨天答对与拼写稳定性达标 → 已掌握 · 下次复习 ${nextDue}</p>`
+        : `<p class="fb__credit">认词达标 → 进入拼写关，独立建立拼写记忆 · 下次复习 ${nextDue}</p>`;
     } else if (r.after.stage === 'mastered') {
-      creditNote = `<p class="fb__credit">已掌握 · 之后每 ${Math.round(MASTERED_DUE / DAY)} 天回访一次</p>`;
-    } else if (have === (r.before.credits || []).length) {
-      // 今天已经记过了，这次只是加刷一遍
-      creditNote = `<p class="fb__credit">今天已经记过了 · 已攒 <b>${have}</b> / ${need} 天 · ${cool} 分钟后可再刷</p>`;
+      creditNote = `<p class="fb__credit">已掌握 · 下次复习 ${nextDue}</p>`;
     } else {
-      creditNote = `<p class="fb__credit">已攒 <b>${have}</b> / ${need} 天（一个月内）· ${cool} 分钟后可再刷</p>`;
+      const evidence = r.credited ? '记上新的一天' : '同日重复或提前回练，不加天数';
+      creditNote = `<p class="fb__credit">${evidence} · 已攒 <b>${have}</b> / 至少 ${need} 天 · 稳定性 ${(r.after.memory?.stability || 0).toFixed(1)} / ${PROMOTION_STABILITY[r.after.stage]} 天 · 下次复习 ${nextDue}</p>`;
     }
 
     const userLine = (!isCorrect && q.kind !== 'recognize' && userAnswer)
@@ -1092,14 +1202,16 @@
       <div class="fb ${isCorrect ? 'fb--ok' : 'fb--no'}">
         <p class="fb__head">
           ${isCorrect ? iconCheck() : iconCross()}
-          ${isCorrect ? (q.kind === 'recognize' ? '认对了' : '拼对了') : (q.kind === 'recognize' ? '认错了' : '拼错了')}
+          ${isCorrect ? (q.aided ? '提示后答对' : q.kind === 'recognize' ? '认对了' : '拼对了') : (q.kind === 'recognize' ? '认错了' : '拼错了')}
         </p>
         <p class="fb__word">${esc(w.word)} <span class="prompt__pos">${esc(w.pos || '')}</span></p>
         <p class="fb__meaning">${esc(w.meaning)}</p>
         ${userLine}
-        <div class="fb__ex">
+          <div class="fb__ex">
           <p class="fb__ex-en">${highlight(w.example, w.word)}</p>
           <p class="fb__ex-zh">${esc(w.exampleZh || '')}</p>
+          ${w.exampleSource ? `<p class="hint">${esc(w.exampleSource)}</p>` : ''}
+          ${(w.collocations || []).length ? `<p class="fb__ex-zh">搭配：${w.collocations.map(esc).join('；')}</p>` : ''}
         </div>
         ${stageNote}
         ${creditNote}
@@ -1108,7 +1220,34 @@
     const next = $('#btn-next');
     next.hidden = false;
     next.textContent = session.done >= session.total ? '看小结' : '继续';
-    next.focus({ preventScroll: true });
+    if (!isCorrect && q.kind !== 'recognize') {
+      next.disabled = true;
+      $('#feedback').insertAdjacentHTML('beforeend', `
+        <form class="spell" id="correction-form">
+          <label for="correction-input">再正确拼写一次：${esc(w.word)}</label>
+          <div class="spell__row">
+            <input class="spell__input" id="correction-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" required>
+            <button class="btn btn--ghost" type="submit">确认拼写</button>
+          </div>
+          <p class="hint" id="correction-hint" role="status">这次订正不计入答题次数或升阶天数。</p>
+        </form>`);
+      const input = $('#correction-input');
+      $('#correction-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (normalize(input.value) !== normalize(w.word)) {
+          $('#correction-hint').textContent = '还没拼对，请对照上面的单词再试一次。';
+          input.focus();
+          return;
+        }
+        input.disabled = true;
+        $('#correction-form button').disabled = true;
+        $('#correction-hint').textContent = q.requeued ? '已订正，本轮隔开几题后再练。' : '已订正，之后按复习计划再练。';
+        next.disabled = false;
+        next.focus({ preventScroll: true });
+      });
+      input.focus({ preventScroll: true });
+    } else next.focus({ preventScroll: true });
+    if (store.settings.speak && q.kind !== 'recognize') speak(w.word);
   }
 
   function renderSummary(stats) {
@@ -1116,25 +1255,30 @@
     $('#summary-title').textContent = rate >= 90 ? '干净利落' : rate >= 70 ? '稳步推进' : '有难点，正常';
 
     // 把结果分成四类，避免把「新词刚起步」说成「攒到了新的一天」
-    const started = [], advanced = [], gained = [], lost = [];
+    const started = [], advanced = [], gained = [];
     stats.results.forEach((r, id) => {
       const before = (r.before.credits || []).length;
       const after = (r.after.credits || []).length;
       if (r.promoted && r.before.stage === 'new') started.push(id);
       else if (r.promoted) advanced.push(id);
       else if (after > before) gained.push(id);
-      if (!r.promoted && after < before) lost.push(id);
     });
 
     $('#summary-stats').innerHTML = `
       <div class="stat"><span class="stat__num">${stats.done}</span><span class="stat__label">答题</span></div>
-      <div class="stat"><span class="stat__num">${rate}%</span><span class="stat__label">正确率</span></div>
+      <div class="stat"><span class="stat__num">${rate}%</span><span class="stat__label">独立答对率</span></div>
       <div class="stat"><span class="stat__num">${gained.length}</span><span class="stat__label">攒到天数</span></div>`;
 
     const rows = [];
     if (started.length) rows.push(`<div class="summary__row"><b>${started.length} 个</b> 词进入「认词中」，开始攒天数</div>`);
     if (gained.length) rows.push(`<div class="summary__row"><b>${gained.length} 个</b> 词攒到了新的一天 <span class="tag tag--up">↑</span></div>`);
-    if (lost.length) rows.push(`<div class="summary__row"><b>${lost.length} 个</b> 词答错清零，得重新攒 <span class="tag tag--down">↓</span></div>`);
+    summaryMistakes = [...stats.missed];
+    if (summaryMistakes.length) rows.push(`<div class="summary__row">本轮错词：<b>${summaryMistakes.map((id) => esc(byId.get(id)?.word || id)).join('、')}</b></div>`);
+    const aidedWords = [...stats.aided];
+    if (aidedWords.length) rows.push(`<div class="summary__row">提示后仍需巩固：<b>${aidedWords.map((id) => esc(byId.get(id)?.word || id)).join('、')}</b></div>`);
+    summaryMistakes = [...new Set(summaryMistakes.concat(aidedWords))];
+    $('#btn-summary-mistakes').hidden = !summaryMistakes.length;
+    rows.push(`<div class="summary__row">用时 ${Math.max(1, Math.round(stats.elapsed / MIN))} 分钟${stats.practice ? ' · 自由加练，不影响复习计划' : ''}</div>`);
     if (advanced.length) {
       rows.push(`<div class="summary__row">升阶：<b>${advanced.map((id) => esc(byId.get(id)?.word || id)).join('、')}</b> <span class="tag tag--up">晋级</span></div>`);
     }
@@ -1162,7 +1306,7 @@
     const q = libQuery.trim().toLowerCase();
     const list = WORDS.filter((w) => {
       const p = progressOf(w.id);
-      if (libFilter !== 'all' && p.stage !== libFilter) return false;
+      if (libFilter === 'mistakes' ? !p.wrong : libFilter !== 'all' && p.stage !== libFilter) return false;
       if (!q) return true;
       return w.word.toLowerCase().includes(q) || w.meaning.toLowerCase().includes(q);
     });
@@ -1177,7 +1321,7 @@
         `<i class="strength__pip ${(p.stage === 'mastered' || i < have) ? 'is-on' : ''}" data-stage="${p.stage}"></i>`).join('');
       const creditText = p.stage === 'new' ? '未开始'
         : p.stage === 'mastered' ? '已掌握'
-        : `已攒 ${have}/${need} 天`;
+        : `已攒 ${have} / 至少 ${need} 天`;
       const dueText = p.stage === 'new' ? '尚未开始'
         : p.due <= now() ? '待复习'
         : `复习：${formatDue(p.due)}`;
@@ -1192,7 +1336,7 @@
           <p class="wcard__ex">${esc(w.example)}</p>
           <div class="wcard__foot">
             <span class="strength" role="img" aria-label="${creditText}">${pips}</span>
-            <span class="wcard__meta">${creditText} · 对 ${p.correct} · 错 ${p.wrong} · ${dueText}</span>
+            <span class="wcard__meta">${creditText} · 对 ${p.correct} · 错 ${p.wrong} · ${dueText}${p.memory ? ` · 稳定性 ${p.memory.stability.toFixed(1)} 天` : ''}</span>
           </div>
         </li>`;
     }).join('');
@@ -1232,6 +1376,18 @@
       store.settings.threshold = Number(th.value);
       store.settingsAt = now();
       saveStore();
+      refreshIntro();
+      renderLibrary();
+    });
+
+    const retention = $('#set-retention');
+    retention.value = store.settings.retention;
+    $('#set-retention-out').textContent = retention.value + '%';
+    retention.addEventListener('input', () => {
+      store.settings.retention = Number(retention.value);
+      store.settingsAt = now();
+      $('#set-retention-out').textContent = retention.value + '%';
+      saveStore();
     });
 
     const sp = $('#set-speak');
@@ -1241,36 +1397,28 @@
       saveStore();
     });
 
-    $('#btn-export').addEventListener('click', () => {
-      const blob = new Blob([JSON.stringify(store, null, 2)], { type: 'application/json' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = `worddrill-progress-${new Date().toISOString().slice(0, 10)}.json`;
-      a.click();
-      URL.revokeObjectURL(a.href);
-      toast('已导出进度文件');
-    });
+    $('#btn-export').addEventListener('click', () => exportProgress(JSON.stringify(store, null, 2)));
+    $('#btn-backup').disabled = !localStorage.getItem(BACKUP_KEY);
+    $('#btn-backup').addEventListener('click', () => exportProgress(localStorage.getItem(BACKUP_KEY), 'before-upgrade'));
 
     $('#import-file').addEventListener('change', async (e) => {
       const file = e.target.files?.[0];
       if (!file) return;
       try {
         const data = JSON.parse(await file.text());
-        if (!data || typeof data !== 'object' || !data.words) throw new Error('bad');
-        store = Object.assign(defaultStore(), data, {
-          settings: Object.assign(defaultStore().settings, data.settings || {}),
-          stats: Object.assign(defaultStore().stats, data.stats || {})
-        });
+        const imported = readStore(data);
         // 导入的也可能是旧版导出的文件，同样按版本升级语义
-        migrateStore(store, data.version);
-        normalizeSettings(store.settings);
+        migrateStore(imported, data.version);
+        keepBackup(localStorage.getItem(STORE_KEY) || JSON.stringify(data));
+        store = imported;
         saveStore();
+        $('#btn-backup').disabled = false;
         applySettingsToUI();
         refreshIntro();
         renderLibrary();
         toast('进度已导入');
-      } catch {
-        toast('导入失败：文件格式不对');
+      } catch (err) {
+        toast('导入失败：' + err.message);
       } finally {
         e.target.value = '';
       }
@@ -1288,6 +1436,17 @@
 
     $('#meta-count').textContent = WORDS.length;
     $('#meta-updated').textContent = META.updated || '—';
+  }
+
+  function exportProgress(raw, suffix = dayKey(now())) {
+    if (!raw) return;
+    const blob = new Blob([raw], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `worddrill-progress-${suffix}.json`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    toast('已导出进度文件');
   }
 
   /* ---------- 同步面板 ---------- */
@@ -1375,6 +1534,9 @@
     $('#set-threshold-out').textContent = store.settings.threshold;
     $('#set-threshold-text').textContent = store.settings.threshold;
     $('#set-speak').checked = !!store.settings.speak;
+    $('#set-retention').value = store.settings.retention;
+    $('#set-retention-out').textContent = store.settings.retention + '%';
+    $('#btn-backup').disabled = !localStorage.getItem(BACKUP_KEY);
   }
 
   /* ---------- 主题 ----------
@@ -1383,15 +1545,20 @@
    */
 
   /* ---------- 发音 ---------- */
-  function speak(text) {
-    if (!('speechSynthesis' in window)) return;
+  const canSpeak = () => 'speechSynthesis' in window && typeof SpeechSynthesisUtterance === 'function';
+  function speak(text, onError = null) {
+    if (!canSpeak()) { onError?.(); return; }
     try {
       window.speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(text);
       u.lang = 'en-US';
       u.rate = 0.9;
+      if (onError) u.onerror = (event) => {
+        // 重播会主动取消上一段语音，不应当显示为播放失败。
+        if (!['canceled', 'interrupted'].includes(event?.error)) onError();
+      };
       window.speechSynthesis.speak(u);
-    } catch { /* 静默失败：不影响答题 */ }
+    } catch { onError?.(); }
   }
 
   /* ---------- 视图切换 ---------- */
@@ -1419,11 +1586,17 @@
       if (!b.classList.contains('nav__item')) b.addEventListener('click', () => switchView(b.dataset.view));
     });
 
-    $('#btn-start').addEventListener('click', startSession);
-    // 「再来一轮」也走同一逻辑：没有到期的词就把今天练过的再带上
+    $('#btn-start').addEventListener('click', () => startSession());
+    $('#btn-review').addEventListener('click', () => startSession('review'));
+    $('#btn-practice').addEventListener('click', () => startSession('practice'));
+    $('#btn-context').addEventListener('click', () => startSession('context'));
+    $('#btn-listen').addEventListener('click', () => startSession('listen'));
+    $('#btn-mistakes').addEventListener('click', () => startSession('mistakes'));
+    $('#btn-summary-mistakes').addEventListener('click', () => startSession('mistakes', summaryMistakes));
     $('#btn-again').addEventListener('click', () => { showPanel('intro'); refreshIntro(); startSession(); });
     $('#btn-end').addEventListener('click', endSession);
     $('#btn-next').addEventListener('click', () => {
+      if (!session || !session.answered) return;
       if (session && session.done >= session.total) endSession();
       else nextQuestion();
     });
@@ -1443,17 +1616,19 @@
 
     // 键盘：选择题 1-4 直接作答；Enter 进入下一题
     document.addEventListener('keydown', (e) => {
+      if (e.isComposing) return;
       if ($('#view-learn').hidden) return;
       const quizVisible = !$('#session-quiz').hidden;
       if (!quizVisible || !session) return;
       const tag = document.activeElement?.tagName;
       const typing = tag === 'INPUT';
 
-      if (!session.answered && /^[1-4]$/.test(e.key) && !typing) {
+      if (!session.answered && session.current.optionsReady && /^[1-4]$/.test(e.key) && !typing) {
         const btn = $$('.option')[Number(e.key) - 1];
         if (btn && !btn.disabled) { e.preventDefault(); btn.click(); }
       }
       if (e.key === 'Enter' && session.answered) {
+        if (typing) return;  // 订正表单使用原生 Enter 提交
         // 焦点若落在别处「可用」按钮上，交给浏览器原生激活（比如「结束本次」）；
         // 焦点在「继续」或已禁用的选项按钮上时，由这里统一推进，保证 Enter 始终管用。
         const el = document.activeElement;
@@ -1466,7 +1641,16 @@
 
   /* ---------- 启动 ---------- */
   async function boot() {
-    store = loadStore();
+    try {
+      if (typeof FSRS === 'undefined') throw new Error('复习算法未载入，请联网刷新一次');
+      store = loadStore();
+    } catch (err) {
+      $('#session-intro').innerHTML = `<h2 class="intro__title">进度未被改动</h2>
+        <p class="intro__sub">${esc(err.message || '无法读取进度')}。为保护原记录，本次暂停训练。</p>
+        <button class="btn btn--ghost" id="btn-rescue" type="button">导出原始进度</button>`;
+      $('#btn-rescue').addEventListener('click', () => exportProgress(localStorage.getItem(STORE_KEY), 'original'));
+      return;
+    }
     if (storeMigrated) saveStore();   // 迁移结果立刻落盘：同浏览器的旧标签页不该再读到旧语义的 threshold
     sync = loadSync();
 
@@ -1511,6 +1695,8 @@
     applySyncToUI();
     refreshIntro();
     showPanel('intro');
+    setInterval(() => { if (!session) refreshIntro(); }, MIN);
+    window.addEventListener('focus', refreshIntro);
 
     const hash = location.hash.replace('#', '');
     if (['library', 'settings'].includes(hash)) switchView(hash);
