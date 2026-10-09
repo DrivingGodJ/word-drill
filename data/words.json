@@ -2,7 +2,7 @@
   "meta": {
     "name": "WordDrill",
     "version": 1,
-    "updated": "2026-10-08",
+    "updated": "2026-10-09",
     "source": "FlowUs · page 2220ec94-e0c2-4523-87be-f8277b09d786",
     "note": "词库由 FlowUs 生词页同步而来；新增单词请用 scripts/sync-from-flowus.py 或直接编辑本文件。"
   },
@@ -725,6 +725,36 @@
       "difficulty": 4
     },
     {
+      "id": "metabolic",
+      "word": "metabolic",
+      "pos": "adj.",
+      "meaning": "代谢作用的， 新陈代谢的",
+      "example": "Exercise can increase your metabolic rate.",
+      "exampleZh": "运动可以提高新陈代谢率。",
+      "collocations": [
+        "metabolic disorder（代谢障碍，代谢失调）",
+        "metabolic rate（代谢速率）",
+        "metabolic process（代谢过程）"
+      ],
+      "tags": [
+        "CET6"
+      ],
+      "score": 8,
+      "difficulty": 4,
+      "phonetic": "ˌmetə'bɒlɪk",
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_3"
+        ],
+        "examSources": [
+          "CET6 · 2008.12 · 阅读理解"
+        ]
+      }
+    },
+    {
       "id": "metropolis",
       "word": "metropolis",
       "pos": "n.",
@@ -753,6 +783,36 @@
       ]
     },
     {
+      "id": "nominal",
+      "word": "nominal",
+      "pos": "adj.",
+      "meaning": "名义上的， 有名无实的； 很少的， 象征性的； 名词性的",
+      "example": "Their conversion to Christianity was only nominal.",
+      "exampleZh": "他们只是名义上皈依了基督教。",
+      "collocations": [
+        "nominal value（[化]标称值；票面价值）",
+        "nominal diameter（公称直径；标称直径）",
+        "nominal gdp（名义国内生产总值）"
+      ],
+      "tags": [
+        "CET6"
+      ],
+      "score": 8,
+      "difficulty": 4,
+      "phonetic": "'nɒmɪnl",
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_3"
+        ],
+        "examSources": [
+          "CET6 · 2017.6 · 第三套 · 阅读理解"
+        ]
+      }
+    },
+    {
       "id": "periodical",
       "word": "periodical",
       "pos": "adj./n.",
@@ -763,6 +823,36 @@
       "tags": [
         "CET6"
       ]
+    },
+    {
+      "id": "preparatory",
+      "word": "preparatory",
+      "pos": "adj.",
+      "meaning": "预备的",
+      "example": "A lot of preparatory work still needs to be done.",
+      "exampleZh": "还有很多准备工作要做。",
+      "collocations": [
+        "preparatory work（准备工作；筹备工作）",
+        "preparatory stage（准备阶段；预备伐）",
+        "preparatory committee（筹备委员会）"
+      ],
+      "tags": [
+        "CET6"
+      ],
+      "score": 8,
+      "difficulty": 4,
+      "phonetic": "prɪ'pærətri",
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_3"
+        ],
+        "examSources": [
+          "CET6 · 2012.12 · 第二套 · 听力题"
+        ]
+      }
     },
     {
       "id": "prevalence",

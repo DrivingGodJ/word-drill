@@ -1,61 +1,34 @@
 {
-  "updated": "2026-10-08",
+  "updated": "2026-10-09",
   "words": [
-    {
-      "id": "metabolic",
-      "word": "metabolic",
-      "pos": "adj.",
-      "meaning": "代谢作用的， 新陈代谢的",
-      "example": "the metabolic activity of the brain",
-      "exampleZh": "大脑的新陈代谢活动",
-      "collocations": [],
-      "tags": [
-        "CET6"
-      ],
-      "score": 6,
-      "difficulty": 4
-    },
-    {
-      "id": "nominal",
-      "word": "nominal",
-      "pos": "adj.",
-      "meaning": "名义上的， 有名无实的； 很少的， 象征性的； 名词性的",
-      "example": "the nominal head of the rebellion",
-      "exampleZh": "这次叛乱名义上的领导人",
-      "collocations": [],
-      "tags": [
-        "CET6"
-      ],
-      "score": 6,
-      "difficulty": 4
-    },
-    {
-      "id": "preparatory",
-      "word": "preparatory",
-      "pos": "adj.",
-      "meaning": "预备的",
-      "example": "preparatory drawings",
-      "exampleZh": "草图",
-      "collocations": [],
-      "tags": [
-        "CET6"
-      ],
-      "score": 6,
-      "difficulty": 4
-    },
     {
       "id": "prevalent",
       "word": "prevalent",
       "pos": "adj.",
       "meaning": "流行的， 普遍的",
-      "example": "the prevalent belief in astrology",
-      "exampleZh": "对占星术的普遍相信",
+      "example": "The belief in astrology is prevalent in some communities.",
+      "exampleZh": "对占星术的信仰在一些群体中很普遍。",
       "collocations": [],
       "tags": [
         "CET6"
       ],
       "score": 6,
-      "difficulty": 4
+      "difficulty": 4,
+      "phonetic": "'prevələnt",
+      "exampleSource": "本项目编辑补全（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_2",
+          "CET6_3"
+        ],
+        "examSources": [
+          "CET6 · 2016.6 · 第一套 · 阅读理解",
+          "CET6 · 2012.6 · 阅读理解",
+          "CET6 · 2011.6 · 阅读理解"
+        ]
+      }
     },
     {
       "id": "preventable",
@@ -69,21 +42,293 @@
         "CET4"
       ],
       "score": 6,
-      "difficulty": 4
+      "difficulty": 4,
+      "phonetic": "prɪ'ventəbl",
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET4_1",
+          "CET4luan_1"
+        ],
+        "examSources": [
+          "CET4 · 2013.12 · 第一套 · 听力题"
+        ]
+      }
     },
     {
       "id": "proficient",
       "word": "proficient",
       "pos": "adj.",
       "meaning": "熟练的，精通的",
-      "example": "a proficient typist",
-      "exampleZh": "熟练的打字员",
-      "collocations": [],
+      "example": "He is a proficient typist who rarely makes mistakes.",
+      "exampleZh": "他是一名熟练的打字员，很少出错。",
+      "collocations": [
+        "proficient in（精通；熟练）"
+      ],
       "tags": [
         "CET6"
       ],
+      "score": 7,
+      "difficulty": 4,
+      "phonetic": "prə'fɪʃ(ə)nt",
+      "exampleSource": "本项目编辑补全（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_2"
+        ],
+        "examSources": [
+          "CET6 · 2016.6 · 第二套 · 听力题",
+          "CET6 · 2013.6 · 第三套 · 阅读理解"
+        ]
+      }
+    },
+    {
+      "id": "productivity",
+      "word": "productivity",
+      "pos": "n.",
+      "meaning": "生产力； 生产率",
+      "example": "It cost the country $4 million in lost productivity .",
+      "exampleZh": "它对该国造成了400万美元的生产力损失。",
+      "collocations": [
+        "labor productivity（劳动生产率）",
+        "labour productivity（劳动生产率）",
+        "primary productivity（初级生产力；第一性生产力；基础生产力；初级生产率）"
+      ],
+      "phonetic": "ˌprɒdʌk'tɪvəti",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_1",
+          "CET6_2",
+          "CET6_3",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2016.6 · 第二套 · 阅读理解",
+          "CET6 · 2016.6 · 第一套 · 写作题",
+          "CET6 · 2016.12 · 第三套 · 阅读理解",
+          "CET6 · 2013.12 · 第三套 · 阅读理解",
+          "CET6 · 2013.12 · 第一套 · 阅读理解",
+          "CET6 · 2012.12 · 第一套 · 阅读理解",
+          "CET6 · 2009.12 · 阅读理解"
+        ],
+        "frequencyRank": 22052
+      },
+      "score": 8,
+      "difficulty": 3
+    },
+    {
+      "id": "infer",
+      "word": "infer",
+      "pos": "v.",
+      "meaning": "推断",
+      "example": "From the evidence, we can infer that the victim knew her killer.",
+      "exampleZh": "根据证据我们可以推断出受害者认识凶手。",
+      "collocations": [],
+      "phonetic": "ɪn'fɜː",
+      "tags": [
+        "CET4"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET4_2",
+          "CET4_3",
+          "CET4luan_2",
+          "CET6_2"
+        ],
+        "examSources": [
+          "CET6 · 2012.12 · 第二套 · 听力题",
+          "CET6 · 2011.12 · 阅读理解",
+          "CET6 · 2010.6 · 阅读理解",
+          "CET6 · 2010.12 · 听力题",
+          "CET4 · 2014.6 · 第二套 · 听力题",
+          "CET4 · 2008.12 · 听力题"
+        ],
+        "frequencyRank": 31457
+      },
+      "score": 6,
+      "difficulty": 3
+    },
+    {
+      "id": "advisable",
+      "word": "advisable",
+      "pos": "adj.",
+      "meaning": "明智的， 可取的",
+      "example": "Regular medical check-ups are advisable.",
+      "exampleZh": "定期检查身体是明智的。",
+      "collocations": [],
+      "phonetic": "əd'vaɪzəbl",
+      "tags": [
+        "CET4"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET4_2",
+          "CET4_3",
+          "CET4luan_2",
+          "CET6_3"
+        ],
+        "examSources": [
+          "CET6 · 2016.12 · 第二套 · 写作题",
+          "CET6 · 2013.6 · 第三套 · 写作题",
+          "CET6 · 2009.12 · 阅读理解",
+          "CET4 · 2017.6 · 第三套 · 阅读理解",
+          "CET4 · 2013.12 · 第一套 · 写作题",
+          "CET4 · 2012.6 · 写作题"
+        ],
+        "frequencyRank": 26735
+      },
+      "score": 6,
+      "difficulty": 3
+    },
+    {
+      "id": "navigate",
+      "word": "navigate",
+      "pos": "v.",
+      "meaning": "航行，驾驶",
+      "example": "The river is too dangerous to navigate.",
+      "exampleZh": "这河道太危险，不适宜航行。",
+      "collocations": [],
+      "phonetic": "ˈnævɪgeɪt",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_1",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2017.6 · 第一套 · 阅读理解",
+          "CET6 · 2015.6 · 第二套 · 阅读理解",
+          "CET6 · 2015.12 · 第一套 · 阅读理解",
+          "CET6 · 2014.6 · 第二套 · 阅读理解",
+          "CET6 · 2013.12 · 第二套 · 阅读理解",
+          "CET6 · 2012.12 · 第三套 · 阅读理解"
+        ],
+        "frequencyRank": 13605
+      },
+      "score": 6,
+      "difficulty": 3
+    },
+    {
+      "id": "proverb",
+      "word": "proverb",
+      "pos": "n.",
+      "meaning": "谚语，格言，箴言",
+      "example": "An old Arab proverb says, \"The enemy of my enemy is my friend.\"",
+      "exampleZh": "有一句古老的阿拉伯谚语说：“我敌人的敌人是我的朋友。”",
+      "collocations": [
+        "as the proverb goes（有句谚语说道；俗话说）"
+      ],
+      "phonetic": "'prɒvɜːb",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_2"
+        ],
+        "examSources": [
+          "CET6 · 2015.6 · 第一套 · 写作题",
+          "CET6 · 2014.6 · 第二套 · 写作题",
+          "CET6 · 2014.6 · 第三套 · 写作题",
+          "CET6 · 2014.6 · 第一套 · 写作题",
+          "CET6 · 2013.6 · 第三套 · 写作题"
+        ],
+        "frequencyRank": 18010
+      },
+      "score": 7,
+      "difficulty": 3
+    },
+    {
+      "id": "predominantly",
+      "word": "predominantly",
+      "pos": "adv.",
+      "meaning": "占主导地位地",
+      "example": "The landscape has remained predominantly rural in appearance.",
+      "exampleZh": "该风景看上去主要保留了乡村风貌。",
+      "collocations": [],
+      "phonetic": "prɪˈdɒmɪnəntli",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_1",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2017.12 · 第一套 · 阅读理解",
+          "CET6 · 2015.6 · 第三套 · 阅读理解",
+          "CET6 · 2013.12 · 第三套 · 阅读理解",
+          "CET6 · 2012.6 · 听力题",
+          "CET6 · 2008.12 · 阅读理解"
+        ],
+        "frequencyRank": 33247
+      },
       "score": 6,
       "difficulty": 4
+    },
+    {
+      "id": "prospective",
+      "word": "prospective",
+      "pos": "adj.",
+      "meaning": "预期的；未来的",
+      "example": "They are worried about prospective changes in the law.",
+      "exampleZh": "他们担心即将修改法律。",
+      "collocations": [
+        "prospective study（前瞻研究；预期研究；远景调查）",
+        "prospective market（未来的市场）",
+        "prospective customer（潜在顾客）"
+      ],
+      "phonetic": "prəˈspektɪv",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_1",
+          "CET6_3",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2015.12 · 第二套 · 阅读理解",
+          "CET6 · 2015.12 · 第一套 · 阅读理解",
+          "CET6 · 2014.12 · 第一套 · 阅读理解",
+          "CET6 · 2012.12 · 第二套 · 阅读理解"
+        ],
+        "frequencyRank": 18923
+      },
+      "score": 8,
+      "difficulty": 3
     }
   ]
 }
