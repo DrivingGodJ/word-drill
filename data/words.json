@@ -2,7 +2,7 @@
   "meta": {
     "name": "WordDrill",
     "version": 1,
-    "updated": "2026-10-09",
+    "updated": "2026-10-11",
     "source": "FlowUs · page 2220ec94-e0c2-4523-87be-f8277b09d786",
     "note": "词库由 FlowUs 生词页同步而来；新增单词请用 scripts/sync-from-flowus.py 或直接编辑本文件。"
   },
@@ -168,6 +168,20 @@
       ],
       "score": 6,
       "difficulty": 4
+    },
+    {
+      "id": "chronicle",
+      "word": "chronicle",
+      "pos": "n./v.",
+      "meaning": "编年史，大事记；记述，按时间顺序记录",
+      "example": "Its pages chronicle the lives of three generations of farmers.",
+      "exampleZh": "书中的篇章记述了三代农民的生活。",
+      "collocations": [
+        "a chronicle of events",
+        "chronicle the history of",
+        "chronicle the life of"
+      ],
+      "tags": []
     },
     {
       "id": "cobble",
@@ -825,6 +839,20 @@
       ]
     },
     {
+      "id": "prairie",
+      "word": "prairie",
+      "pos": "n.",
+      "meaning": "（尤指北美的）大草原",
+      "example": "Native grasses cover the prairie beyond the river.",
+      "exampleZh": "河流另一侧的大草原上覆盖着原生草本植物。",
+      "collocations": [
+        "open prairie",
+        "prairie grass",
+        "the North American prairie"
+      ],
+      "tags": []
+    },
+    {
       "id": "preparatory",
       "word": "preparatory",
       "pos": "adj.",
@@ -965,6 +993,20 @@
       ]
     },
     {
+      "id": "slant",
+      "word": "slant",
+      "pos": "v./n.",
+      "meaning": "（使）倾斜；有偏向地报道；斜度；看问题的角度或倾向",
+      "example": "Rays of sunlight slant across the wooden floor.",
+      "exampleZh": "一道道阳光斜照在木地板上。",
+      "collocations": [
+        "slant to the left",
+        "a political slant",
+        "slant the news"
+      ],
+      "tags": []
+    },
+    {
       "id": "stroke",
       "word": "stroke",
       "pos": "n.",
@@ -993,6 +1035,20 @@
       "tags": [
         "Unit2"
       ]
+    },
+    {
+      "id": "substantial",
+      "word": "substantial",
+      "pos": "adj.",
+      "meaning": "大量的，可观的；实质性的；坚固的",
+      "example": "The new policy led to a substantial reduction in energy use.",
+      "exampleZh": "新政策使能源消耗大幅减少。",
+      "collocations": [
+        "a substantial amount of",
+        "a substantial increase in",
+        "a substantial reduction in"
+      ],
+      "tags": []
     },
     {
       "id": "sun-drenched",
@@ -1033,6 +1089,34 @@
       "tags": [
         "Unit2"
       ]
+    },
+    {
+      "id": "undergo",
+      "word": "undergo",
+      "pos": "vt.",
+      "meaning": "经历，遭受（变化或不愉快的事）；接受（治疗、检查等）",
+      "example": "The bridge will undergo major repairs next month.",
+      "exampleZh": "这座桥将于下月进行大修。",
+      "collocations": [
+        "undergo major changes",
+        "undergo surgery",
+        "undergo a medical examination"
+      ],
+      "tags": []
+    },
+    {
+      "id": "undertake",
+      "word": "undertake",
+      "pos": "vt.",
+      "meaning": "承担，着手进行；承诺，保证",
+      "example": "Our team will undertake a study of energy use on campus.",
+      "exampleZh": "我们团队将开展一项关于校园能源使用的研究。",
+      "collocations": [
+        "undertake a task",
+        "undertake research",
+        "undertake to do something"
+      ],
+      "tags": []
     },
     {
       "id": "unveil",
