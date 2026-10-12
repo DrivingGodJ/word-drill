@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>WordDrill · 背单词</title>
-<meta name="description" content="按认识 → 拼写两阶段递进的单词训练工具，内置间隔重复调度与熟练度追踪。">
+<meta name="description" content="四级和手动词练认词与拼写，六级词只需认词；内置间隔重复调度与熟练度追踪。">
 <!-- 主题色分浅/深两份，浏览器 UI（Safari 顶栏、Android 工具栏）会按系统外观自动选 -->
 <meta name="theme-color" media="(prefers-color-scheme: light)" content="#7C3AED">
 <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0C0D12">
@@ -79,7 +79,7 @@
     <div class="panel panel--intro card" id="session-intro">
       <p class="eyebrow">今日训练</p>
       <h2 class="intro__title">先认得出，再写得出。</h2>
-      <p class="intro__sub">先能认出释义，再能独立拼写。根据每个词的记忆情况安排复习；跨天答对、记忆稳定后再升关。偶尔忘记也保留之前的积累。</p>
+      <p class="intro__sub">四级词和你额外加的词要会认会写；六级词只需认词。根据记忆情况安排复习，跨天独立答对、记忆稳定后再升关；忘记也保留之前的积累。</p>
 
       <div class="stat-row" id="intro-stats">
         <div class="stat">
@@ -208,7 +208,7 @@
     <div class="card settings-card">
       <h2 class="card__title">升阶判级</h2>
       <p class="card__desc">
-        每关至少要在多少个<strong>不同日子</strong>独立答对。还需达到记忆稳定性：认词 7 天，拼写 21 天。
+        每关至少要在多少个<strong>不同日子</strong>独立答对。认词稳定性需达 7 天：六级词即可掌握，四级和手动词还需通过拼写关（稳定性 21 天）。
         当天重复、提前加练和借助提示不增加升阶天数；答错只撤销当天证据，保留之前的积累。
       </p>
       <div class="field">
@@ -319,6 +319,6 @@
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
 <script src="vendor/ts-fsrs-5.4.2.js"></script>
-<script src="app.js?v=8"></script>
+<script src="app.js?v=9"></script>
 </body>
 </html>

@@ -123,4 +123,36 @@ with contextlib.redirect_stdout(io.StringIO()):
             pass
         for name in values:
             if name != 'progress.json': assert (root/name).read_bytes() == before[name][0]
-print('CET checks passed: adaptive supply, 48h quota, approval/rejection, reserve, replay, dry-run, no-op, bad progress.')
+# Manual entry paths override a CET6 label without replacing the existing word/ID.
+with tempfile.TemporaryDirectory() as folder, contextlib.redirect_stdout(io.StringIO()):
+    root = Path(folder)
+    original = dict(item)
+    original['custom'] = 'keep'
+    data_file = root/'words.json'
+    data_file.write_text(json.dumps({'words': [original]}))
+    entries = root/'entries.json'
+    entries.write_text(json.dumps([{'word': 'proficient', 'meaning': 'do not overwrite'},
+                                  {'word': 'extra', 'meaning': '额外词', 'tags': ['CET6']}]))
+    spec = importlib.util.spec_from_file_location('manual', Path(__file__).with_name('add-words.py'))
+    manual = importlib.util.module_from_spec(spec); spec.loader.exec_module(manual)
+    manual.WORDS_FILE, manual.POOL_FILE, manual.ROOT = data_file, root/'no-pool.json', root
+    manual.git = lambda *args: (_ for _ in ()).throw(AssertionError('no Git operations'))
+    before = data_file.read_bytes()
+    sys.argv = ['check', '--json-file', str(entries), '--dry-run']
+    manual.main()
+    assert data_file.read_bytes() == before
+    sys.argv = ['check', '--json-file', str(entries), '--no-commit']
+    manual.main()
+    records = {w['id']: w for w in json.loads(data_file.read_text())['words']}
+    for wid in ('proficient', 'extra'): assert '手动添加' in records[wid]['tags']
+    assert {k: v for k,v in records['proficient'].items() if k != 'tags'} == {k: v for k,v in original.items() if k != 'tags'}
+    before = data_file.read_bytes()
+    manual.main()
+    assert data_file.read_bytes() == before, 'repeating a manual add is a no-op'
+    spec = importlib.util.spec_from_file_location('flowus', Path(__file__).with_name('sync-from-flowus.py'))
+    flowus = importlib.util.module_from_spec(spec); spec.loader.exec_module(flowus)
+    existing = copy.deepcopy([original])
+    merged, added, updated, blank = flowus.merge(existing, [{'id': 'proficient', 'word': 'proficient', 'meaning': item['meaning']}])
+    assert added == [] and updated == ['proficient'] and '手动添加' in merged[0]['tags']
+    assert merged[0]['custom'] == 'keep' and merged[0]['example'] == original['example']
+print('CET checks passed: adaptive supply, 48h quota, approval/rejection, reserve, replay, dry-run, no-op, bad progress, manual-word priority.')
