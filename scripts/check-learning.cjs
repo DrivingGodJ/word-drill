@@ -394,6 +394,13 @@ assert.equal(app.getSession().practice, true);
     sha++; writes++;
     return { ok: true, json: async () => ({}) };
   };
+  // A schema-only migration must upload v6 even if all progress/settings are identical.
+  reset();
+  cloud = plain(app.buildPayload()); cloud.version = 5;
+  await app.syncNow({ silent: true });
+  assert.equal(cloud.version, 6);
+  assert.equal(writes, 1);
+  cloud = plain(phone); sha++; reads = 0; writes = 0;
   reset({ desktopOnly: rec() });
   await app.autoSync();
   for (const [id, p] of Object.entries(app.readStore(phone).words)) {

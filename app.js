@@ -608,6 +608,7 @@
 
   /** 只用来判断「内容有没有变」，排除 deviceId / syncedAt 这类每次都变的时间戳。 */
   const payloadSig = (p) => JSON.stringify({
+    version: Number(p.version) || 1,
     settings: p.settings || {}, settingsAt: p.settingsAt || 0,
     cet: p.cet || { approved: [], rejected: [] },
     stats: p.stats || {}, words: p.words || {}
