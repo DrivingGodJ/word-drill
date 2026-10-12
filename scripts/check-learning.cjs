@@ -36,6 +36,7 @@ const source = fs.readFileSync(path.join(root, 'app.js'), 'utf8')
   .replace("document.addEventListener('DOMContentLoaded', boot);", `globalThis.check = {
     defaultStore, readStore, migrateStore, loadStore, grade, mergeRemote, buildPayload,
     newAllowance, normalMemory, normalize, hasFillExample, dayKey, startSession, remoteRead,
+    requiresWriting, progressOf, quizTypeFor, renderLibrary,
     nextQuestion, answer, revealOptions, onPickOption, speak, canSpeak, bindEvents,
     syncNow, autoSync, bindAutoSync, endSession, getSync: () => sync, isSyncing: () => syncing,
     setSync: (config) => { sync = config; }, setSession: (s) => { session = s; },
@@ -70,10 +71,10 @@ const old = process.argv[2] ? JSON.parse(fs.readFileSync(process.argv[2], 'utf8'
 const raw = JSON.stringify(old);
 storage.set('worddrill.v1', raw);
 const migrated = app.loadStore();
-assert.equal(migrated.version, 5);
+assert.equal(migrated.version, 6);
 assert.equal(migrated.settings.threshold, 3);
 assert.equal(migrated.settings.newLimit, old.settings.newLimit);
-assert.equal(storage.get('worddrill.backup.before-v5'), raw);
+assert.equal(storage.get('worddrill.backup.before-v6'), raw);
 for (const [id, p] of Object.entries(old.words)) {
   for (const key of ['stage', 'credits', 'correct', 'wrong', 'due', 'lastSeen']) {
     assert.deepEqual(plain(migrated.words[id][key]), p[key], `${id}.${key}`);
@@ -82,11 +83,23 @@ for (const [id, p] of Object.entries(old.words)) {
 assert.deepEqual(plain(migrated.stats), { ...plain(app.defaultStore().stats), ...old.stats });
 assert.deepEqual(plain(migrated.cet), old.cet);
 const originalSetter = context.localStorage.setItem;
-storage.delete('worddrill.backup.before-v5');
+storage.delete('worddrill.backup.before-v6');
 context.localStorage.setItem = () => { throw new Error('quota'); };
 assert.throws(() => app.loadStore(), /quota/);
 assert.equal(storage.get('worddrill.v1'), raw);
 context.localStorage.setItem = originalSetter;
+
+// v5 -> v6 keeps existing FSRS settings/history and also retains the older backup.
+const v5 = { ...plain(migrated), version: 5, settings: { ...plain(migrated.settings), threshold: 5, retention: 85 }, settingsAt: 123 };
+storage.set('worddrill.v1', JSON.stringify(v5));
+storage.set('worddrill.backup.before-v5', 'older-backup');
+const v6 = app.loadStore();
+assert.equal(v6.version, 6);
+assert.deepEqual(plain(v6.settings), v5.settings);
+assert.equal(v6.settingsAt, 123);
+assert.deepEqual(plain(v6.words), v5.words);
+assert.equal(storage.get('worddrill.backup.before-v6'), JSON.stringify(v5));
+assert.equal(storage.get('worddrill.backup.before-v5'), 'older-backup');
 
 // Lapses retain historical days; practice and hints cannot create mastery evidence.
 reset({ word: rec() });
@@ -134,6 +147,81 @@ const forgotten = app.grade('fresh', false);
 assert.equal(forgotten.after.stage, 'write');
 assert.equal(forgotten.demoted, true);
 assert.ok(forgotten.after.memory.stability < 21);
+
+// CET6 needs recognition only; CET4, manual and overlapping labels still require writing.
+const classified = [
+  { id: 'six', word: 'six', meaning: '六级词', tags: ['CET6'] },
+  { id: 'four', word: 'four', meaning: '四级词', tags: ['CET4'] },
+  { id: 'extra', word: 'extra', meaning: '手动词', tags: [] },
+  { id: 'both', word: 'both', meaning: '重合词', tags: ['CET4', 'CET6'] },
+  { id: 'manualSix', word: 'manual-six', meaning: '额外六级词', tags: ['CET6', '手动添加'] },
+  { id: 'unitSix', word: 'unit-six', meaning: '课本词', tags: ['CET6', 'Unit2'] }
+];
+app.setWords(classified);
+assert.equal(app.requiresWriting('six'), false);
+for (const id of ['four', 'extra', 'both', 'manualSix', 'unitSix']) assert.equal(app.requiresWriting(id), true);
+for (const stage of ['new', 'recognize', 'write', 'mastered']) assert.equal(app.quizTypeFor('six', stage), 'recognize');
+for (const id of ['four', 'extra', 'both', 'manualSix']) assert.equal(app.quizTypeFor(id, 'mastered'), 'spell');
+reset();
+app.grade('six', true);
+let sixMastered = false;
+for (let n = 0; n < 16; n++) {
+  context.testNow = app.getStore().words.six.due;
+  const result = app.grade('six', true);
+  assert.notEqual(result.after.stage, 'write');
+  if (result.after.stage === 'mastered') { sixMastered = true; break; }
+}
+assert.ok(sixMastered);
+assert.equal(app.getStore().words.six.masteredBy, 'recognize');
+const sixMemory = plain(app.getStore().words.six.memory);
+const sixPayload = plain(app.buildPayload());
+reset();
+app.mergeRemote(sixPayload);
+assert.equal(app.getStore().words.six.masteredBy, 'recognize', 'sync retains which skill was mastered');
+assert.deepEqual(plain(app.getStore().words.six.memory), sixMemory);
+context.testNow = app.getStore().words.six.due;
+assert.equal(app.grade('six', false).after.stage, 'recognize', 'a CET6 lapse never demands spelling');
+reset({ six: rec('write'), four: rec('write') });
+const legacySix = plain(app.getStore().words.six);
+assert.equal(app.progressOf('six').stage, 'mastered');
+for (const key of ['credits', 'correct', 'wrong', 'due', 'lastSeen']) assert.deepEqual(plain(app.progressOf('six')[key]), legacySix[key]);
+assert.deepEqual(plain(app.getStore().words.six), legacySix, 'interpreting legacy CET6 does not rewrite history');
+assert.equal(app.progressOf('four').stage, 'write');
+app.setWords(classified.slice(0, 1));
+app.startSession('review');
+assert.equal(app.getSession().current.kind, 'recognize', 'even a tiny CET6 dictionary does not fall back to spelling');
+app.setSession(null);
+app.setWords(classified);
+reset({ manualSix: { ...rec('mastered'), due: initialTime + 30 * DAY, masteredBy: 'recognize', memory: sixMemory } });
+assert.equal(app.progressOf('manualSix').stage, 'write', 'manually requesting an already-recognized CET6 word adds the spelling requirement');
+assert.equal(app.progressOf('manualSix').memory, undefined, 'spelling starts a separate memory card');
+assert.equal(app.progressOf('manualSix').credits.length, 0);
+assert.equal(app.progressOf('manualSix').due, 0, 'the unlearned writing skill is available immediately');
+app.grade('manualSix', true);
+assert.equal(app.getStore().words.manualSix.stage, 'write');
+assert.ok(app.getStore().words.manualSix.memory.stability < 21);
+assert.throws(() => app.readStore({ version: 6, words: { six: { ...rec(), masteredBy: 'unknown' } } }), /格式/);
+app.renderLibrary();
+assert.match(elements.get('#wordlist').innerHTML, /只需认词/);
+assert.match(elements.get('#wordlist').innerHTML, /认词＋拼写/);
+
+if (process.argv[3]) {
+  const current = JSON.parse(fs.readFileSync(process.argv[3], 'utf8'));
+  app.setWords(JSON.parse(fs.readFileSync(path.join(root, 'data/words.json'), 'utf8')).words);
+  app.setStore(current);
+  const original = plain(app.getStore());
+  let legacySix = 0;
+  for (const [id, p] of Object.entries(original.words)) {
+    const view = app.progressOf(id);
+    assert.equal(view.stage, !app.requiresWriting(id) && p.stage === 'write' ? 'mastered' : p.stage);
+    if (!app.requiresWriting(id) && p.stage === 'write') legacySix++;
+    for (const key of ['credits', 'correct', 'wrong', 'due', 'lastSeen', 'introducedAt', 'memory']) {
+      assert.deepEqual(plain(view[key] ?? null), plain(p[key] ?? null), `${id} preserves ${key}`);
+    }
+  }
+  assert.deepEqual(plain(app.getStore()), original, 'the live export remains unchanged while applying current requirements');
+  console.log(`Current-progress check passed; ${legacySix} legacy CET6 spelling records now count as recognition-mastered.`);
+}
 
 // A real daily quota includes failed first attempts and is shared across sessions.
 reset();
@@ -306,6 +394,13 @@ assert.equal(app.getSession().practice, true);
     sha++; writes++;
     return { ok: true, json: async () => ({}) };
   };
+  // A schema-only migration must upload v6 even if all progress/settings are identical.
+  reset();
+  cloud = plain(app.buildPayload()); cloud.version = 5;
+  await app.syncNow({ silent: true });
+  assert.equal(cloud.version, 6);
+  assert.equal(writes, 1);
+  cloud = plain(phone); sha++; reads = 0; writes = 0;
   reset({ desktopOnly: rec() });
   await app.autoSync();
   for (const [id, p] of Object.entries(app.readStore(phone).words)) {

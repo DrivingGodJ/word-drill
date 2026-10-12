@@ -1,7 +1,7 @@
 /* ============================================================
    WordDrill — app
-   两阶段记忆模型：认（Recognition）→ 写（Production）
-   调度：FSRS-6；认词与拼写分别积累，升关后开始新的记忆卡
+   四级 / 手动词：认 → 写；六级词：只认
+   调度：FSRS-6；认词与拼写分别积累，认词升拼写时建立新的记忆卡
    ============================================================ */
 (() => {
   'use strict';
@@ -96,8 +96,8 @@
   }
 
   /* ---------- 持久化 ---------- */
-  const STORE_VERSION = 5;   // v5 FSRS + 累计跨天证据；保留所有词条与统计
-  const BACKUP_KEY = 'worddrill.backup.before-v5';
+  const STORE_VERSION = 6;   // v6 区分认词掌握和拼写掌握，防止旧客户端覆盖新判定
+  const BACKUP_KEY = 'worddrill.backup.before-v6';
 
   function defaultStore() {
     return {
@@ -114,9 +114,11 @@
   function migrateStore(s, fromVersion) {
     if ((fromVersion || 1) >= STORE_VERSION) return false;
     s.version = STORE_VERSION;
-    s.settings.threshold = CREDIT_NEED_DEFAULT;
-    s.settings.retention = 90;
-    s.settingsAt = now();
+    if ((fromVersion || 1) < 5) {
+      s.settings.threshold = CREDIT_NEED_DEFAULT;
+      s.settings.retention = 90;
+      s.settingsAt = now();
+    }
     return true;
   }
 
@@ -130,7 +132,8 @@
       settings: Object.assign(defaultStore().settings, parsed.settings || {}),
       stats: Object.assign(defaultStore().stats, parsed.stats || {}),
       words: Object.fromEntries(Object.entries(parsed.words).map(([id, p]) => {
-        if (!p || typeof p !== 'object' || !STAGES.includes(p.stage || 'new')) {
+        if (!p || typeof p !== 'object' || !STAGES.includes(p.stage || 'new')
+            || (p.masteredBy !== undefined && !['recognize', 'write'].includes(p.masteredBy))) {
           throw new Error('词条进度格式不对');
         }
         return [id, normalRec(p)];
@@ -168,12 +171,28 @@
     }
   }
 
-  /** 取某个词的进度（不存在则视为未开始）。 */
+  /** 四级、手动词优先要求拼写；没有考试标签的词也按手动词处理。 */
+  function requiresWriting(id) {
+    const tags = byId.get(id)?.tags || [];
+    return !tags.includes('CET6') || tags.includes('CET4')
+      || tags.includes('手动添加') || tags.some((tag) => /^Unit\d+$/i.test(tag));
+  }
+
+  /** 按当前词汇要求解释阶段；原始历史不批量改写，实际作答后再落盘。 */
   function progressOf(id) {
-    return store.words[id] || {
+    const p = store.words[id] || {
       stage: 'new', credits: [],
       correct: 0, wrong: 0, due: 0, lastSeen: 0, introducedAt: 0
     };
+    if (!requiresWriting(id) && p.stage === 'write') {
+      // 已进入拼写的旧六级词已通过认词关，保留统计、记忆卡和到期时间。
+      return { ...p, stage: 'mastered', masteredBy: 'recognize' };
+    }
+    if (requiresWriting(id) && p.stage === 'mastered' && p.masteredBy === 'recognize') {
+      // 用户额外指定的六级词仍要会写；认词记忆不能冒充拼写证据。
+      return { ...p, stage: 'write', credits: [], memory: undefined, due: 0 };
+    }
+    return p;
   }
 
   /* ---------- SRS 引擎 ---------- */
@@ -243,7 +262,8 @@
         if (credited && after.credits.length >= need
             && after.memory.stability >= PROMOTION_STABILITY[after.stage]
             && after.memory.state === FSRS.State.Review) {
-          after.stage = after.stage === 'recognize' ? 'write' : 'mastered';
+          after.stage = after.stage === 'recognize' && requiresWriting(id) ? 'write' : 'mastered';
+          after.masteredBy = after.stage === 'mastered' ? (requiresWriting(id) ? 'write' : 'recognize') : undefined;
           after.credits = [];
           promoted = true;
           if (after.stage === 'write') {
@@ -256,7 +276,11 @@
     } else if (!isCorrect && !practice) {
       // 只撤销今天的证据，之前跨天答对的积累保留。
       after.credits = after.credits.filter((ts) => dayKey(ts) !== dayKey(at));
-      if (after.stage === 'mastered') { after.stage = 'write'; demoted = true; }
+      if (after.stage === 'mastered') {
+        after.stage = requiresWriting(id) ? 'write' : 'recognize';
+        after.masteredBy = undefined;
+        demoted = true;
+      }
     }
 
     store.words[id] = after;
@@ -265,8 +289,8 @@
   }
 
   /** 根据当前阶段决定出题方式。 */
-  function quizTypeFor(stage) {
-    if (stage === 'write' || stage === 'mastered') return 'spell';
+  function quizTypeFor(id, stage) {
+    if (requiresWriting(id) && (stage === 'write' || stage === 'mastered')) return 'spell';
     return 'recognize';
   }
 
@@ -562,7 +586,8 @@
     due: r.due || 0, lastSeen: r.lastSeen || 0,
     correct: r.correct || 0, wrong: r.wrong || 0,
     introducedAt: r.introducedAt || 0,
-    memory: normalMemory(r.memory)
+    memory: normalMemory(r.memory),
+    masteredBy: r.masteredBy
   });
 
   function buildPayload(target = store) {
@@ -583,6 +608,7 @@
 
   /** 只用来判断「内容有没有变」，排除 deviceId / syncedAt 这类每次都变的时间戳。 */
   const payloadSig = (p) => JSON.stringify({
+    version: Number(p.version) || 1,
     settings: p.settings || {}, settingsAt: p.settingsAt || 0,
     cet: p.cet || { approved: [], rejected: [] },
     stats: p.stats || {}, words: p.words || {}
@@ -618,11 +644,11 @@
       }
     }
 
-    // 学习参数只在「两边语义版本一致」时互相同步。
+    // v5 起的学习参数语义一致；v6 只改变每类词的必修技能。
     // 旧版本客户端（payload 里 version 落后）存的 threshold 是另一套含义的数字，
     // 不能让旧版「一个月内 15 天」的门槛覆盖新升阶规则。
     const remoteModel = Number(remote.version) || 1;
-    const settingsOk = remoteModel >= STORE_VERSION;
+    const settingsOk = remoteModel >= 5;
     if (settingsOk && (remote.settingsAt || 0) > (target.settingsAt || 0) && remote.settings) {
       for (const k of SYNCED_SETTINGS) {
         const v = clampSetting(k, remote.settings[k]);
@@ -820,7 +846,7 @@
     if (!word) return nextQuestion();
 
     const stage = progressOf(id).stage;
-    const type = quizTypeFor(stage);
+    const type = quizTypeFor(id, stage);
     let q;
     if (session.mode === 'context') {
       q = buildFillQuestion(word);
@@ -830,7 +856,7 @@
       // 正式复习保持一致的提问方式；语境与听写单独加练。
       q = buildSpellQuestion(word);
     } else {
-      q = WORDS.length >= 4 ? buildRecognizeQuestion(word) : buildSpellQuestion(word);
+      q = WORDS.length >= 4 || !requiresWriting(id) ? buildRecognizeQuestion(word) : buildSpellQuestion(word);
     }
 
     q.retry = session.results.has(id);
@@ -948,7 +974,7 @@
       : (!WORDS.length ? '词库还是空的。'
         : '暂时没有到期的词；自由加练不会提前推迟下次复习。');
     $('#intro-rule').textContent =
-      `升阶：至少 ${creditNeed()} 个不同日子独立答对，并达到认词 7 天 / 拼写 21 天的记忆稳定性。答错保留之前的积累。`;
+      `至少 ${creditNeed()} 个不同日子独立答对，认词稳定性达 7 天。六级词认词达标即可掌握；四级和手动词还需拼写稳定性达 21 天。`;
     $('#btn-start').disabled = totalToday === 0;
     $('#btn-review').disabled = due === 0;
     $('#btn-mistakes').disabled = !WORDS.some((w) => progressOf(w.id).wrong > 0);
@@ -1060,7 +1086,8 @@
     const stage = progressOf(q.word.id).stage;
     const badge = $('#stage-badge');
     badge.textContent = q.retry ? '本轮回练' : session.mode === 'context' ? '语境加练'
-      : session.mode === 'listen' ? '听写加练' : STAGE_BADGE[stage] || '认词';
+      : session.mode === 'listen' ? '听写加练'
+      : stage === 'mastered' && !requiresWriting(q.word.id) ? '认词巩固' : STAGE_BADGE[stage] || '认词';
     badge.dataset.stage = stage;
 
     $('#feedback').innerHTML = '';
@@ -1222,7 +1249,7 @@
       creditNote = `<p class="fb__credit">进入「认词中」· 下次复习 ${nextDue}</p>`;
     } else if (r.promoted) {
       creditNote = r.after.stage === 'mastered'
-        ? `<p class="fb__credit">跨天答对与拼写稳定性达标 → 已掌握 · 下次复习 ${nextDue}</p>`
+        ? `<p class="fb__credit">跨天答对与${requiresWriting(w.id) ? '拼写' : '认词'}稳定性达标 → 已掌握 · 下次复习 ${nextDue}</p>`
         : `<p class="fb__credit">认词达标 → 进入拼写关，独立建立拼写记忆 · 下次复习 ${nextDue}</p>`;
     } else if (r.after.stage === 'mastered') {
       creditNote = `<p class="fb__credit">已掌握 · 下次复习 ${nextDue}</p>`;
@@ -1372,7 +1399,7 @@
           <p class="wcard__ex">${esc(w.example)}</p>
           <div class="wcard__foot">
             <span class="strength" role="img" aria-label="${creditText}">${pips}</span>
-            <span class="wcard__meta">${creditText} · 对 ${p.correct} · 错 ${p.wrong} · ${dueText}${p.memory ? ` · 稳定性 ${p.memory.stability.toFixed(1)} 天` : ''}</span>
+            <span class="wcard__meta">${requiresWriting(w.id) ? '认词＋拼写' : '只需认词'} · ${creditText} · 对 ${p.correct} · 错 ${p.wrong} · ${dueText}${p.memory ? ` · 稳定性 ${p.memory.stability.toFixed(1)} 天` : ''}</span>
           </div>
         </li>`;
     }).join('');

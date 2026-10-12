@@ -10,7 +10,7 @@
 设计原则：
   * FlowUs 页面是生词内容的 source of truth（你手动改的以页面为准）。
   * 词库里已有的 collocations / tags 等字段不会被清掉。
-  * 只更新单词、词性、释义、例句这几项。
+  * 更新单词、词性、释义、例句，并补上「手动添加」标签（需认词和拼写）。
 """
 
 from __future__ import annotations
@@ -139,12 +139,15 @@ def merge(existing: list[dict], incoming: list[dict]) -> tuple[list[dict], list[
         old = by_id.get(item["id"])
         if old is None:
             item.setdefault("collocations", [])
-            item.setdefault("tags", [])
+            item["tags"] = list(item.get("tags", [])) + ["手动添加"]
             existing.append(item)
             added.append(item["word"])
             continue
 
         changed = False
+        if "手动添加" not in old.get("tags", []):
+            old["tags"] = list(old.get("tags", [])) + ["手动添加"]
+            changed = True
         for key in ("word", "pos", "meaning", "example", "exampleZh"):
             new_val = item.get(key)
             if new_val and old.get(key) != new_val:

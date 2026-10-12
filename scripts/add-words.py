@@ -28,6 +28,7 @@
 
 脚本自动做的事：
   * id = 单词小写 slug（'sun-drenched' → 'sun-drenched'），已存在就跳过并报告
+  * 标记「手动添加」，即使已有 CET6 词也要求认词和拼写；重复词不覆盖内容
   * 按字母序重排整个词库，更新 meta.updated
   * 检查 data/distractors.json 里是否混进了这些词/释义（会造成「正确释义同时当干扰项」），
     有的话**自动从干扰池剔除**
@@ -176,21 +177,24 @@ def main() -> None:
 
     data = json.loads(WORDS_FILE.read_text(encoding="utf-8"))
     words = data["words"]
-    have = {w["id"] for w in words}
+    by_id = {w["id"]: w for w in words}
 
     cleaned = [normalize(e, f"第 {i + 1} 条") for i, e in enumerate(entries)]
-    added, skipped = [], []
+    added, skipped, marked = [], [], []
     for item in cleaned:
-        if item["id"] in have:
+        if item["id"] in by_id:
             skipped.append(item["word"])
+            old = by_id[item["id"]]
+            if "手动添加" not in old.get("tags", []):
+                old["tags"] = list(old.get("tags", [])) + ["手动添加"]
+                marked.append(item["word"])
             continue
-        if args.tag:
-            item["tags"] = sorted(set(list(item.get("tags") or []) + args.tag))
+        item["tags"] = sorted(set(list(item.get("tags") or []) + args.tag + ["手动添加"]))
         words.append(item)
-        have.add(item["id"])
+        by_id[item["id"]] = item
         added.append(item)
 
-    if not added:
+    if not added and not marked:
         print(f"没有新词可加（{len(skipped)} 个已存在：{'、'.join(skipped)}）")
         return
 
@@ -203,6 +207,8 @@ def main() -> None:
         print(f"  + {w['word']:<16} {w['pos']:<8} {w['meaning']}")
     if skipped:
         print(f"已存在跳过 {len(skipped)} 个：{'、'.join(skipped)}")
+    if marked:
+        print(f"标记为手动词（需认词和拼写）{len(marked)} 个：{'、'.join(marked)}")
 
     lib_words = {w["word"].lower() for w in words}
     lib_meanings = {w["meaning"].strip() for w in words}
@@ -223,9 +229,9 @@ def main() -> None:
         print("--no-commit：未提交。")
         return
 
-    names = "、".join(w["word"] for w in added)
+    names = "、".join([w["word"] for w in added] + marked)
     git("add", "data/words.json", "data/distractors.json")
-    git("commit", "-q", "-m", f"feat(dict): 加词 {len(added)} 个：{names}")
+    git("commit", "-q", "-m", f"feat(dict): 加词 {len(added)} 个、手动标记 {len(marked)} 个：{names}")
     push = subprocess.run(["git", "-C", str(GIT_DIR), "push", "-q", "origin", "main"],
                           capture_output=True, text=True)
     if push.returncode != 0:
