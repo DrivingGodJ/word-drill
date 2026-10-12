@@ -2,7 +2,7 @@
   "meta": {
     "name": "WordDrill",
     "version": 1,
-    "updated": "2026-10-11",
+    "updated": "2026-10-12",
     "source": "FlowUs · page 2220ec94-e0c2-4523-87be-f8277b09d786",
     "note": "词库由 FlowUs 生词页同步而来；新增单词请用 scripts/sync-from-flowus.py 或直接编辑本文件。"
   },
@@ -893,6 +893,62 @@
       "tags": [
         "CET6"
       ]
+    },
+    {
+      "id": "prevalent",
+      "word": "prevalent",
+      "pos": "adj.",
+      "meaning": "流行的， 普遍的",
+      "example": "The belief in astrology is prevalent in some communities.",
+      "exampleZh": "对占星术的信仰在一些群体中很普遍。",
+      "collocations": [],
+      "tags": [
+        "CET6"
+      ],
+      "score": 6,
+      "difficulty": 4,
+      "phonetic": "'prevələnt",
+      "exampleSource": "本项目编辑补全（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_2",
+          "CET6_3"
+        ],
+        "examSources": [
+          "CET6 · 2016.6 · 第一套 · 阅读理解",
+          "CET6 · 2012.6 · 阅读理解",
+          "CET6 · 2011.6 · 阅读理解"
+        ]
+      }
+    },
+    {
+      "id": "preventable",
+      "word": "preventable",
+      "pos": "adj.",
+      "meaning": "可预防的",
+      "example": "Forty thousand children a day die from preventable diseases.",
+      "exampleZh": "每天有四万儿童死于本可以防止的疾病。",
+      "collocations": [],
+      "tags": [
+        "CET4"
+      ],
+      "score": 6,
+      "difficulty": 4,
+      "phonetic": "prɪ'ventəbl",
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET4_1",
+          "CET4luan_1"
+        ],
+        "examSources": [
+          "CET4 · 2013.12 · 第一套 · 听力题"
+        ]
+      }
     },
     {
       "id": "quantitative",
