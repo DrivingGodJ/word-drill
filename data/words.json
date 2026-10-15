@@ -2,7 +2,7 @@
   "meta": {
     "name": "WordDrill",
     "version": 1,
-    "updated": "2026-10-14",
+    "updated": "2026-10-15",
     "source": "FlowUs · page 2220ec94-e0c2-4523-87be-f8277b09d786",
     "note": "词库由 FlowUs 生词页同步而来；新增单词请用 scripts/sync-from-flowus.py 或直接编辑本文件。"
   },
@@ -956,6 +956,38 @@
       "tags": []
     },
     {
+      "id": "predominantly",
+      "word": "predominantly",
+      "pos": "adv.",
+      "meaning": "占主导地位地",
+      "example": "The landscape has remained predominantly rural in appearance.",
+      "exampleZh": "该风景看上去主要保留了乡村风貌。",
+      "collocations": [],
+      "phonetic": "prɪˈdɒmɪnəntli",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_1",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2017.12 · 第一套 · 阅读理解",
+          "CET6 · 2015.6 · 第三套 · 阅读理解",
+          "CET6 · 2013.12 · 第三套 · 阅读理解",
+          "CET6 · 2012.6 · 听力题",
+          "CET6 · 2008.12 · 阅读理解"
+        ],
+        "frequencyRank": 33247
+      },
+      "score": 6,
+      "difficulty": 4
+    },
+    {
       "id": "preparatory",
       "word": "preparatory",
       "pos": "adj.",
@@ -1121,6 +1153,39 @@
           "CET6 · 2013.6 · 第三套 · 阅读理解"
         ]
       }
+    },
+    {
+      "id": "proverb",
+      "word": "proverb",
+      "pos": "n.",
+      "meaning": "谚语，格言，箴言",
+      "example": "An old Arab proverb says, \"The enemy of my enemy is my friend.\"",
+      "exampleZh": "有一句古老的阿拉伯谚语说：“我敌人的敌人是我的朋友。”",
+      "collocations": [
+        "as the proverb goes（有句谚语说道；俗话说）"
+      ],
+      "phonetic": "'prɒvɜːb",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_2"
+        ],
+        "examSources": [
+          "CET6 · 2015.6 · 第一套 · 写作题",
+          "CET6 · 2014.6 · 第二套 · 写作题",
+          "CET6 · 2014.6 · 第三套 · 写作题",
+          "CET6 · 2014.6 · 第一套 · 写作题",
+          "CET6 · 2013.6 · 第三套 · 写作题"
+        ],
+        "frequencyRank": 18010
+      },
+      "score": 7,
+      "difficulty": 3
     },
     {
       "id": "quantitative",
