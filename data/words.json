@@ -2,7 +2,7 @@
   "meta": {
     "name": "WordDrill",
     "version": 1,
-    "updated": "2026-10-15",
+    "updated": "2026-10-17",
     "source": "FlowUs · page 2220ec94-e0c2-4523-87be-f8277b09d786",
     "note": "词库由 FlowUs 生词页同步而来；新增单词请用 scripts/sync-from-flowus.py 或直接编辑本文件。"
   },
@@ -19,6 +19,39 @@
         "in abundance"
       ],
       "tags": []
+    },
+    {
+      "id": "accountable",
+      "word": "accountable",
+      "pos": "adj.",
+      "meaning": "应负责的，有责任的",
+      "example": "The hospital should be held accountable for the quality of care it gives.",
+      "exampleZh": "医院应当对医护质量负责。",
+      "collocations": [
+        "accountable for（负责，对…应付责任）"
+      ],
+      "phonetic": "ə'kauntəbl",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_1",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2017.12 · 第三套 · 写作题",
+          "CET6 · 2016.6 · 第二套 · 阅读理解",
+          "CET6 · 2016.6 · 第一套 · 阅读理解",
+          "CET6 · 2015.6 · 第二套 · 阅读理解"
+        ],
+        "frequencyRank": 13109
+      },
+      "score": 7,
+      "difficulty": 3
     },
     {
       "id": "advisable",
@@ -477,6 +510,76 @@
       ]
     },
     {
+      "id": "enrich",
+      "word": "enrich",
+      "pos": "vt.",
+      "meaning": "充实， 使丰富； 使富裕， 使富有",
+      "example": "Add fertilizer to enrich the soil.",
+      "exampleZh": "施上肥料使土壤肥沃。",
+      "collocations": [],
+      "phonetic": "ɪn'rɪtʃ",
+      "tags": [
+        "CET4"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET4_1",
+          "CET4luan_1",
+          "CET6_1",
+          "CET6_2",
+          "CET6_3",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2013.12 · 第三套 · 阅读理解",
+          "CET6 · 2011.6 · 写作题",
+          "CET4 · 2014.12 · 第三套 · 文本题",
+          "CET4 · 2008.6 · 写作题"
+        ],
+        "frequencyRank": 28583
+      },
+      "score": 6,
+      "difficulty": 3
+    },
+    {
+      "id": "enrollment",
+      "word": "enrollment",
+      "pos": "n.",
+      "meaning": "入学人数",
+      "example": "Class enrollment, where each student has all of the course schedule selections, each student having his own bucket in the CGTT.",
+      "exampleZh": "班级入学，每个学生都有所有的课程安排选择，每个学生都将自己的选择放在 CGTT 中。",
+      "collocations": [
+        "school enrollment（入学注册）",
+        "students enrollment（在校学生人数）"
+      ],
+      "phonetic": "ɪn'rəʊlmənt",
+      "tags": [
+        "CET4"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET4_1",
+          "CET4luan_1",
+          "CET6_1",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2014.12 · 第一套 · 文本题",
+          "CET6 · 2011.6 · 阅读理解",
+          "CET4 · 2012.6 · 阅读理解"
+        ],
+        "frequencyRank": 38289
+      },
+      "score": 8,
+      "difficulty": 3
+    },
+    {
       "id": "eradicate",
       "word": "eradicate",
       "pos": "vt.",
@@ -505,6 +608,41 @@
       ],
       "score": 6,
       "difficulty": 4
+    },
+    {
+      "id": "extracurricular",
+      "word": "extracurricular",
+      "pos": "adj.",
+      "meaning": "课外的",
+      "example": "Each child had participated in extracurricular activities at school.",
+      "exampleZh": "每个孩子都参加了学校的课外活动。",
+      "collocations": [
+        "extracurricular activity（课外活动）"
+      ],
+      "phonetic": "ekstrəkə'rɪkjʊlə",
+      "tags": [
+        "CET4"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET4_1",
+          "CET4luan_1",
+          "CET6_1",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2017.6 · 第一套 · 阅读理解",
+          "CET6 · 2015.12 · 第二套 · 阅读理解",
+          "CET6 · 2013.6 · 第一套 · 阅读理解",
+          "CET6 · 2012.6 · 阅读理解"
+        ],
+        "frequencyRank": 26583
+      },
+      "score": 7,
+      "difficulty": 3
     },
     {
       "id": "fertile",
@@ -678,6 +816,44 @@
       "difficulty": 4
     },
     {
+      "id": "incidence",
+      "word": "incidence",
+      "pos": "n.",
+      "meaning": "发生率",
+      "example": "The incidence of breast cancer increases with age.",
+      "exampleZh": "乳腺癌的发病率随着年龄的增长而上升。",
+      "collocations": [
+        "incidence rate（发生率，发病率）",
+        "incidence angle（入射角，迎角；安装角）",
+        "angle of incidence（[计]入射角）"
+      ],
+      "phonetic": "'ɪnsɪdəns",
+      "tags": [
+        "CET4"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET4_1",
+          "CET4luan_1",
+          "CET6_1",
+          "CET6_2",
+          "CET6_3",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2016.6 · 第一套 · 阅读理解",
+          "CET6 · 2016.6 · 第一套 · 听力题",
+          "CET6 · 2013.6 · 第三套 · 阅读理解"
+        ],
+        "frequencyRank": 39258
+      },
+      "score": 8,
+      "difficulty": 3
+    },
+    {
       "id": "inclusive",
       "word": "inclusive",
       "pos": "adj.",
@@ -718,6 +894,36 @@
       ],
       "score": 6,
       "difficulty": 4
+    },
+    {
+      "id": "inevitably",
+      "word": "inevitably",
+      "pos": "adv.",
+      "meaning": "不可避免地",
+      "example": "Inevitably, the situation did not please everyone.",
+      "exampleZh": "这种状况必定不能让所有人都感到满意。",
+      "collocations": [],
+      "phonetic": "ɪ'nevɪtəblɪ; ɪn'evɪtəblɪ",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_2"
+        ],
+        "examSources": [
+          "CET6 · 2014.12 · 第三套 · 阅读理解",
+          "CET6 · 2014.12 · 第一套 · 写作题",
+          "CET6 · 2013.12 · 第三套 · 阅读理解",
+          "CET6 · 2008.12 · 阅读理解"
+        ],
+        "frequencyRank": 14371
+      },
+      "score": 6,
+      "difficulty": 3
     },
     {
       "id": "infer",
@@ -928,6 +1134,37 @@
           "CET6 · 2017.6 · 第三套 · 阅读理解"
         ]
       }
+    },
+    {
+      "id": "outweigh",
+      "word": "outweigh",
+      "pos": "v.",
+      "meaning": "超过",
+      "example": "The advantages of this deal largely outweigh the disadvantages.",
+      "exampleZh": "这笔交易的利远大于弊。",
+      "collocations": [],
+      "phonetic": "ˌaʊt'weɪ",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_1",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2016.6 · 第二套 · 阅读理解",
+          "CET6 · 2015.12 · 第一套 · 阅读理解",
+          "CET6 · 2014.12 · 第二套 · 阅读理解",
+          "CET6 · 2012.6 · 阅读理解"
+        ],
+        "frequencyRank": 33539
+      },
+      "score": 6,
+      "difficulty": 4
     },
     {
       "id": "periodical",
@@ -1153,6 +1390,42 @@
           "CET6 · 2013.6 · 第三套 · 阅读理解"
         ]
       }
+    },
+    {
+      "id": "prospective",
+      "word": "prospective",
+      "pos": "adj.",
+      "meaning": "预期的；未来的",
+      "example": "They are worried about prospective changes in the law.",
+      "exampleZh": "他们担心即将修改法律。",
+      "collocations": [
+        "prospective study（前瞻研究；预期研究；远景调查）",
+        "prospective market（未来的市场）",
+        "prospective customer（潜在顾客）"
+      ],
+      "phonetic": "prəˈspektɪv",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_1",
+          "CET6_3",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2015.12 · 第二套 · 阅读理解",
+          "CET6 · 2015.12 · 第一套 · 阅读理解",
+          "CET6 · 2014.12 · 第一套 · 阅读理解",
+          "CET6 · 2012.12 · 第二套 · 阅读理解"
+        ],
+        "frequencyRank": 18923
+      },
+      "score": 8,
+      "difficulty": 3
     },
     {
       "id": "proverb",
