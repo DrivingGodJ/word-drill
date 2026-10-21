@@ -1,210 +1,6 @@
 {
-  "updated": "2026-10-17",
+  "updated": "2026-10-21",
   "words": [
-    {
-      "id": "dynamics",
-      "word": "dynamics",
-      "pos": "n.",
-      "meaning": "动力学",
-      "example": "In its broadest sense, dynamics includes nearly the whole of mechanics.",
-      "exampleZh": "广义地说来, 动力学几乎包括了整个力学。",
-      "collocations": [
-        "system dynamics（系统动力学）",
-        "molecular dynamics（分子动力学）",
-        "nonlinear dynamics（非线性动力学）"
-      ],
-      "phonetic": "daɪ'næmɪks",
-      "tags": [
-        "CET6"
-      ],
-      "exampleSource": "词书配对例句（非真题）",
-      "selection": {
-        "version": 2,
-        "source": "kajweb/dict",
-        "books": [
-          "CET6_1",
-          "CET6luan_1"
-        ],
-        "examSources": [
-          "CET6 · 2015.6 · 第二套 · 阅读理解",
-          "CET6 · 2015.6 · 第一套 · 阅读理解",
-          "CET6 · 2015.12 · 第二套 · 阅读理解"
-        ],
-        "frequencyRank": 18031
-      },
-      "score": 8,
-      "difficulty": 3
-    },
-    {
-      "id": "fertility",
-      "word": "fertility",
-      "pos": "n.",
-      "meaning": "多产，肥沃",
-      "example": "It symbolizes growth, harmony, freshness, and fertility.",
-      "exampleZh": "它是生长、和谐、新鲜和丰饶的象征。",
-      "collocations": [
-        "soil fertility（土壤肥力；地力）",
-        "fertility rate（生育率；人口出生率）"
-      ],
-      "phonetic": "fəˈtɪləti",
-      "tags": [
-        "CET6"
-      ],
-      "exampleSource": "词书配对例句（非真题）",
-      "selection": {
-        "version": 2,
-        "source": "kajweb/dict",
-        "books": [
-          "CET6_1",
-          "CET6luan_1"
-        ],
-        "examSources": [
-          "CET6 · 2017.6 · 第一套 · 文本题",
-          "CET6 · 2013.12 · 第一套 · 阅读理解",
-          "CET6 · 2010.12 · 阅读理解"
-        ],
-        "frequencyRank": 12216
-      },
-      "score": 8,
-      "difficulty": 3
-    },
-    {
-      "id": "irrigation",
-      "word": "irrigation",
-      "pos": "n.",
-      "meaning": "灌溉",
-      "example": "Small blockages or collapses of the canal would choke the intricate irrigation networks.",
-      "exampleZh": "运河的小堵塞或倒塌都会阻塞整个负责的灌溉网络。",
-      "collocations": [
-        "irrigation works（灌溉结构物）",
-        "irrigation water（灌溉用水）",
-        "drip irrigation（滴灌；滴流灌溉）"
-      ],
-      "phonetic": "ˌɪrɪ'geɪʃn",
-      "tags": [
-        "CET6"
-      ],
-      "exampleSource": "词书配对例句（非真题）",
-      "selection": {
-        "version": 2,
-        "source": "kajweb/dict",
-        "books": [
-          "CET6_1",
-          "CET6_2",
-          "CET6_3",
-          "CET6luan_1"
-        ],
-        "examSources": [
-          "CET6 · 2016.6 · 第二套 · 阅读理解",
-          "CET6 · 2013.6 · 第三套 · 阅读理解",
-          "CET6 · 2013.12 · 第三套 · 阅读理解"
-        ],
-        "frequencyRank": 20806
-      },
-      "score": 8,
-      "difficulty": 3
-    },
-    {
-      "id": "strive",
-      "word": "strive",
-      "pos": "v.",
-      "meaning": "努力，奋斗，力求",
-      "example": "We must continue to strive for greater efficiency.",
-      "exampleZh": "我们必须继续为提高效率而努力。",
-      "collocations": [
-        "strive for（争取，奋斗）",
-        "strive to develop（努力发展；大力发展）",
-        "strive after（奋斗；争取）"
-      ],
-      "phonetic": "straɪv",
-      "tags": [
-        "CET6"
-      ],
-      "exampleSource": "词书配对例句（非真题）",
-      "selection": {
-        "version": 2,
-        "source": "kajweb/dict",
-        "books": [
-          "CET6_2",
-          "CET6_3"
-        ],
-        "examSources": [
-          "CET6 · 2016.6 · 第一套 · 阅读理解",
-          "CET6 · 2016.12 · 第一套 · 写作题",
-          "CET6 · 2014.12 · 第一套 · 文本题"
-        ],
-        "frequencyRank": 13514
-      },
-      "score": 8,
-      "difficulty": 3
-    },
-    {
-      "id": "irreversible",
-      "word": "irreversible",
-      "pos": "adj.",
-      "meaning": "不可逆的；不可取消的",
-      "example": "Fossil fuels have caused irreversible damage to the environment.",
-      "exampleZh": "矿物燃料已对环境造成了不可挽回的破坏。",
-      "collocations": [
-        "irreversible process（不可逆过程；单向磁化过程）",
-        "irreversible thermodynamics（不可逆过程热力学）"
-      ],
-      "phonetic": "ˌɪrɪˈvɜ:səbl",
-      "tags": [
-        "CET6"
-      ],
-      "exampleSource": "词书配对例句（非真题）",
-      "selection": {
-        "version": 2,
-        "source": "kajweb/dict",
-        "books": [
-          "CET6_1",
-          "CET6luan_1"
-        ],
-        "examSources": [
-          "CET6 · 2017.6 · 第二套 · 阅读理解",
-          "CET6 · 2015.6 · 第一套 · 阅读理解",
-          "CET6 · 2014.6 · 第三套 · 阅读理解"
-        ],
-        "frequencyRank": 23506
-      },
-      "score": 8,
-      "difficulty": 3
-    },
-    {
-      "id": "imperative",
-      "word": "imperative",
-      "pos": "adj./n.",
-      "meaning": "必要的；紧急的，极重要的；命令的；必要的事， 必须完成的事； 【语】祈使语气",
-      "example": "It is imperative that politicians should be good communicators.",
-      "exampleZh": "政治家应该是很好的沟通者，这很重要。",
-      "collocations": [
-        "imperative sentence（祈使句；命令句）",
-        "imperative mood（祈使语气；命令语气；祈使式）"
-      ],
-      "phonetic": "ɪm'perətɪv",
-      "tags": [
-        "CET6"
-      ],
-      "exampleSource": "词书配对例句（非真题）",
-      "selection": {
-        "version": 2,
-        "source": "kajweb/dict",
-        "books": [
-          "CET6_1",
-          "CET6_3",
-          "CET6luan_1"
-        ],
-        "examSources": [
-          "CET6 · 2014.6 · 第一套 · 写作题",
-          "CET6 · 2014.12 · 第二套 · 阅读理解",
-          "CET6 · 2013.6 · 第二套 · 写作题"
-        ],
-        "frequencyRank": 12923
-      },
-      "score": 8,
-      "difficulty": 3
-    },
     {
       "id": "maturity",
       "word": "maturity",
@@ -340,6 +136,208 @@
         "frequencyRank": 16533
       },
       "score": 7,
+      "difficulty": 3
+    },
+    {
+      "id": "derive",
+      "word": "derive",
+      "pos": "v.",
+      "meaning": "取得； 起源",
+      "example": "Mr. Ying is one of those happy people who derive pleasure from helping others.",
+      "exampleZh": "英先生是那种助人为乐的快活人。",
+      "collocations": [
+        "derive from（源出，来自，得自；衍生于）"
+      ],
+      "phonetic": "dɪ'raɪv",
+      "tags": [
+        "CET4"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET4_1",
+          "CET4_2",
+          "CET4_3",
+          "CET4luan_1",
+          "CET4luan_2",
+          "CET6_1",
+          "CET6_3",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2016.6 · 第三套 · 阅读理解",
+          "CET4 · 2015.12 · 第一套 · 阅读理解",
+          "CET4 · 2014.6 · 第三套 · 阅读理解"
+        ],
+        "frequencyRank": 31119
+      },
+      "score": 7,
+      "difficulty": 3
+    },
+    {
+      "id": "incorporate",
+      "word": "incorporate",
+      "pos": "vt.",
+      "meaning": "包含； 加上， 吸收； 把…合并， 使并入",
+      "example": "The new cars will incorporate a number of major improvements.",
+      "exampleZh": "这种新型汽车将包含许多重大的改进。",
+      "collocations": [
+        "incorporate with（合并；混合）"
+      ],
+      "phonetic": "ɪn'kɔːpəreɪt",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_1",
+          "CET6_2",
+          "CET6_3",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2017.12 · 第一套 · 阅读理解",
+          "CET6 · 2013.12 · 第二套 · 阅读理解",
+          "CET6 · 2013.12 · 第三套 · 阅读理解"
+        ],
+        "frequencyRank": 19436
+      },
+      "score": 7,
+      "difficulty": 3
+    },
+    {
+      "id": "unrealistic",
+      "word": "unrealistic",
+      "pos": "adj.",
+      "meaning": "不现实的",
+      "example": "Some parents have totally unrealistic expectations of teachers.",
+      "exampleZh": "有些家长对老师抱着完全不切实际的期望。",
+      "collocations": [],
+      "phonetic": "ˌʌnrɪəˈlɪstɪk",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_1",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2016.12 · 第三套 · 阅读理解",
+          "CET6 · 2012.6 · 阅读理解",
+          "CET6 · 2012.12 · 第一套 · 写作题"
+        ],
+        "frequencyRank": 20922
+      },
+      "score": 6,
+      "difficulty": 3
+    },
+    {
+      "id": "restrict",
+      "word": "restrict",
+      "pos": "vt.",
+      "meaning": "限制， 约束， 限定",
+      "example": "The agreement will restrict competition.",
+      "exampleZh": "这个协议将限制竞争。",
+      "collocations": [],
+      "phonetic": "rɪ'strɪkt",
+      "tags": [
+        "CET4"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET4_1",
+          "CET4_2",
+          "CET4_3",
+          "CET4luan_1",
+          "CET4luan_2",
+          "CET6_1",
+          "CET6_3",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2013.12 · 第二套 · 阅读理解",
+          "CET4 · 2015.6 · 第三套 · 听力题",
+          "CET4 · 2015.12 · 第一套 · 阅读理解"
+        ],
+        "frequencyRank": 26263
+      },
+      "score": 6,
+      "difficulty": 3
+    },
+    {
+      "id": "continuity",
+      "word": "continuity",
+      "pos": "n.",
+      "meaning": "连续， 持续",
+      "example": "We should ensure continuity of care between hospital and home.",
+      "exampleZh": "我们应当保证医院护理和家庭护理的连续性。",
+      "collocations": [
+        "continuity equation（连续方程）",
+        "business continuity（业务连续性；企业永续经营）",
+        "continuity condition（连续性条件）"
+      ],
+      "phonetic": "ˌkɒntɪ'njuːəti",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_3"
+        ],
+        "examSources": [
+          "CET6 · 2010.6 · 阅读理解",
+          "CET6 · 2009.12 · 阅读理解"
+        ],
+        "frequencyRank": 18870
+      },
+      "score": 8,
+      "difficulty": 3
+    },
+    {
+      "id": "nutrition",
+      "word": "nutrition",
+      "pos": "n.",
+      "meaning": "营养",
+      "example": "Nutrition and exercise are essential to fitness and health.",
+      "exampleZh": "营养和运动是保持健康所必不可少的。",
+      "collocations": [
+        "animal nutrition（动物营养学）",
+        "human nutrition（人类营养学，人体营养）",
+        "nutrition and health care（营养与保健）"
+      ],
+      "phonetic": "nju'trɪʃn",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_3"
+        ],
+        "examSources": [
+          "CET6 · 2014.12 · 第一套 · 文本题",
+          "CET6 · 2013.12 · 第三套 · 阅读理解"
+        ],
+        "frequencyRank": 17063
+      },
+      "score": 8,
       "difficulty": 3
     }
   ]
