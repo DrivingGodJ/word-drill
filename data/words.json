@@ -2,7 +2,7 @@
   "meta": {
     "name": "WordDrill",
     "version": 1,
-    "updated": "2026-10-21",
+    "updated": "2026-10-22",
     "source": "FlowUs · page 2220ec94-e0c2-4523-87be-f8277b09d786",
     "note": "词库由 FlowUs 生词页同步而来；新增单词请用 scripts/sync-from-flowus.py 或直接编辑本文件。"
   },
@@ -544,6 +544,22 @@
       ]
     },
     {
+      "id": "enact",
+      "word": "enact",
+      "pos": "v.",
+      "meaning": "制定（法律），颁布；实施",
+      "example": "The government is to enact a law aimed at improving safety on construction sites.",
+      "exampleZh": "政府将颁布一项旨在改善建筑工地安全的法律。",
+      "collocations": [
+        "enact legislation",
+        "enact a law",
+        "enact reforms"
+      ],
+      "tags": [
+        "手动添加"
+      ]
+    },
+    {
       "id": "enrich",
       "word": "enrich",
       "pos": "vt.",
@@ -627,6 +643,23 @@
       ],
       "tags": [
         "Unit2"
+      ]
+    },
+    {
+      "id": "exemption",
+      "word": "exemption",
+      "pos": "n.",
+      "meaning": "豁免，免除；免税（额）",
+      "example": "Candidates with a qualification in chemistry have exemption from this course.",
+      "exampleZh": "具备化学资质的考生可以免修这门课程。",
+      "collocations": [
+        "tax exemption",
+        "exemption from",
+        "grant an exemption",
+        "claim exemption"
+      ],
+      "tags": [
+        "手动添加"
       ]
     },
     {
@@ -824,6 +857,23 @@
       ],
       "tags": [
         "Unit1"
+      ]
+    },
+    {
+      "id": "hefty",
+      "word": "hefty",
+      "pos": "adj.",
+      "meaning": "巨额的，大量的；沉重的，笨重的",
+      "example": "The company paid a hefty fine for breaking environmental rules.",
+      "exampleZh": "这家公司因违反环保规定而支付了高额罚款。",
+      "collocations": [
+        "a hefty fine",
+        "a hefty bill",
+        "a hefty price",
+        "hefty profits"
+      ],
+      "tags": [
+        "手动添加"
       ]
     },
     {
@@ -1171,6 +1221,22 @@
       "difficulty": 4
     },
     {
+      "id": "lure",
+      "word": "lure",
+      "pos": "v./n.",
+      "meaning": "引诱，诱使（去做某事或去某处）；诱惑力，诱饵",
+      "example": "Supermarket chains try to lure customers with price discounts.",
+      "exampleZh": "连锁超市试图用折扣价吸引顾客。",
+      "collocations": [
+        "lure sb into doing sth",
+        "lure sb away",
+        "the lure of money"
+      ],
+      "tags": [
+        "手动添加"
+      ]
+    },
+    {
       "id": "marginal",
       "word": "marginal",
       "pos": "adj.",
@@ -1304,6 +1370,23 @@
           "CET6 · 2017.6 · 第三套 · 阅读理解"
         ]
       }
+    },
+    {
+      "id": "optimal",
+      "word": "optimal",
+      "pos": "adj.",
+      "meaning": "最佳的，最理想的",
+      "example": "Several treatment sessions are required in order to obtain optimal results.",
+      "exampleZh": "要取得最佳效果，需要接受多次治疗。",
+      "collocations": [
+        "optimal conditions",
+        "optimal performance",
+        "optimal results",
+        "the optimal solution"
+      ],
+      "tags": [
+        "手动添加"
+      ]
     },
     {
       "id": "outweigh",
@@ -1830,6 +1913,23 @@
       "collocations": [],
       "tags": [
         "Unit1"
+      ]
+    },
+    {
+      "id": "tariff",
+      "word": "tariff",
+      "pos": "n.",
+      "meaning": "关税；价目表，收费表",
+      "example": "The government imposed new tariffs on imported steel.",
+      "exampleZh": "政府对进口钢材加征了新关税。",
+      "collocations": [
+        "impose a tariff",
+        "import tariffs",
+        "tariff barriers",
+        "a tariff war"
+      ],
+      "tags": [
+        "手动添加"
       ]
     },
     {
