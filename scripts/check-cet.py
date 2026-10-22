@@ -2,6 +2,8 @@
 """Run: python3 scripts/check-cet.py (offline, no private reads, no Git writes)."""
 import contextlib
 import copy
+import base64
+import hashlib
 import importlib.util
 import io
 import json
@@ -10,10 +12,68 @@ import tempfile
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from types import SimpleNamespace
+from unittest.mock import patch
 
 s = importlib.util.spec_from_file_location('cet', Path(__file__).with_name('add-cet-words.py'))
 cet = importlib.util.module_from_spec(s)
 s.loader.exec_module(cet)
+# Servers need no personal token or gh installation for public dictionary data.
+with patch.object(cet.shutil, 'which', return_value=None), patch.object(
+        cet.urllib.request, 'urlopen', return_value=io.BytesIO(b'{"public": true}')) as request:
+    assert json.loads(cet.gh('repos/kajweb/dict/contents/book')) == {'public': True}
+    assert request.call_args.args[0].full_url == 'https://api.github.com/repos/kajweb/dict/contents/book'
+with patch.object(cet.shutil, 'which', return_value=None), patch.object(
+        cet.urllib.request, 'urlopen', side_effect=cet.urllib.error.HTTPError('url', 404, 'missing', {}, None)):
+    assert cet.gh('missing', allow_404=True) == ''
+    try:
+        cet.gh('missing')
+        assert False, 'unexpected HTTP failures must stop'
+    except SystemExit:
+        pass
+
+# The read-only progress source fetches before reading; errors cannot use stale data.
+args = SimpleNamespace(progress_repo=Path('/private/progress.git'), progress_file=None, decisions_file=None)
+calls = []
+def progress_git(*command, repo=None):
+    calls.append((command, repo))
+    if command[0] == 'remote': return 'git@github.com:DrivingGodJ/worddrill-data.git\n'
+    if command[0] == 'fetch': return ''
+    if command == ('show', 'FETCH_HEAD:progress.json'):
+        return json.dumps({'words': {'kept': {'stage': 'write', 'correct': 12}}, 'cet': {'approved': ['next']}})
+    raise AssertionError(command)
+with patch.object(cet, 'git', side_effect=progress_git), patch.object(
+        cet, 'gh', side_effect=AssertionError('progress must use its read-only Git key')):
+    progress = cet.load_progress(args)
+    assert progress['words'] == {'kept': {'stage': 'write', 'correct': 12}}
+    assert [c[0][0] for c in calls] == ['remote', 'fetch', 'show']
+    assert all(repo == args.progress_repo.resolve() for _, repo in calls)
+for results in [['git@github.com:other/repo.git'],
+                ['git@github.com:DrivingGodJ/worddrill-data.git', SystemExit('network failed')]]:
+    with patch.object(cet, 'git', side_effect=results) as mocked:
+        try:
+            cet.load_progress(args)
+            assert False, 'wrong origins and fetch failures must stop'
+        except SystemExit:
+            assert not any(c.args[0] == 'show' for c in mocked.call_args_list)
+
+with tempfile.TemporaryDirectory() as folder:
+    raw = b'book fixture'
+    sha = hashlib.sha1(f'blob {len(raw)}\0'.encode() + raw).hexdigest()
+    index = [{'name': '1_CET4_1.zip', 'sha': sha}]
+    with patch.object(cet, 'CACHE_DIR', Path(folder)), patch.object(cet, 'book_index', return_value=index), patch.object(
+            cet, 'gh', return_value=json.dumps({'content': base64.b64encode(raw).decode()})) as api:
+        assert cet.download_books(r'.*')[0].read_bytes() == raw
+        assert api.call_args.args == (f'repos/kajweb/dict/git/blobs/{sha}',)
+        cet.download_books(r'.*')
+        assert api.call_count == 1, 'verified cached books need no download'
+    with patch.object(cet, 'CACHE_DIR', Path(folder)), patch.object(cet, 'book_index', return_value=index), patch.object(
+            cet, 'gh', return_value=json.dumps({'content': base64.b64encode(b'wrong').decode()})):
+        (Path(folder)/index[0]['name']).write_bytes(b'old invalid cache')
+        try:
+            cet.download_books(r'.*')
+            assert False, 'a mismatched blob must never replace the cache'
+        except SystemExit:
+            assert (Path(folder)/index[0]['name']).read_bytes() == b'old invalid cache'
 at = datetime(2026, 10, 8, 4, tzinfo=timezone.utc)
 item = {'id': 'proficient', 'word': 'proficient', 'pos': 'adj.', 'meaning': '熟练的',
         'example': 'He is a proficient typist who rarely makes mistakes.', 'exampleZh': '他是一名熟练的打字员，很少出错。',
