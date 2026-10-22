@@ -4,11 +4,12 @@
 python3 scripts/add-cet-words.py --dry-run
 python3 scripts/add-cet-words.py --no-commit --progress-file progress.json
 python3 scripts/add-cet-words.py --repo /path/to/clean/main/checkout
+python3 scripts/add-cet-words.py --repo /var/lib/worddrill/repo --progress-repo /var/lib/worddrill/progress.git --dry-run
 
 只挑有词性、中文释义、完整中英例句和带日期的真题收录记录的难词。
 词频是难度代理；优先真题相关性和实际展示的资料，不让缺词频的词排第一。
 --force 只跳过候选储备判断，不跳过入库配额、确认或未学词储备上限。
-依赖 Python 标准库和已登录的 gh；无需模型或额外 token。
+依赖 Python 标准库与 Git；本机可复用 gh 登录，服务器可用仓库部署密钥；无需模型。
 """
 from __future__ import annotations
 
@@ -19,8 +20,10 @@ import hashlib
 import json
 import math
 import re
+import shutil
 import subprocess
 import sys
+import urllib.error
 import urllib.request
 import zipfile
 from datetime import datetime, timedelta, timezone
@@ -51,6 +54,18 @@ EDITED_EXAMPLES = {
 
 
 def gh(endpoint: str, allow_404: bool = False) -> str:
+    if shutil.which('gh') is None:
+        request = urllib.request.Request(f'https://api.github.com/{endpoint}',
+                                         headers={'Accept': 'application/vnd.github+json', 'User-Agent': 'WordDrill'})
+        try:
+            with urllib.request.urlopen(request, timeout=45) as response:
+                return response.read().decode('utf-8')
+        except urllib.error.HTTPError as error:
+            if allow_404 and error.code == 404:
+                return ''
+            sys.exit(f'GitHub 读取失败：HTTP {error.code}（{endpoint}）')
+        except urllib.error.URLError as error:
+            sys.exit(f'GitHub 读取失败：{error.reason}')
     p = subprocess.run(['gh', 'api', endpoint], capture_output=True, text=True)
     if p.returncode:
         if allow_404 and '(HTTP 404)' in p.stderr:
@@ -59,8 +74,8 @@ def gh(endpoint: str, allow_404: bool = False) -> str:
     return p.stdout
 
 
-def git(*args: str) -> str:
-    p = subprocess.run(['git', '-C', str(ROOT), *args], capture_output=True, text=True)
+def git(*args: str, repo: Path | None = None) -> str:
+    p = subprocess.run(['git', '-C', str(repo or ROOT), *args], capture_output=True, text=True)
     if p.returncode:
         sys.exit(f"git {' '.join(args)} 失败：{p.stderr.strip()[:300]}")
     return p.stdout
@@ -96,8 +111,8 @@ def download_books(pattern: str) -> list[Path]:
             return hashlib.sha1(f'blob {len(raw)}\0'.encode() + raw).hexdigest() == it['sha']
         if not dest.exists() or not matches(dest.read_bytes()):
             print(f"下载并校验词书 {it['name']}...")
-            with urllib.request.urlopen(f"https://raw.githubusercontent.com/{DICT_REPO}/master/book/{it['name']}", timeout=45) as res:
-                raw = res.read()
+            blob = json.loads(gh(f"repos/{DICT_REPO}/git/blobs/{it['sha']}"))
+            raw = base64.b64decode(blob['content'])
             if not matches(raw):
                 sys.exit(f"词书 {it['name']} 校验失败，未修改词库，请稍后重试。")
             dest.write_bytes(raw)
@@ -184,8 +199,8 @@ def exam_sources(entries: list[dict], head: str) -> list[str]:
 def load_freq_ranks() -> dict[str, int]:
     path = CACHE_DIR / 'en-freq-50k.txt'
     if not path.exists():
-        with urllib.request.urlopen(f'https://raw.githubusercontent.com/{FREQ_REPO}/master/{FREQ_PATH}', timeout=45) as res:
-            path.write_bytes(res.read())
+        data = json.loads(gh(f'repos/{FREQ_REPO}/contents/{FREQ_PATH}'))
+        path.write_bytes(base64.b64decode(data['content']))
     return {line.split()[0].lower(): i for i, line in enumerate(path.read_text().splitlines(), 1) if line.strip()}
 
 
@@ -281,7 +296,15 @@ def ids(value, label: str) -> list[str]:
 
 
 def load_progress(args) -> dict:
-    if args.progress_file:
+    if getattr(args, 'progress_repo', None):
+        repo = args.progress_repo.expanduser().resolve()
+        if git('remote', 'get-url', 'origin', repo=repo).strip() not in (
+                f'https://github.com/{PROGRESS_REPO}.git', f'git@github.com:{PROGRESS_REPO}.git'):
+            sys.exit('私有进度仓库 origin 不匹配，停止补词。')
+        # 只读部署密钥：只获取最新对象，不检出、提交或推送学习记录。
+        git('fetch', '--depth=1', '-q', 'origin', 'main', repo=repo)
+        progress = json.loads(git('show', f'FETCH_HEAD:{PROGRESS_FILE}', repo=repo))
+    elif args.progress_file:
         progress = load_json(Path(args.progress_file))
     elif args.decisions_file:
         progress = {'words': {}, 'cet': load_json(Path(args.decisions_file))}
@@ -407,12 +430,13 @@ def main() -> None:
     global ROOT, WORDS_FILE, PENDING_FILE, STATE_FILE, CACHE_DIR
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument('--repo', type=Path, default=ROOT, help='词库工作副本（定时任务使用干净的 main）')
-    ap.add_argument('--dry-run', action='store_true', help='只预演，不拉取、不改词库、不提交；可更新下载缓存')
+    ap.add_argument('--dry-run', action='store_true', help='只预演，不拉取词库、不改数据、不提交；可更新下载缓存')
     ap.add_argument('--no-commit', action='store_true', help='只写本地文件，不拉取、提交或推送')
     ap.add_argument('--force', action='store_true', help='强制准备候选，仍保留所有入库限制')
     ap.add_argument('--min-fresh', type=int, default=MIN_FRESH)
     ap.add_argument('--batch-size', type=int, default=BATCH_SIZE)
     src = ap.add_mutually_exclusive_group()
+    src.add_argument('--progress-repo', type=Path, help='用只读部署密钥获取私有进度仓库最新 main，无需个人 token')
     src.add_argument('--progress-file', help='使用本地完整进度，不访问私有仓库')
     src.add_argument('--decisions-file', help='兼容本地 {approved:[], rejected:[]}，未学词数按全新存档计算')
     args = ap.parse_args()

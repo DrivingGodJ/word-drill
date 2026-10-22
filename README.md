@@ -260,6 +260,27 @@ python3 scripts/install-cet-timer.py --repo /path/to/word-drill-main
 launchctl bootout gui/$(id -u)/com.drivinggodj.worddrill.cet
 ```
 
+### Linux 服务器补词
+
+服务器可使用 Python 标准库和 Git，无需安装 `gh` 或复制个人 GitHub token：
+
+- 创建专用 `worddrill` 系统用户，使用 `/var/lib/worddrill` 存放运行数据。
+- 为 `DrivingGodJ/word-drill` 配置可写部署密钥，为私有 `DrivingGodJ/worddrill-data` 配置另一把只读部署密钥。私钥只留在服务器，各仓库通过本地 `core.sshCommand` 指定对应私钥；GitHub 主机密钥应从官方来源核验。
+- `/var/lib/worddrill/repo` 是干净的 main 工作副本，origin 使用 `git@github.com:DrivingGodJ/word-drill.git`；保留 `data/words.json`、`data/cet-pending.json`、`scripts/cet-state.json` 和 `.gitignore` 即可，将已有词书缓存放入 `scripts/.cache-cet/`。
+- `/var/lib/worddrill/progress.git` 是私有进度仓库的浅 bare clone。程序每次只读获取最新 main，不检出、修改或推送进度；读取失败就停止，不回退到旧进度或空进度。
+- 将固定补词程序安装为 `/opt/worddrill/add-cet-words.py`，使用仓库中的 `scripts/systemd/worddrill-cet.service` 和 `.timer`。只启用 timer；它开机后待命，每天上海时间 9 点运行，`Persistent=false`，不会开机立即补跑。
+
+```bash
+# 在 worddrill 用户下预演；获取最新私有进度，但不拉取或改写词库，不提交、不推送。
+python3 /opt/worddrill/add-cet-words.py --repo /var/lib/worddrill/repo --progress-repo /var/lib/worddrill/progress.git --dry-run
+# 配置与权限验证通过后，由管理员启用定时器。
+systemctl enable --now worddrill-cet.timer
+systemctl list-timers worddrill-cet.timer
+journalctl -u worddrill-cet.service
+```
+
+迁移时先验证服务器在相同系统用户及服务限制下能预演、读取最新进度并通过词库推送的 `--dry-run` 权限检查，再停用旧机器的任务，避免两个调度器同时发布。学习规则、候选确认、滚动配额及学习记录保持不变。服务器不能稳定连接 raw.githubusercontent.com 时，词书和词频通过 GitHub API 获取；词书仍按 Git blob SHA 校验。
+
 ```json
 {
   "id": "unveil",

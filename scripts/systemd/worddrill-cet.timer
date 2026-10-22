@@ -1,0 +1,11 @@
+[Unit]
+Description=Check approved WordDrill words daily at 09:00 Shanghai time
+
+[Timer]
+OnCalendar=*-*-* 09:00:00 Asia/Shanghai
+AccuracySec=1s
+Persistent=false
+Unit=worddrill-cet.service
+
+[Install]
+WantedBy=timers.target
