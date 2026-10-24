@@ -1,17 +1,52 @@
 {
-  "updated": "2026-10-23",
+  "updated": "2026-10-24",
   "words": [
     {
-      "id": "incorporate",
-      "word": "incorporate",
-      "pos": "vt.",
-      "meaning": "包含； 加上， 吸收； 把…合并， 使并入",
-      "example": "The new cars will incorporate a number of major improvements.",
-      "exampleZh": "这种新型汽车将包含许多重大的改进。",
+      "id": "compulsory",
+      "word": "compulsory",
+      "pos": "adj.",
+      "meaning": "必须做的， 强制性的； 必修的",
+      "example": "He believes that the study of history should be compulsory in school.",
+      "exampleZh": "他认为在学校里学习历史应该是强制性的。",
       "collocations": [
-        "incorporate with（合并；混合）"
+        "compulsory education（义务教育）",
+        "compulsory course（必修课）",
+        "compulsory insurance（强制保险）"
       ],
-      "phonetic": "ɪn'kɔːpəreɪt",
+      "phonetic": "kəm'pʌlsəri",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_2",
+          "CET6_3"
+        ],
+        "examSources": [
+          "CET6 · 2017.6 · 第一套 · 阅读理解",
+          "CET6 · 2012.12 · 第三套 · 阅读理解"
+        ],
+        "frequencyRank": 20891
+      },
+      "score": 8,
+      "difficulty": 3
+    },
+    {
+      "id": "underlying",
+      "word": "underlying",
+      "pos": "adj.",
+      "meaning": "在下面的； 含蓄的； 潜在的",
+      "example": "To stop a problem you have to understand its underlying causes.",
+      "exampleZh": "要解决问题，你得了解其潜在原因。",
+      "collocations": [
+        "underlying surface（下垫面，下伏面；伏面）",
+        "underlying asset（标的资产；基础资产；相关/指定资产）",
+        "underlying strata（底板岩石）"
+      ],
+      "phonetic": "ˌʌndə'laɪɪŋ",
       "tags": [
         "CET6"
       ],
@@ -21,29 +56,31 @@
         "source": "kajweb/dict",
         "books": [
           "CET6_1",
-          "CET6_2",
           "CET6_3",
           "CET6luan_1"
         ],
         "examSources": [
           "CET6 · 2017.12 · 第一套 · 阅读理解",
-          "CET6 · 2013.12 · 第二套 · 阅读理解",
-          "CET6 · 2013.12 · 第三套 · 阅读理解"
+          "CET6 · 2015.12 · 第二套 · 阅读理解"
         ],
-        "frequencyRank": 19436
+        "frequencyRank": 16750
       },
-      "score": 7,
+      "score": 8,
       "difficulty": 3
     },
     {
-      "id": "unrealistic",
-      "word": "unrealistic",
+      "id": "explicit",
+      "word": "explicit",
       "pos": "adj.",
-      "meaning": "不现实的",
-      "example": "Some parents have totally unrealistic expectations of teachers.",
-      "exampleZh": "有些家长对老师抱着完全不切实际的期望。",
-      "collocations": [],
-      "phonetic": "ˌʌnrɪəˈlɪstɪk",
+      "meaning": "详述的， 明确的， 明晰的； 直言的， 露骨的",
+      "example": "The contrast could not have been made more explicit.",
+      "exampleZh": "这个对比再清楚不过了。",
+      "collocations": [
+        "explicit expression（显式表达式）",
+        "explicit knowledge（显性知识；外显知识）",
+        "explicit memory（外显记忆）"
+      ],
+      "phonetic": "ɪk'splɪsɪt",
       "tags": [
         "CET6"
       ],
@@ -52,28 +89,31 @@
         "version": 2,
         "source": "kajweb/dict",
         "books": [
-          "CET6_1",
-          "CET6luan_1"
+          "CET6_2",
+          "CET6_3"
         ],
         "examSources": [
-          "CET6 · 2016.12 · 第三套 · 阅读理解",
-          "CET6 · 2012.6 · 阅读理解",
-          "CET6 · 2012.12 · 第一套 · 写作题"
+          "CET6 · 2013.12 · 第二套 · 阅读理解",
+          "CET6 · 2010.6 · 阅读理解"
         ],
-        "frequencyRank": 20922
+        "frequencyRank": 17640
       },
-      "score": 6,
+      "score": 8,
       "difficulty": 3
     },
     {
-      "id": "restrict",
-      "word": "restrict",
-      "pos": "vt.",
-      "meaning": "限制， 约束， 限定",
-      "example": "The agreement will restrict competition.",
-      "exampleZh": "这个协议将限制竞争。",
-      "collocations": [],
-      "phonetic": "rɪ'strɪkt",
+      "id": "developmental",
+      "word": "developmental",
+      "pos": "adj.",
+      "meaning": "发展的",
+      "example": "Higher education is a continuing developmental process .",
+      "exampleZh": "高等教育是一个持续的发展过程。",
+      "collocations": [
+        "developmental biology（发育生物学；发生生物学，发展生物学）",
+        "developmental stage（发育阶段；发展阶段）",
+        "developmental psychology（发展心理学）"
+      ],
+      "phonetic": "dɪˌveləp'mentl",
       "tags": [
         "CET4"
       ],
@@ -82,70 +122,30 @@
         "version": 2,
         "source": "kajweb/dict",
         "books": [
-          "CET4_1",
-          "CET4_2",
-          "CET4_3",
-          "CET4luan_1",
-          "CET4luan_2",
-          "CET6_1",
-          "CET6_3",
-          "CET6luan_1"
+          "CET4_3"
         ],
         "examSources": [
-          "CET6 · 2013.12 · 第二套 · 阅读理解",
-          "CET4 · 2015.6 · 第三套 · 听力题",
-          "CET4 · 2015.12 · 第一套 · 阅读理解"
+          "CET4 · 2015.12 · 第一套 · 阅读理解",
+          "CET4 · 2013.6 · 第二套 · 阅读理解"
         ],
-        "frequencyRank": 26263
-      },
-      "score": 6,
-      "difficulty": 3
-    },
-    {
-      "id": "continuity",
-      "word": "continuity",
-      "pos": "n.",
-      "meaning": "连续， 持续",
-      "example": "We should ensure continuity of care between hospital and home.",
-      "exampleZh": "我们应当保证医院护理和家庭护理的连续性。",
-      "collocations": [
-        "continuity equation（连续方程）",
-        "business continuity（业务连续性；企业永续经营）",
-        "continuity condition（连续性条件）"
-      ],
-      "phonetic": "ˌkɒntɪ'njuːəti",
-      "tags": [
-        "CET6"
-      ],
-      "exampleSource": "词书配对例句（非真题）",
-      "selection": {
-        "version": 2,
-        "source": "kajweb/dict",
-        "books": [
-          "CET6_3"
-        ],
-        "examSources": [
-          "CET6 · 2010.6 · 阅读理解",
-          "CET6 · 2009.12 · 阅读理解"
-        ],
-        "frequencyRank": 18870
+        "frequencyRank": 38486
       },
       "score": 8,
       "difficulty": 3
     },
     {
-      "id": "nutrition",
-      "word": "nutrition",
-      "pos": "n.",
-      "meaning": "营养",
-      "example": "Nutrition and exercise are essential to fitness and health.",
-      "exampleZh": "营养和运动是保持健康所必不可少的。",
+      "id": "ethnic",
+      "word": "ethnic",
+      "pos": "adj.",
+      "meaning": "种族的",
+      "example": "The school teaches pupils from different ethnic groups.",
+      "exampleZh": "该校教授不同种族的小学生。",
       "collocations": [
-        "animal nutrition（动物营养学）",
-        "human nutrition（人类营养学，人体营养）",
-        "nutrition and health care（营养与保健）"
+        "ethnic group（n. 同种同文化之民族）",
+        "ethnic minority（少数民族）",
+        "ethnic chinese（华裔人士）"
       ],
-      "phonetic": "nju'trɪʃn",
+      "phonetic": "'eθnɪk",
       "tags": [
         "CET6"
       ],
@@ -154,13 +154,178 @@
         "version": 2,
         "source": "kajweb/dict",
         "books": [
+          "CET6_1",
+          "CET6_3",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2011.6 · 阅读理解",
+          "CET6 · 2008.12 · 阅读理解"
+        ],
+        "frequencyRank": 13607
+      },
+      "score": 8,
+      "difficulty": 3
+    },
+    {
+      "id": "turbulence",
+      "word": "turbulence",
+      "pos": "n.",
+      "meaning": "气流；骚乱",
+      "example": "The plane encountered severe turbulence and winds of nearly two-hundred miles an hour.",
+      "exampleZh": "那架飞机遇到了强湍流和时速近二百英里的强风。",
+      "collocations": [
+        "atmospheric turbulence（大气湍流；湍馏气）",
+        "turbulence intensity（湍流强度；扰动强度）",
+        "air turbulence（空气扰动）"
+      ],
+      "phonetic": "'tɜ:bjələns",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_1",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2015.12 · 第三套 · 写作题",
+          "CET6 · 2012.12 · 第二套 · 阅读理解"
+        ],
+        "frequencyRank": 15865
+      },
+      "score": 8,
+      "difficulty": 3
+    },
+    {
+      "id": "intuitive",
+      "word": "intuitive",
+      "pos": "adj.",
+      "meaning": "直觉的",
+      "example": "He seemed to have an intuitive awareness of how I felt.",
+      "exampleZh": "他好像凭直觉就知道我的感受。",
+      "collocations": [
+        "intuitive knowledge（n. 良知；直觉的知识，直观知识）",
+        "intuitive thinking（直觉思维；直观思维）"
+      ],
+      "phonetic": "ɪnˈtju:ɪtɪv",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_1",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2014.12 · 第三套 · 阅读理解",
+          "CET6 · 2013.12 · 第三套 · 阅读理解"
+        ],
+        "frequencyRank": 22039
+      },
+      "score": 8,
+      "difficulty": 3
+    },
+    {
+      "id": "mobility",
+      "word": "mobility",
+      "pos": "n.",
+      "meaning": "流动性；活动性",
+      "example": "It improves the strength and mobility of joints.",
+      "exampleZh": "它能提高关节的力量和灵活性。",
+      "collocations": [
+        "social mobility（社会流动；社会流动性）",
+        "high mobility（高迁移率；机动性高）",
+        "upward mobility（上进心；向上倾向）"
+      ],
+      "phonetic": "məʊˈbɪləti",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_1",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2015.6 · 第二套 · 阅读理解",
+          "CET6 · 2015.12 · 第一套 · 阅读理解"
+        ],
+        "frequencyRank": 21641
+      },
+      "score": 8,
+      "difficulty": 3
+    },
+    {
+      "id": "pendulum",
+      "word": "pendulum",
+      "pos": "n.",
+      "meaning": "摆， 钟摆； 摇摆不定的事态",
+      "example": "After several years of Republican government, the pendulum will undoubtedly swing back and voters will elect a Democrat.",
+      "exampleZh": "由共和党执政数年后，选民无疑会掉过头来，选出一位民主党人。",
+      "collocations": [
+        "inverted pendulum（倒立摆；倒摆）",
+        "simple pendulum（单摆；数学摆）",
+        "compound pendulum（[物]复摆；[物]物理摆（等于physical pendulum））"
+      ],
+      "phonetic": "'pendjələm",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_2",
           "CET6_3"
         ],
         "examSources": [
-          "CET6 · 2014.12 · 第一套 · 文本题",
-          "CET6 · 2013.12 · 第三套 · 阅读理解"
+          "CET6 · 2015.6 · 第二套 · 阅读理解",
+          "CET6 · 2012.12 · 第二套 · 阅读理解"
         ],
-        "frequencyRank": 17063
+        "frequencyRank": 22971
+      },
+      "score": 8,
+      "difficulty": 3
+    },
+    {
+      "id": "representation",
+      "word": "representation",
+      "pos": "n.",
+      "meaning": "描写；陈述；代表",
+      "example": "Minority groups need more effective parliamentary representation.",
+      "exampleZh": "少数族群需要办事更为高效的议会代表。",
+      "collocations": [
+        "knowledge representation（知识表示；知识表达）",
+        "symbolic representation（符号表示；符号表征；符号性表象）",
+        "graphical representation（图示；图解表示法）"
+      ],
+      "phonetic": ",reprɪzen'teɪʃ(ə)n",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_2"
+        ],
+        "examSources": [
+          "CET6 · 2014.6 · 第三套 · 阅读理解",
+          "CET6 · 2014.6 · 第一套 · 阅读理解"
+        ],
+        "frequencyRank": 12138
       },
       "score": 8,
       "difficulty": 3

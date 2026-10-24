@@ -2,7 +2,7 @@
   "meta": {
     "name": "WordDrill",
     "version": 1,
-    "updated": "2026-10-23",
+    "updated": "2026-10-24",
     "source": "FlowUs · page 2220ec94-e0c2-4523-87be-f8277b09d786",
     "note": "词库由 FlowUs 生词页同步而来；新增单词请用 scripts/sync-from-flowus.py 或直接编辑本文件。"
   },
@@ -322,6 +322,38 @@
       ],
       "score": 6,
       "difficulty": 4
+    },
+    {
+      "id": "continuity",
+      "word": "continuity",
+      "pos": "n.",
+      "meaning": "连续， 持续",
+      "example": "We should ensure continuity of care between hospital and home.",
+      "exampleZh": "我们应当保证医院护理和家庭护理的连续性。",
+      "collocations": [
+        "continuity equation（连续方程）",
+        "business continuity（业务连续性；企业永续经营）",
+        "continuity condition（连续性条件）"
+      ],
+      "phonetic": "ˌkɒntɪ'njuːəti",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_3"
+        ],
+        "examSources": [
+          "CET6 · 2010.6 · 阅读理解",
+          "CET6 · 2009.12 · 阅读理解"
+        ],
+        "frequencyRank": 18870
+      },
+      "score": 8,
+      "difficulty": 3
     },
     {
       "id": "cooperative",
@@ -1143,6 +1175,40 @@
       "difficulty": 4
     },
     {
+      "id": "incorporate",
+      "word": "incorporate",
+      "pos": "vt.",
+      "meaning": "包含； 加上， 吸收； 把…合并， 使并入",
+      "example": "The new cars will incorporate a number of major improvements.",
+      "exampleZh": "这种新型汽车将包含许多重大的改进。",
+      "collocations": [
+        "incorporate with（合并；混合）"
+      ],
+      "phonetic": "ɪn'kɔːpəreɪt",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_1",
+          "CET6_2",
+          "CET6_3",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2017.12 · 第一套 · 阅读理解",
+          "CET6 · 2013.12 · 第二套 · 阅读理解",
+          "CET6 · 2013.12 · 第三套 · 阅读理解"
+        ],
+        "frequencyRank": 19436
+      },
+      "score": 7,
+      "difficulty": 3
+    },
+    {
       "id": "inertia",
       "word": "inertia",
       "pos": "n.",
@@ -1517,6 +1583,38 @@
           "CET6 · 2017.6 · 第三套 · 阅读理解"
         ]
       }
+    },
+    {
+      "id": "nutrition",
+      "word": "nutrition",
+      "pos": "n.",
+      "meaning": "营养",
+      "example": "Nutrition and exercise are essential to fitness and health.",
+      "exampleZh": "营养和运动是保持健康所必不可少的。",
+      "collocations": [
+        "animal nutrition（动物营养学）",
+        "human nutrition（人类营养学，人体营养）",
+        "nutrition and health care（营养与保健）"
+      ],
+      "phonetic": "nju'trɪʃn",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_3"
+        ],
+        "examSources": [
+          "CET6 · 2014.12 · 第一套 · 文本题",
+          "CET6 · 2013.12 · 第三套 · 阅读理解"
+        ],
+        "frequencyRank": 17063
+      },
+      "score": 8,
+      "difficulty": 3
     },
     {
       "id": "optimal",
@@ -1903,6 +2001,42 @@
       "tags": []
     },
     {
+      "id": "restrict",
+      "word": "restrict",
+      "pos": "vt.",
+      "meaning": "限制， 约束， 限定",
+      "example": "The agreement will restrict competition.",
+      "exampleZh": "这个协议将限制竞争。",
+      "collocations": [],
+      "phonetic": "rɪ'strɪkt",
+      "tags": [
+        "CET4"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET4_1",
+          "CET4_2",
+          "CET4_3",
+          "CET4luan_1",
+          "CET4luan_2",
+          "CET6_1",
+          "CET6_3",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2013.12 · 第二套 · 阅读理解",
+          "CET4 · 2015.6 · 第三套 · 听力题",
+          "CET4 · 2015.12 · 第一套 · 阅读理解"
+        ],
+        "frequencyRank": 26263
+      },
+      "score": 6,
+      "difficulty": 3
+    },
+    {
       "id": "revenue",
       "word": "revenue",
       "pos": "n.",
@@ -2174,6 +2308,36 @@
         "undertake to do something"
       ],
       "tags": []
+    },
+    {
+      "id": "unrealistic",
+      "word": "unrealistic",
+      "pos": "adj.",
+      "meaning": "不现实的",
+      "example": "Some parents have totally unrealistic expectations of teachers.",
+      "exampleZh": "有些家长对老师抱着完全不切实际的期望。",
+      "collocations": [],
+      "phonetic": "ˌʌnrɪəˈlɪstɪk",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_1",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2016.12 · 第三套 · 阅读理解",
+          "CET6 · 2012.6 · 阅读理解",
+          "CET6 · 2012.12 · 第一套 · 写作题"
+        ],
+        "frequencyRank": 20922
+      },
+      "score": 6,
+      "difficulty": 3
     },
     {
       "id": "unveil",
