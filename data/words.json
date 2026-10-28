@@ -2,7 +2,7 @@
   "meta": {
     "name": "WordDrill",
     "version": 1,
-    "updated": "2026-10-27",
+    "updated": "2026-10-28",
     "source": "FlowUs · page 2220ec94-e0c2-4523-87be-f8277b09d786",
     "note": "词库由 FlowUs 生词页同步而来；新增单词请用 scripts/sync-from-flowus.py 或直接编辑本文件。"
   },
@@ -1446,6 +1446,38 @@
       "difficulty": 4
     },
     {
+      "id": "intuitive",
+      "word": "intuitive",
+      "pos": "adj.",
+      "meaning": "直觉的",
+      "example": "He seemed to have an intuitive awareness of how I felt.",
+      "exampleZh": "他好像凭直觉就知道我的感受。",
+      "collocations": [
+        "intuitive knowledge（n. 良知；直觉的知识，直观知识）",
+        "intuitive thinking（直觉思维；直观思维）"
+      ],
+      "phonetic": "ɪnˈtju:ɪtɪv",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_1",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2014.12 · 第三套 · 阅读理解",
+          "CET6 · 2013.12 · 第三套 · 阅读理解"
+        ],
+        "frequencyRank": 22039
+      },
+      "score": 8,
+      "difficulty": 3
+    },
+    {
       "id": "irreversible",
       "word": "irreversible",
       "pos": "adj.",
@@ -1636,6 +1668,39 @@
         "a bustling metropolis"
       ],
       "tags": []
+    },
+    {
+      "id": "mobility",
+      "word": "mobility",
+      "pos": "n.",
+      "meaning": "流动性；活动性",
+      "example": "It improves the strength and mobility of joints.",
+      "exampleZh": "它能提高关节的力量和灵活性。",
+      "collocations": [
+        "social mobility（社会流动；社会流动性）",
+        "high mobility（高迁移率；机动性高）",
+        "upward mobility（上进心；向上倾向）"
+      ],
+      "phonetic": "məʊˈbɪləti",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_1",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2015.6 · 第二套 · 阅读理解",
+          "CET6 · 2015.12 · 第一套 · 阅读理解"
+        ],
+        "frequencyRank": 21641
+      },
+      "score": 8,
+      "difficulty": 3
     },
     {
       "id": "navigate",
@@ -2412,6 +2477,39 @@
       "tags": [
         "Unit2"
       ]
+    },
+    {
+      "id": "turbulence",
+      "word": "turbulence",
+      "pos": "n.",
+      "meaning": "气流；骚乱",
+      "example": "The plane encountered severe turbulence and winds of nearly two-hundred miles an hour.",
+      "exampleZh": "那架飞机遇到了强湍流和时速近二百英里的强风。",
+      "collocations": [
+        "atmospheric turbulence（大气湍流；湍馏气）",
+        "turbulence intensity（湍流强度；扰动强度）",
+        "air turbulence（空气扰动）"
+      ],
+      "phonetic": "'tɜ:bjələns",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_1",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2015.12 · 第三套 · 写作题",
+          "CET6 · 2012.12 · 第二套 · 阅读理解"
+        ],
+        "frequencyRank": 15865
+      },
+      "score": 8,
+      "difficulty": 3
     },
     {
       "id": "undergo",

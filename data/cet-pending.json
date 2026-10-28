@@ -1,104 +1,6 @@
 {
-  "updated": "2026-10-27",
+  "updated": "2026-10-28",
   "words": [
-    {
-      "id": "turbulence",
-      "word": "turbulence",
-      "pos": "n.",
-      "meaning": "气流；骚乱",
-      "example": "The plane encountered severe turbulence and winds of nearly two-hundred miles an hour.",
-      "exampleZh": "那架飞机遇到了强湍流和时速近二百英里的强风。",
-      "collocations": [
-        "atmospheric turbulence（大气湍流；湍馏气）",
-        "turbulence intensity（湍流强度；扰动强度）",
-        "air turbulence（空气扰动）"
-      ],
-      "phonetic": "'tɜ:bjələns",
-      "tags": [
-        "CET6"
-      ],
-      "exampleSource": "词书配对例句（非真题）",
-      "selection": {
-        "version": 2,
-        "source": "kajweb/dict",
-        "books": [
-          "CET6_1",
-          "CET6luan_1"
-        ],
-        "examSources": [
-          "CET6 · 2015.12 · 第三套 · 写作题",
-          "CET6 · 2012.12 · 第二套 · 阅读理解"
-        ],
-        "frequencyRank": 15865
-      },
-      "score": 8,
-      "difficulty": 3
-    },
-    {
-      "id": "intuitive",
-      "word": "intuitive",
-      "pos": "adj.",
-      "meaning": "直觉的",
-      "example": "He seemed to have an intuitive awareness of how I felt.",
-      "exampleZh": "他好像凭直觉就知道我的感受。",
-      "collocations": [
-        "intuitive knowledge（n. 良知；直觉的知识，直观知识）",
-        "intuitive thinking（直觉思维；直观思维）"
-      ],
-      "phonetic": "ɪnˈtju:ɪtɪv",
-      "tags": [
-        "CET6"
-      ],
-      "exampleSource": "词书配对例句（非真题）",
-      "selection": {
-        "version": 2,
-        "source": "kajweb/dict",
-        "books": [
-          "CET6_1",
-          "CET6luan_1"
-        ],
-        "examSources": [
-          "CET6 · 2014.12 · 第三套 · 阅读理解",
-          "CET6 · 2013.12 · 第三套 · 阅读理解"
-        ],
-        "frequencyRank": 22039
-      },
-      "score": 8,
-      "difficulty": 3
-    },
-    {
-      "id": "mobility",
-      "word": "mobility",
-      "pos": "n.",
-      "meaning": "流动性；活动性",
-      "example": "It improves the strength and mobility of joints.",
-      "exampleZh": "它能提高关节的力量和灵活性。",
-      "collocations": [
-        "social mobility（社会流动；社会流动性）",
-        "high mobility（高迁移率；机动性高）",
-        "upward mobility（上进心；向上倾向）"
-      ],
-      "phonetic": "məʊˈbɪləti",
-      "tags": [
-        "CET6"
-      ],
-      "exampleSource": "词书配对例句（非真题）",
-      "selection": {
-        "version": 2,
-        "source": "kajweb/dict",
-        "books": [
-          "CET6_1",
-          "CET6luan_1"
-        ],
-        "examSources": [
-          "CET6 · 2015.6 · 第二套 · 阅读理解",
-          "CET6 · 2015.12 · 第一套 · 阅读理解"
-        ],
-        "frequencyRank": 21641
-      },
-      "score": 8,
-      "difficulty": 3
-    },
     {
       "id": "pendulum",
       "word": "pendulum",
@@ -162,6 +64,270 @@
         "frequencyRank": 12138
       },
       "score": 8,
+      "difficulty": 3
+    },
+    {
+      "id": "questionnaire",
+      "word": "questionnaire",
+      "pos": "n.",
+      "meaning": "问卷， 征求意见表",
+      "example": "Teachers will be asked to fill in a questionnaire.",
+      "exampleZh": "教师们将被要求填写一份调查问卷。",
+      "collocations": [
+        "questionnaire survey（问卷调查）",
+        "questionnaire method（问卷调查法；问卷法）",
+        "personality questionnaire（人格问卷）"
+      ],
+      "phonetic": "ˌkwestʃə'neə",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_2",
+          "CET6_3"
+        ],
+        "examSources": [
+          "CET6 · 2016.6 · 第一套 · 听力题",
+          "CET6 · 2013.12 · 第一套 · 阅读理解"
+        ],
+        "frequencyRank": 23538
+      },
+      "score": 8,
+      "difficulty": 3
+    },
+    {
+      "id": "elevation",
+      "word": "elevation",
+      "pos": "n.",
+      "meaning": "高度，海拔",
+      "example": "The city is at an elevation of 2 000 metres.",
+      "exampleZh": "这座城市海拔2000米。",
+      "collocations": [
+        "elevation angle（仰角；倾斜角；升运角）",
+        "elevation difference（高差；仰角差）",
+        "ground elevation（地面高程；室外地面标高；地面海拔）"
+      ],
+      "phonetic": ",elɪ'veɪʃ(ə)n",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_2"
+        ],
+        "examSources": [
+          "CET6 · 2016.6 · 第二套 · 阅读理解",
+          "CET6 · 2016.12 · 第一套 · 阅读理解"
+        ],
+        "frequencyRank": 21733
+      },
+      "score": 8,
+      "difficulty": 3
+    },
+    {
+      "id": "segregation",
+      "word": "segregation",
+      "pos": "n.",
+      "meaning": "隔离",
+      "example": "The Supreme Court unanimously ruled that racial segregation in schools was unconstitutional.",
+      "exampleZh": "最高法院一致裁定学校实施的种族隔离措施违反宪法。",
+      "collocations": [
+        "racial segregation（种族隔离）",
+        "gravity segregation（重力偏析；密度偏析）"
+      ],
+      "phonetic": "ˌseɡrɪˈɡeɪʃn",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_1",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2015.6 · 第二套 · 阅读理解",
+          "CET6 · 2014.12 · 第三套 · 阅读理解"
+        ],
+        "frequencyRank": 22892
+      },
+      "score": 8,
+      "difficulty": 3
+    },
+    {
+      "id": "successive",
+      "word": "successive",
+      "pos": "adj.",
+      "meaning": "连续的， 接连的",
+      "example": "The team has had five successive victories.",
+      "exampleZh": "这支球队已经连胜五场了。",
+      "collocations": [
+        "successive approximation（连续的近似值；连续的学习步骤；逐次近似计算法）",
+        "successive elimination（逐次消元）"
+      ],
+      "phonetic": "sək'sesɪv",
+      "tags": [
+        "CET4"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET4_2",
+          "CET4_3",
+          "CET4luan_2",
+          "CET6_3"
+        ],
+        "examSources": [
+          "CET6 · 2016.6 · 第一套 · 听力题",
+          "CET6 · 2014.6 · 第二套 · 阅读理解"
+        ],
+        "frequencyRank": 34122
+      },
+      "score": 8,
+      "difficulty": 3
+    },
+    {
+      "id": "stimulus",
+      "word": "stimulus",
+      "pos": "n.",
+      "meaning": "促进； 刺激",
+      "example": "Tax cuts provided the stimulus which the slow economy needed.",
+      "exampleZh": "减税为不景气的经济带来了其所需的刺激。",
+      "collocations": [
+        "economic stimulus（经济刺激）",
+        "stimulus package（刺激计划）",
+        "fiscal stimulus（财政刺激）"
+      ],
+      "phonetic": "'stɪmjələs",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_1",
+          "CET6_3",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2016.6 · 第三套 · 阅读理解",
+          "CET6 · 2016.6 · 第一套 · 听力题"
+        ],
+        "frequencyRank": 25159
+      },
+      "score": 8,
+      "difficulty": 4
+    },
+    {
+      "id": "certification",
+      "word": "certification",
+      "pos": "n.",
+      "meaning": "证书",
+      "example": "We successfully completed the certification for open water diving.",
+      "exampleZh": "我们成功地拿到了开放水域潜水证书。",
+      "collocations": [
+        "quality certification（质量认证）",
+        "quality certification system（质量保证制度）",
+        "certification body（认证机构）"
+      ],
+      "phonetic": ",sɜːtɪfɪ'keɪʃən",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_1",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2016.6 · 第一套 · 阅读理解",
+          "CET6 · 2011.6 · 写作题"
+        ],
+        "frequencyRank": 30978
+      },
+      "score": 8,
+      "difficulty": 4
+    },
+    {
+      "id": "assert",
+      "word": "assert",
+      "pos": "v.",
+      "meaning": "断言，宣称；维护",
+      "example": "She continued to assert that she was innocent.",
+      "exampleZh": "她仍然坚称自己无辜。",
+      "collocations": [
+        "assert oneself（坚持自己的权利或意见）"
+      ],
+      "phonetic": "ə'sɜːt",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_1",
+          "CET6_2",
+          "CET6_3",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2016.12 · 第一套 · 阅读理解",
+          "CET6 · 2014.12 · 第一套 · 阅读理解"
+        ],
+        "frequencyRank": 21108
+      },
+      "score": 7,
+      "difficulty": 3
+    },
+    {
+      "id": "equip",
+      "word": "equip",
+      "pos": "vt.",
+      "meaning": "装备， 配备； 使有准备",
+      "example": "They try to equip their vehicles with gadgets to deal with every possible contingency.",
+      "exampleZh": "他们尽量给他们的车辆配备各种小装置以应付任何可能的突发状况。",
+      "collocations": [
+        "equip with（装备，配备；备有…，以…装备）"
+      ],
+      "phonetic": "ɪ'kwɪp",
+      "tags": [
+        "CET4"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET4_2",
+          "CET4_3",
+          "CET4luan_2",
+          "CET6_3"
+        ],
+        "examSources": [
+          "CET6 · 2009.12 · 阅读理解",
+          "CET4 · 2013.6 · 第二套 · 写作题"
+        ],
+        "frequencyRank": 37608
+      },
+      "score": 7,
       "difficulty": 3
     }
   ]
