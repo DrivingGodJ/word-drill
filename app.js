@@ -221,9 +221,25 @@
     return { ...result, due: +result.due, last_review: +result.last_review };
   }
 
+  const dailyWordTarget = () => Math.max(0, Math.min(80, Number(META.dailyWordTarget) || 0));
+  const studyDayKey = (ts) => new Date(ts + 8 * 60 * MIN).toISOString().slice(0, 10);
+
+  function dailyCoverage(t = now()) {
+    const today = studyDayKey(t);
+    let seen = 0, due = 0;
+    for (const w of WORDS) {
+      const p = progressOf(w.id);
+      if (p.lastSeen && studyDayKey(p.lastSeen) === today) seen++;
+      else if ((p.stage !== 'new' || p.introducedAt) && p.due <= t) due++;
+    }
+    return { seen, due };
+  }
+
   function newAllowance(t = now()) {
     const started = Object.values(store.words).filter((p) => p.introducedAt && dayKey(p.introducedAt) === dayKey(t)).length;
-    return Math.max(0, store.settings.newLimit - started);
+    const { seen, due } = dailyCoverage(t);
+    // 基础额度仍保留；两轮目标按不同词计算，重复复习不重复占位。
+    return Math.max(0, store.settings.newLimit - started, dailyWordTarget() - seen - due);
   }
 
   /**
@@ -973,6 +989,9 @@
       ? `本轮最多 ${Math.min(totalToday, REQUESTS_PER_ROUND)} 个词 · 待复习 ${due} · 今日可加新词 ${remaining}`
       : (!WORDS.length ? '词库还是空的。'
         : '暂时没有到期的词；自由加练不会提前推迟下次复习。');
+    if (dailyWordTarget()) {
+      $('#intro-hint').textContent += ` · 每日备词目标 ${dailyWordTarget()} 词（2 × 40），今日已练 ${dailyCoverage(t).seen} 个不同词`;
+    }
     $('#intro-rule').textContent =
       `至少 ${creditNeed()} 个不同日子独立答对，认词稳定性达 7 天。六级词认词达标即可掌握；四级和手动词还需拼写稳定性达 21 天。`;
     $('#btn-start').disabled = totalToday === 0;

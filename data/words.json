@@ -2,6 +2,7 @@
   "meta": {
     "name": "WordDrill",
     "version": 1,
+    "dailyWordTarget": 80,
     "updated": "2026-10-28",
     "source": "FlowUs · page 2220ec94-e0c2-4523-87be-f8277b09d786",
     "note": "词库由 FlowUs 生词页同步而来；新增单词请用 scripts/sync-from-flowus.py 或直接编辑本文件。"

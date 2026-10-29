@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""四六级补词：候选确认后按学习余量入库；7 个是参考量，48 小时最多 14 个。
+"""四六级补词：按每日目标自动补足；未设目标时沿用候选确认与 48 小时配额。
 
 python3 scripts/add-cet-words.py --dry-run
 python3 scripts/add-cet-words.py --no-commit --progress-file progress.json
@@ -8,7 +8,8 @@ python3 scripts/add-cet-words.py --repo /var/lib/worddrill/repo --progress-repo 
 
 只挑有词性、中文释义、完整中英例句和带日期的真题收录记录的难词。
 词频是难度代理；优先真题相关性和实际展示的资料，不让缺词频的词排第一。
---force 只跳过候选储备判断，不跳过入库配额、确认或未学词储备上限。
+词库 meta.dailyWordTarget=80 时按缺口直接入库，保留历史拒绝与质量门槛。
+未设目标时，--force 只跳过候选储备判断，不跳过旧模式的入库限制。
 依赖 Python 标准库与 Git；本机可复用 gh 登录，服务器可用仓库部署密钥；无需模型。
 """
 from __future__ import annotations
@@ -27,6 +28,7 @@ import urllib.error
 import urllib.request
 import zipfile
 from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 from functools import lru_cache
 from pathlib import Path
 
@@ -370,9 +372,79 @@ def eligible(item: dict) -> bool:
             and bool(item.get('selection', {}).get('examSources')))
 
 
+def daily_capacity(words: list[dict], progress: dict, at: datetime) -> dict:
+    """与网页一致：今天已练、现在到期、尚未开始的词各只算一次。"""
+    today = at.astimezone(ZoneInfo('Asia/Shanghai')).date()
+    timestamp = at.timestamp() * 1000
+    counts = {'seen': 0, 'due': 0, 'fresh': 0}
+    for word in words:
+        p = progress['words'].get(word['id'], {})
+        stage, due = p.get('stage', 'new'), p.get('due', 0)
+        tags = word.get('tags', [])
+        writing = ('CET6' not in tags or 'CET4' in tags or '手动添加' in tags
+                   or any(re.fullmatch(r'Unit\d+', tag, re.I) for tag in tags))
+        if writing and stage == 'mastered' and p.get('masteredBy') == 'recognize':
+            stage, due = 'write', 0
+        seen = p.get('lastSeen', 0)
+        if seen and datetime.fromtimestamp(seen / 1000, ZoneInfo('Asia/Shanghai')).date() == today:
+            counts['seen'] += 1
+        elif stage == 'new' and not p.get('introducedAt'):
+            counts['fresh'] += 1
+        elif due <= timestamp:
+            counts['due'] += 1
+    return counts
+
+
+def fill_daily_target(data: dict, pending: list[dict], state: dict, progress: dict,
+                      at: datetime, target: int) -> tuple[list[dict], list[str]]:
+    words = data['words']
+    counts = daily_capacity(words, progress, at)
+    missing = max(0, target - sum(counts.values()))
+    print(f"每日目标 {target}：今日已练 {counts['seen']}，现在到期 {counts['due']}，未学 {counts['fresh']}；需补 {missing}")
+    known_ids = {w['id'] for w in words}
+    known_words = {w['word'].casefold() for w in words}
+    rejected = set(ids(state.get('rejected', []), '历史拒绝')) | set(progress['cet']['rejected'])
+    state['rejected'] = sorted(rejected)
+    added = []
+
+    def take(items):
+        for item in items:
+            if len(added) >= missing:
+                break
+            if (item['id'] in known_ids | rejected or item['word'].casefold() in known_words
+                    or not eligible(item)):
+                continue
+            words.append(item)
+            known_ids.add(item['id']); known_words.add(item['word'].casefold())
+            state.setdefault('added', []).append({'word': item['word'], 'at': at.astimezone(ZoneInfo('Asia/Shanghai')).isoformat(timespec='seconds'), 'level': item['tags'][0]})
+            added.append(item['word'])
+            print(f"入库：{item['word']} {item['pos']} {item['meaning']}")
+
+    if missing:
+        upgrade_pending(pending)
+        # 先接纳已确认的合格候选，再用同一质量筛选器按缺口补充；拒绝决定始终优先。
+        approved = set(progress['cet']['approved'])
+        take(w for w in pending if w['id'] in approved)
+        if len(added) < missing:
+            take(item for _, _, item in build_scored_candidates())
+    if added:
+        words.sort(key=lambda w: w['word'].lower())
+        data['meta']['updated'] = at.astimezone(ZoneInfo('Asia/Shanghai')).date().isoformat()
+    pending = [w for w in pending if w['id'] not in known_ids | rejected and w['word'].casefold() not in known_words]
+    if len(added) < missing:
+        print(f'合格词源不足：仍差 {missing - len(added)} 词，未降低资料质量门槛。')
+    print(f'补词后今日覆盖 {sum(counts.values()) + len(added)}/{target} 个不同词。')
+    return pending, added
+
+
 def plan_update(data: dict, pending: list[dict], state: dict, progress: dict,
                 min_fresh=MIN_FRESH, batch_size=BATCH_SIZE, force=False, at=None) -> tuple[list[dict], list[str]]:
     at = at or datetime.now(timezone.utc)
+    target = data.get('meta', {}).get('dailyWordTarget', 0)
+    if type(target) is not int or not 0 <= target <= 80:
+        raise ValueError('dailyWordTarget 必须是 0～80 的整数，停止补词。')
+    if target:
+        return fill_daily_target(data, pending, state, progress, at, target)
     words = data['words']
     known_ids = {w['id'] for w in words}
     known_words = {w['word'].lower() for w in words}

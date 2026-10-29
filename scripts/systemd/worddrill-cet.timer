@@ -1,8 +1,8 @@
 [Unit]
-Description=Check approved WordDrill words daily at 09:00 Shanghai time
+Description=Check WordDrill daily vocabulary supply at 06:00 Shanghai time
 
 [Timer]
-OnCalendar=*-*-* 09:00:00 Asia/Shanghai
+OnCalendar=*-*-* 06:00:00 Asia/Shanghai
 AccuracySec=1s
 Persistent=false
 Unit=worddrill-cet.service

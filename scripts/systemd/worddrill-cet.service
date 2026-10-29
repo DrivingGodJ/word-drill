@@ -1,5 +1,5 @@
 [Unit]
-Description=WordDrill approved CET vocabulary ingestion
+Description=WordDrill daily CET vocabulary supply
 Wants=network-online.target
 After=network-online.target
 
