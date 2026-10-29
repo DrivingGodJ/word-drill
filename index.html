@@ -197,10 +197,10 @@
     <h1 class="page-title" id="settings-title">设置</h1>
 
     <div class="card settings-card">
-      <h2 class="card__title">每日新词上限</h2>
-      <p class="card__desc">控制一个自然日最多引入几个新词，多轮训练共享配额。到期复习优先，每轮最多 40 题。</p>
+      <h2 class="card__title">每日基础新词额度</h2>
+      <p class="card__desc">多轮训练共享额度。启用每日 80 词备词目标时，会按今日已练词和到期词自动补足新词额度；基础额度为 0 也不会关闭该目标。到期复习优先，每轮最多 40 题。</p>
       <div class="field">
-        <input type="range" id="set-newlimit" aria-label="每日新词上限" min="0" max="40" step="1" value="10">
+        <input type="range" id="set-newlimit" aria-label="每日基础新词额度" min="0" max="40" step="1" value="10">
         <output id="set-newlimit-out" for="set-newlimit">10</output>
       </div>
     </div>
@@ -319,6 +319,6 @@
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
 <script src="vendor/ts-fsrs-5.4.2.js"></script>
-<script src="app.js?v=9"></script>
+<script src="app.js?v=10"></script>
 </body>
 </html>

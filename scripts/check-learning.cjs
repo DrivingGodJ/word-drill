@@ -35,13 +35,13 @@ const source = fs.readFileSync(path.join(root, 'app.js'), 'utf8')
   .replace('const now = () => Date.now();', 'const now = () => globalThis.testNow;')
   .replace("document.addEventListener('DOMContentLoaded', boot);", `globalThis.check = {
     defaultStore, readStore, migrateStore, loadStore, grade, mergeRemote, buildPayload,
-    newAllowance, normalMemory, normalize, hasFillExample, dayKey, startSession, remoteRead,
+    newAllowance, dailyCoverage, normalMemory, normalize, hasFillExample, dayKey, startSession, remoteRead,
     requiresWriting, progressOf, quizTypeFor, renderLibrary,
     nextQuestion, answer, revealOptions, onPickOption, speak, canSpeak, bindEvents,
     syncNow, autoSync, bindAutoSync, endSession, getSync: () => sync, isSyncing: () => syncing,
     setSync: (config) => { sync = config; }, setSession: (s) => { session = s; },
     getStore: () => store, setStore: (s) => { store = readStore(s); },
-    getSession: () => session,
+    getSession: () => session, setMeta: (meta) => { META = meta; },
     setWords: (words) => { WORDS = words; byId.clear(); words.forEach(w => byId.set(w.id, w)); }
   }; sync = { deviceId: 'check' };`);
 vm.runInContext(source, context);
@@ -222,6 +222,47 @@ if (process.argv[3]) {
   assert.deepEqual(plain(app.getStore()), original, 'the live export remains unchanged while applying current requirements');
   console.log(`Current-progress check passed; ${legacySix} legacy CET6 spelling records now count as recognition-mastered.`);
 }
+
+// A two-round target lifts only the effective quota; stored settings/progress stay intact.
+reset();
+app.setMeta({ dailyWordTarget: 80 });
+const supply = Array.from({length: 100}, (_, i) => ({id: `s${i}`, word: `s${i}`, tags: ['CET4']}));
+app.setWords(supply);
+assert.equal(app.newAllowance(), 80);
+for (let i = 0; i < 30; i++) app.getStore().words[`s${i}`] = rec();
+assert.equal(app.newAllowance(), 50, '30 due words leave a 50-word gap');
+for (let i = 0; i < 20; i++) {
+  app.getStore().words[`s${i}`].lastSeen = initialTime;
+  app.getStore().words[`s${i}`].due = initialTime + DAY;
+}
+assert.deepEqual(plain(app.dailyCoverage()), {seen: 20, due: 10});
+assert.equal(app.newAllowance(), 50, 'completed reviews still count toward today');
+app.getStore().words.s0.due = initialTime - 1;
+assert.equal(app.newAllowance(), 50, 'an already-seen due word is counted only once');
+app.getStore().words.orphan = rec();
+assert.equal(app.newAllowance(), 50, 'unknown IDs cannot fill the target');
+assert.equal(app.getStore().settings.newLimit, 10, 'do not rewrite synced settings');
+// Two successive perfect rounds can select 40 each even with no due reviews.
+reset();
+app.setWords(supply);
+app.startSession();
+assert.equal(app.getSession().queue.length, 40);
+for (const id of app.getSession().queue) {
+  app.getStore().words[id] = {...rec(), introducedAt: initialTime, lastSeen: initialTime, due: initialTime + DAY};
+}
+assert.equal(app.newAllowance(), 40);
+app.startSession();
+assert.equal(app.getSession().queue.length, 40);
+for (const id of app.getSession().queue) {
+  assert.equal(app.getStore().words[id], undefined, 'second round has different fresh words');
+  app.getStore().words[id] = {...rec(), introducedAt: initialTime, lastSeen: initialTime, due: initialTime + DAY};
+}
+assert.equal(app.newAllowance(), 0);
+context.testNow += DAY;
+assert.equal(app.newAllowance(), 10, '80 now-due words already cover the target');
+app.setMeta({});
+app.setSession(null);
+reset();
 
 // A real daily quota includes failed first attempts and is shared across sessions.
 reset();

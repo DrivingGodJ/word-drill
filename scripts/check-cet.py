@@ -183,6 +183,55 @@ with contextlib.redirect_stdout(io.StringIO()):
             pass
         for name in values:
             if name != 'progress.json': assert (root/name).read_bytes() == before[name][0]
+# Daily coverage counts distinct words at Shanghai midnight; ignores future reviews/orphan IDs.
+with contextlib.redirect_stdout(io.StringIO()):
+    words = [{'id': f'd{i}', 'word': f'd{i}', 'tags': ['CET4']} for i in range(60)]
+    progress = {'words': {}, 'cet': {'approved': [], 'rejected': ['candidate0']}}
+    for i in range(30):
+        progress['words'][f'd{i}'] = {'stage': 'recognize', 'due': at.timestamp()*1000 - 1}
+    for i in range(10):
+        progress['words'][f'd{i}'].update(lastSeen=at.timestamp()*1000)
+    for i in range(30, 40):
+        progress['words'][f'd{i}'] = {'stage': 'recognize', 'due': (at+timedelta(days=1)).timestamp()*1000}
+    progress['words']['orphan'] = {'stage': 'recognize', 'due': 0}
+    assert cet.daily_capacity(words, progress, at) == {'seen': 10, 'due': 20, 'fresh': 20}
+    pool = []
+    for i in range(40):
+        candidate = copy.deepcopy(item)
+        candidate.update(id=f'candidate{i}', word=f'candidate{i}', example=f'The candidate{i} was selected by the committee.')
+        pool.append((3, 8, candidate))
+    # 48-hour history no longer blocks the explicitly configured daily target.
+    state = {'added': [{'at': at.isoformat(), 'word': 'old'}]*14, 'rejected': []}
+    data = {'meta': {'dailyWordTarget': 80}, 'words': words}
+    original_words, original_progress = copy.deepcopy(words), copy.deepcopy(progress)
+    with patch.object(cet, 'build_scored_candidates', return_value=pool):
+        pending, added = cet.plan_update(data, [], state, progress, at=at)
+    assert len(added) == 30 and 'candidate0' not in added
+    assert sum(cet.daily_capacity(data['words'], progress, at).values()) == 80
+    assert progress == original_progress
+    assert all(w in data['words'] for w in original_words)
+    assert len(state['added']) == 44, 'preserve all earlier ingestion history'
+    before = copy.deepcopy((data, state))
+    with patch.object(cet, 'build_scored_candidates', side_effect=AssertionError('no source needed')):
+        assert cet.plan_update(data, pending, state, progress, at=at)[1] == []
+    assert (data, state) == before, 'same-day rerun is a no-op'
+    # Enough reviews need no new words; failed/stale reads are already checked above.
+    enough = {'meta': {'dailyWordTarget': 20}, 'words': original_words}
+    assert cet.plan_update(enough, [], {'added': []}, progress, at=at)[1] == []
+    # Exhaustion and duplicate candidates never invent filler or count duplicates.
+    data = {'meta': {'dailyWordTarget': 80}, 'words': []}
+    with patch.object(cet, 'build_scored_candidates', return_value=[pool[1], pool[1]]):
+        assert len(cet.plan_update(data, [], {'added': []}, progress, at=at)[1]) == 1
+    boundary = datetime(2026, 10, 8, 16, tzinfo=timezone.utc)
+    progress = {'words': {'x': {'stage': 'recognize', 'lastSeen': boundary.timestamp()*1000 - 1,
+                               'due': (boundary+timedelta(days=1)).timestamp()*1000}}}
+    assert cet.daily_capacity([{'id': 'x'}], progress, boundary)['seen'] == 0
+    progress['words']['x']['lastSeen'] += 1
+    assert cet.daily_capacity([{'id': 'x'}], progress, boundary)['seen'] == 1
+    # Recognition-only mastery newly requiring spelling is available now, like progressOf in JS.
+    progress['words']['x'] = {'stage': 'mastered', 'masteredBy': 'recognize', 'due': (at+timedelta(days=1)).timestamp()*1000}
+    assert cet.daily_capacity([{'id': 'x', 'tags': ['CET6', '手动添加']}], progress, at)['due'] == 1
+
 # Manual entry paths override a CET6 label without replacing the existing word/ID.
 with tempfile.TemporaryDirectory() as folder, contextlib.redirect_stdout(io.StringIO()):
     root = Path(folder)
