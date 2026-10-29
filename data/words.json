@@ -3,7 +3,7 @@
     "name": "WordDrill",
     "version": 1,
     "dailyWordTarget": 80,
-    "updated": "2026-10-29",
+    "updated": "2026-10-30",
     "source": "FlowUs · page 2220ec94-e0c2-4523-87be-f8277b09d786",
     "note": "词库由 FlowUs 生词页同步而来；新增单词请用 scripts/sync-from-flowus.py 或直接编辑本文件。"
   },
@@ -50,6 +50,37 @@
           "CET6 · 2015.6 · 第二套 · 阅读理解"
         ],
         "frequencyRank": 13109
+      },
+      "score": 7,
+      "difficulty": 3
+    },
+    {
+      "id": "acquaint",
+      "word": "acquaint",
+      "pos": "vt.",
+      "meaning": "使认识， 使了解",
+      "example": "Have steps been taken to acquaint breeders with their right to apply for licenses?",
+      "exampleZh": "已经采取措施让饲养动物者了解他们申请执照的权利了吗？",
+      "collocations": [
+        "acquaint with（熟悉；使认识，使了解）"
+      ],
+      "phonetic": "ə'kweɪnt",
+      "tags": [
+        "CET4"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET4_3",
+          "CET6_2",
+          "CET6_3"
+        ],
+        "examSources": [
+          "CET4 · 2008.12 · 阅读理解"
+        ],
+        "frequencyRank": 38892
       },
       "score": 7,
       "difficulty": 3
@@ -145,6 +176,73 @@
         "the allure of"
       ],
       "tags": []
+    },
+    {
+      "id": "analytical",
+      "word": "analytical",
+      "pos": "adj.",
+      "meaning": "分析的",
+      "example": "She’s got an analytical mind.",
+      "exampleZh": "她思维缜密。",
+      "collocations": [
+        "analytical method（分析法）",
+        "analytical chemistry（[化]分析化学）",
+        "analytical solution（分析解；分析解法）"
+      ],
+      "phonetic": "ˌænəˈlɪtɪkl",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_1",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2011.6 · 阅读理解"
+        ],
+        "frequencyRank": 30998
+      },
+      "score": 8,
+      "difficulty": 4
+    },
+    {
+      "id": "applicable",
+      "word": "applicable",
+      "pos": "adj.",
+      "meaning": "能应用的； 合适的， 适当的",
+      "example": "What is a reasonable standard for one family is not applicable for another.",
+      "exampleZh": "对一个家庭合理的标准对于另一个家庭并不适用。",
+      "collocations": [
+        "applicable scope（适用范围）",
+        "if applicable（如果适用；若可以）",
+        "applicable law（适用的法律；准据法）"
+      ],
+      "phonetic": "'æplɪkəbl",
+      "tags": [
+        "CET4"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET4_2",
+          "CET4_3",
+          "CET4luan_2",
+          "CET6_1",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2014.6 · 第二套 · 写作题"
+        ],
+        "frequencyRank": 35123
+      },
+      "score": 8,
+      "difficulty": 3
     },
     {
       "id": "aromatic",
@@ -292,6 +390,38 @@
         "belittle oneself"
       ],
       "tags": []
+    },
+    {
+      "id": "bias",
+      "word": "bias",
+      "pos": "n.",
+      "meaning": "偏见",
+      "example": "Students were evaluated without bias.",
+      "exampleZh": "对学生的评估都是公正的。",
+      "collocations": [
+        "bias voltage（[电]偏压）",
+        "bias current（偏置电流；偏流）",
+        "on the bias（◎偏斜地，倾斜地，歪斜地）"
+      ],
+      "phonetic": "'baɪəs",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_1",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2010.6 · 阅读理解"
+        ],
+        "frequencyRank": 16016
+      },
+      "score": 8,
+      "difficulty": 3
     },
     {
       "id": "bibliography",
@@ -519,6 +649,36 @@
       "difficulty": 3
     },
     {
+      "id": "commencement",
+      "word": "commencement",
+      "pos": "n.",
+      "meaning": "毕业典礼",
+      "example": "President Bush gave the commencement address today at the University of Notre Dame.",
+      "exampleZh": "布什总统今天在巴黎圣母院大学发表了毕业典礼演说。",
+      "collocations": [
+        "commencement date（生效日期）"
+      ],
+      "phonetic": "kə'mensm(ə)nt",
+      "tags": [
+        "CET4"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET4_1",
+          "CET4luan_1"
+        ],
+        "examSources": [
+          "CET4 · 2015.6 · 第三套 · 阅读理解"
+        ],
+        "frequencyRank": 35481
+      },
+      "score": 7,
+      "difficulty": 3
+    },
+    {
       "id": "commonplace",
       "word": "commonplace",
       "pos": "adj.",
@@ -529,6 +689,36 @@
         "become commonplace"
       ],
       "tags": []
+    },
+    {
+      "id": "compatible",
+      "word": "compatible",
+      "pos": "adj.",
+      "meaning": "兼容的； 能和睦相处的， 合得来的",
+      "example": "The new software is IBM compatible (= can be used with IBM computers ) .",
+      "exampleZh": "这个新软件与IBM的计算机兼容。",
+      "collocations": [
+        "compatible with（adj. 与……和谐相处；与……相配的）"
+      ],
+      "phonetic": "kəm'pætəbl",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_2",
+          "CET6_3"
+        ],
+        "examSources": [
+          "CET6 · 2014.6 · 第三套 · 阅读理解"
+        ],
+        "frequencyRank": 13982
+      },
+      "score": 7,
+      "difficulty": 3
     },
     {
       "id": "compulsory",
@@ -561,6 +751,36 @@
         "frequencyRank": 20891
       },
       "score": 8,
+      "difficulty": 3
+    },
+    {
+      "id": "conceive",
+      "word": "conceive",
+      "pos": "v.",
+      "meaning": "设想，以为；怀孕",
+      "example": "She is unable to conceive.",
+      "exampleZh": "她不能怀孕。",
+      "collocations": [
+        "conceive of（设想；想象）"
+      ],
+      "phonetic": "kən'siːv",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_2",
+          "CET6_3"
+        ],
+        "examSources": [
+          "CET6 · 2012.6 · 阅读理解"
+        ],
+        "frequencyRank": 14161
+      },
+      "score": 7,
       "difficulty": 3
     },
     {
@@ -621,6 +841,73 @@
         "frequencyRank": 16942
       },
       "score": 7,
+      "difficulty": 3
+    },
+    {
+      "id": "consecutive",
+      "word": "consecutive",
+      "pos": "adj.",
+      "meaning": "连续的， 连贯的",
+      "example": "It had rained for four consecutive days.",
+      "exampleZh": "雨接连下了四天。",
+      "collocations": [
+        "consecutive days（连续营业日；连续作业日）",
+        "consecutive interpreting（交替传译）",
+        "consecutive reaction（连锁反应）"
+      ],
+      "phonetic": "kən'sekjətɪv",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_3"
+        ],
+        "examSources": [
+          "CET6 · 2016.6 · 第二套 · 听力题"
+        ],
+        "frequencyRank": 17686
+      },
+      "score": 8,
+      "difficulty": 3
+    },
+    {
+      "id": "consist",
+      "word": "consist",
+      "pos": "v.",
+      "meaning": "由…组成；在于",
+      "example": "Happiness does not consist in how many possessions you own.",
+      "exampleZh": "幸福不在于你拥有多少财产。",
+      "collocations": [
+        "consist of（由…构成）",
+        "consist in（在于；存在于）",
+        "consist with（符合；与…一致）"
+      ],
+      "phonetic": "kən'sɪst",
+      "tags": [
+        "CET4"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET4_1",
+          "CET4_2",
+          "CET4_3",
+          "CET4luan_1",
+          "CET4luan_2",
+          "CET6_3"
+        ],
+        "examSources": [
+          "CET6 · 2014.6 · 第一套 · 听力题"
+        ],
+        "frequencyRank": 25619
+      },
+      "score": 8,
       "difficulty": 3
     },
     {
@@ -735,6 +1022,36 @@
       "difficulty": 3
     },
     {
+      "id": "contradict",
+      "word": "contradict",
+      "pos": "vt.",
+      "meaning": "反驳， 否认…的真实性； 与…发生矛盾， 与…抵触",
+      "example": "Deborah opened her mouth to contradict, but closed it again.",
+      "exampleZh": "黛博拉张口想要反驳，但又把嘴闭上了。",
+      "collocations": [
+        "contradict oneself（自相矛盾）"
+      ],
+      "phonetic": "ˌkɒntrə'dɪkt",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_2",
+          "CET6_3"
+        ],
+        "examSources": [
+          "CET6 · 2014.12 · 第二套 · 阅读理解"
+        ],
+        "frequencyRank": 17022
+      },
+      "score": 7,
+      "difficulty": 3
+    },
+    {
       "id": "cooperative",
       "word": "cooperative",
       "pos": "n.",
@@ -808,6 +1125,39 @@
       ],
       "score": 6,
       "difficulty": 4
+    },
+    {
+      "id": "deepen",
+      "word": "deepen",
+      "pos": "v.",
+      "meaning": "使加深，加剧",
+      "example": "The recession continues to deepen.",
+      "exampleZh": "经济衰退继续加剧。",
+      "collocations": [
+        "deepen the reform（深化改革）"
+      ],
+      "phonetic": "'diːp(ə)n",
+      "tags": [
+        "CET4"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET4_1",
+          "CET4_2",
+          "CET4luan_1",
+          "CET4luan_2",
+          "CET6_2"
+        ],
+        "examSources": [
+          "CET6 · 2017.6 · 第一套 · 阅读理解"
+        ],
+        "frequencyRank": 42504
+      },
+      "score": 7,
+      "difficulty": 3
     },
     {
       "id": "derive",
@@ -1001,6 +1351,36 @@
       "difficulty": 4
     },
     {
+      "id": "disconnect",
+      "word": "disconnect",
+      "pos": "v.",
+      "meaning": "断开",
+      "example": "The family agreed to disconnect her life support system.",
+      "exampleZh": "家人同意切断她的生命维持系统。",
+      "collocations": [
+        "disconnect from（从…分离）"
+      ],
+      "phonetic": "ˌdɪskə'nekt",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_1",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2013.12 · 第二套 · 阅读理解"
+        ],
+        "frequencyRank": 13505
+      },
+      "score": 7,
+      "difficulty": 3
+    },
+    {
       "id": "discrepancy",
       "word": "discrepancy",
       "pos": "n.",
@@ -1117,6 +1497,40 @@
       "difficulty": 3
     },
     {
+      "id": "duplicate",
+      "word": "duplicate",
+      "pos": "adj./n./vt.",
+      "meaning": "完全一样的， 复制的；完全一样的东西，复制品；复制， 复印； 重复",
+      "example": "A duplicate copy should be made for the county record office.",
+      "exampleZh": "应该制作一个副本呈交县档案室。",
+      "collocations": [
+        "in duplicate（一式二份）",
+        "duplicate key（复制键）",
+        "duplicate copy（副本；复制本）"
+      ],
+      "phonetic": "ˈdjuːplɪkeɪt",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_1",
+          "CET6_2",
+          "CET6_3",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2013.6 · 第三套 · 阅读理解"
+        ],
+        "frequencyRank": 12565
+      },
+      "score": 8,
+      "difficulty": 3
+    },
+    {
       "id": "dynamics",
       "word": "dynamics",
       "pos": "n.",
@@ -1146,6 +1560,37 @@
           "CET6 · 2015.12 · 第二套 · 阅读理解"
         ],
         "frequencyRank": 18031
+      },
+      "score": 8,
+      "difficulty": 3
+    },
+    {
+      "id": "earnings",
+      "word": "earnings",
+      "pos": "n.",
+      "meaning": "工资，收入；收益",
+      "example": "The company’s earnings have dropped by 5% in the first quarter.",
+      "exampleZh": "公司第一季度的利润下降了5%。",
+      "collocations": [
+        "earnings per share（每股收益）",
+        "annual earnings（年收益）",
+        "earnings yield（净收益率）"
+      ],
+      "phonetic": "'ɜːnɪŋz",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_2"
+        ],
+        "examSources": [
+          "CET6 · 2009.6 · 阅读理解"
+        ],
+        "frequencyRank": 14902
       },
       "score": 8,
       "difficulty": 3
@@ -1343,6 +1788,36 @@
       ]
     },
     {
+      "id": "emergence",
+      "word": "emergence",
+      "pos": "n.",
+      "meaning": "出现，发生",
+      "example": "The day after that, the emergence of a new competitor.",
+      "exampleZh": "今后的每一天都可能出现新的竞争对手。",
+      "collocations": [
+        "rate of emergence（出苗率；种子发芽率）"
+      ],
+      "phonetic": "ɪ'mɜ:dʒəns",
+      "tags": [
+        "CET4"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET4_1",
+          "CET4luan_1"
+        ],
+        "examSources": [
+          "CET4 · 2013.12 · 第一套 · 阅读理解"
+        ],
+        "frequencyRank": 30039
+      },
+      "score": 7,
+      "difficulty": 3
+    },
+    {
       "id": "enact",
       "word": "enact",
       "pos": "v.",
@@ -1359,6 +1834,35 @@
         "手动添加"
       ],
       "exampleSource": "Cambridge Dictionary 例句（非真题）"
+    },
+    {
+      "id": "enlightenment",
+      "word": "enlightenment",
+      "pos": "n.",
+      "meaning": "启发， 开导； 开明， 文明",
+      "example": "Isabel looked to Ron for enlightenment.",
+      "exampleZh": "伊莎贝尔希望得到罗恩的启发。",
+      "collocations": [
+        "age of enlightenment（启蒙时代；启蒙时期）"
+      ],
+      "phonetic": "ɪn'laɪtnmənt",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_3"
+        ],
+        "examSources": [
+          "CET6 · 2017.12 · 第二套 · 写作题"
+        ],
+        "frequencyRank": 12758
+      },
+      "score": 7,
+      "difficulty": 3
     },
     {
       "id": "enrich",
@@ -1857,6 +2361,35 @@
       ]
     },
     {
+      "id": "hearty",
+      "word": "hearty",
+      "pos": "adj.",
+      "meaning": "热情友好的；丰盛的",
+      "example": "The men ate a hearty breakfast.",
+      "exampleZh": "男士们吃了一顿丰盛的早餐。",
+      "collocations": [
+        "hale and hearty（精神充沛的，矍铄的；老当益壮的，健壮的）"
+      ],
+      "phonetic": "'hɑːtɪ",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_2"
+        ],
+        "examSources": [
+          "CET6 · 2014.6 · 第一套 · 阅读理解"
+        ],
+        "frequencyRank": 15447
+      },
+      "score": 7,
+      "difficulty": 3
+    },
+    {
       "id": "hefty",
       "word": "hefty",
       "pos": "adj.",
@@ -1922,6 +2455,38 @@
       "difficulty": 3
     },
     {
+      "id": "humidity",
+      "word": "humidity",
+      "pos": "n.",
+      "meaning": "湿度， 潮湿， 湿气",
+      "example": "The room is kept at 72 degrees and 50% relative humidity.",
+      "exampleZh": "房间的温度保持在72度，相对湿度50%。",
+      "collocations": [
+        "temperature and humidity（温度与湿度）",
+        "relative humidity（相对湿度）",
+        "high humidity（高湿度；湿度大；最高湿度）"
+      ],
+      "phonetic": "hjuː'mɪdəti",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_2",
+          "CET6_3"
+        ],
+        "examSources": [
+          "CET6 · 2008.12 · 听力题"
+        ],
+        "frequencyRank": 16821
+      },
+      "score": 8,
+      "difficulty": 3
+    },
+    {
       "id": "idealism",
       "word": "idealism",
       "pos": "n.",
@@ -1934,6 +2499,36 @@
       ],
       "score": 6,
       "difficulty": 4
+    },
+    {
+      "id": "ideological",
+      "word": "ideological",
+      "pos": "adj.",
+      "meaning": "意识形态的",
+      "example": "The party is split by ideological differences.",
+      "exampleZh": "意识形态上的差异造成该政党分裂。",
+      "collocations": [
+        "ideological education（思想教育；政治教育；意识形态教育）"
+      ],
+      "phonetic": "ˌaɪdiəˈlɒdʒɪkl",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_1",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2012.6 · 阅读理解"
+        ],
+        "frequencyRank": 24135
+      },
+      "score": 7,
+      "difficulty": 3
     },
     {
       "id": "impart",
@@ -2095,6 +2690,39 @@
         "frequencyRank": 19436
       },
       "score": 7,
+      "difficulty": 3
+    },
+    {
+      "id": "indirect",
+      "word": "indirect",
+      "pos": "adj.",
+      "meaning": "间接的， 婉转的",
+      "example": "The indirect effects of climate change may be profound.",
+      "exampleZh": "气候变化造成的间接影响可能是深远的。",
+      "collocations": [
+        "indirect method（间接法）",
+        "indirect speech（n. 间接引语）",
+        "indirect cost（间接成本）"
+      ],
+      "phonetic": "ˌɪndə'rekt; ˌɪndaɪ'rekt",
+      "tags": [
+        "CET4"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET4_2",
+          "CET4_3",
+          "CET4luan_2"
+        ],
+        "examSources": [
+          "CET4 · 2015.6 · 第二套 · 听力题"
+        ],
+        "frequencyRank": 29462
+      },
+      "score": 8,
       "difficulty": 3
     },
     {
@@ -2416,6 +3044,38 @@
       "difficulty": 4
     },
     {
+      "id": "likelihood",
+      "word": "likelihood",
+      "pos": "n.",
+      "meaning": "可能， 可能性",
+      "example": "If I refused, it would in all likelihood mean I’d lose my job.",
+      "exampleZh": "如果我拒绝，那我十有八九会丢掉工作。",
+      "collocations": [
+        "maximum likelihood（极大似然；最大似然率）",
+        "likelihood ratio（概率比；似然率）",
+        "likelihood estimation（似然估算）"
+      ],
+      "phonetic": "'laɪklihud",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_2",
+          "CET6_3"
+        ],
+        "examSources": [
+          "CET6 · 2015.6 · 第三套 · 阅读理解"
+        ],
+        "frequencyRank": 18270
+      },
+      "score": 8,
+      "difficulty": 3
+    },
+    {
       "id": "literal",
       "word": "literal",
       "pos": "adj.",
@@ -2623,6 +3283,36 @@
       "difficulty": 3
     },
     {
+      "id": "missionary",
+      "word": "missionary",
+      "pos": "n.",
+      "meaning": "传教士",
+      "example": "My mother would still like me to be a missionary in Africa.",
+      "exampleZh": "我母亲还是想让我在非洲做一名传教士。",
+      "collocations": [
+        "missionary position（传教士式体位（指男上女下的性交姿势））"
+      ],
+      "phonetic": "'mɪʃənri",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_2",
+          "CET6_3"
+        ],
+        "examSources": [
+          "CET6 · 2011.12 · 阅读理解"
+        ],
+        "frequencyRank": 13024
+      },
+      "score": 7,
+      "difficulty": 3
+    },
+    {
       "id": "mobility",
       "word": "mobility",
       "pos": "n.",
@@ -2651,6 +3341,69 @@
           "CET6 · 2015.12 · 第一套 · 阅读理解"
         ],
         "frequencyRank": 21641
+      },
+      "score": 8,
+      "difficulty": 3
+    },
+    {
+      "id": "monarch",
+      "word": "monarch",
+      "pos": "n.",
+      "meaning": "君主，最高统治者",
+      "example": "Britain's head of state is a constitutional monarch.",
+      "exampleZh": "英国的国家元首是君主立宪的国王或女王。",
+      "collocations": [
+        "monarch butterfly（黑脉金斑蝶，王蝶）"
+      ],
+      "phonetic": "'mɒnək",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_2"
+        ],
+        "examSources": [
+          "CET6 · 2014.6 · 第二套 · 听力题"
+        ],
+        "frequencyRank": 13875
+      },
+      "score": 7,
+      "difficulty": 3
+    },
+    {
+      "id": "monopoly",
+      "word": "monopoly",
+      "pos": "n.",
+      "meaning": "垄断；独占，专利",
+      "example": "A good education should not be the monopoly of the rich.",
+      "exampleZh": "良好的教育不应该成为富人的专利。",
+      "collocations": [
+        "natural monopoly（自然独占；天然垄断）",
+        "monopoly position（垄断地位）",
+        "monopoly power（垄断势力）"
+      ],
+      "phonetic": "mə'nɒp(ə)lɪ",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_1",
+          "CET6_2",
+          "CET6_3",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2015.6 · 第三套 · 阅读理解"
+        ],
+        "frequencyRank": 12961
       },
       "score": 8,
       "difficulty": 3
@@ -2685,6 +3438,36 @@
         "frequencyRank": 15396
       },
       "score": 8,
+      "difficulty": 3
+    },
+    {
+      "id": "multitude",
+      "word": "multitude",
+      "pos": "n.",
+      "meaning": "大量， 许多； 大众， 民众",
+      "example": "Political power has been placed in the hands of the multitude.",
+      "exampleZh": "政治权力已交到民众手中。",
+      "collocations": [
+        "a multitude of（大批的，众多的）"
+      ],
+      "phonetic": "'mʌltɪtjuːd",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_2",
+          "CET6_3"
+        ],
+        "examSources": [
+          "CET6 · 2013.6 · 第一套 · 阅读理解"
+        ],
+        "frequencyRank": 22142
+      },
+      "score": 7,
       "difficulty": 3
     },
     {
@@ -2831,6 +3614,38 @@
       "difficulty": 3
     },
     {
+      "id": "offset",
+      "word": "offset",
+      "pos": "vt.",
+      "meaning": "补偿， 抵消",
+      "example": "Cuts in food prices will be offset by direct payments to farmers.",
+      "exampleZh": "食品降价将通过直接付款给农民的方式进行补偿。",
+      "collocations": [
+        "offset printing（胶印，平版印刷；胶版印刷；平板印刷）",
+        "frequency offset（频率偏移；频率偏置）",
+        "offset press（胶印机）"
+      ],
+      "phonetic": "'ɒfset",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_2",
+          "CET6_3"
+        ],
+        "examSources": [
+          "CET6 · 2016.6 · 第二套 · 阅读理解"
+        ],
+        "frequencyRank": 27046
+      },
+      "score": 8,
+      "difficulty": 4
+    },
+    {
       "id": "optimal",
       "word": "optimal",
       "pos": "adj.",
@@ -2848,6 +3663,38 @@
         "手动添加"
       ],
       "exampleSource": "Cambridge Dictionary 例句（非真题）"
+    },
+    {
+      "id": "orientation",
+      "word": "orientation",
+      "pos": "n.",
+      "meaning": "方向， 目标， 方位； 熟悉情况， 适应， 情况介绍",
+      "example": "The party has a broadly socialist orientation.",
+      "exampleZh": "该政党大体上倾向于社会主义。",
+      "collocations": [
+        "market orientation（市场导向）",
+        "sexual orientation（性取向，性倾向；性指向）",
+        "goal orientation（目标定向；目标取向）"
+      ],
+      "phonetic": "ˌɔːriən'teɪʃn",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_2",
+          "CET6_3"
+        ],
+        "examSources": [
+          "CET6 · 2017.6 · 第二套 · 写作题"
+        ],
+        "frequencyRank": 13034
+      },
+      "score": 8,
+      "difficulty": 3
     },
     {
       "id": "outset",
@@ -2991,6 +3838,37 @@
       ]
     },
     {
+      "id": "physiological",
+      "word": "physiological",
+      "pos": "adj.",
+      "meaning": "生理的， 生理学的",
+      "example": "If so, this would add to a growing list of physiological and biological markers of sexual orientation.",
+      "exampleZh": "如果是这样，这可能会给生理和生物学上的性取向标记增加一长串名单。",
+      "collocations": [
+        "physiological function（生理机能）",
+        "physiological process（生理过程）",
+        "physiological saline（生理盐水；生理盐溶液）"
+      ],
+      "phonetic": "ˌfɪziə'lɒdʒɪkl",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_3"
+        ],
+        "examSources": [
+          "CET6 · 2017.6 · 第三套 · 阅读理解"
+        ],
+        "frequencyRank": 24450
+      },
+      "score": 8,
+      "difficulty": 3
+    },
+    {
       "id": "plateau",
       "word": "plateau",
       "pos": "n.",
@@ -3097,6 +3975,36 @@
           "CET6 · 2012.12 · 第二套 · 听力题"
         ]
       }
+    },
+    {
+      "id": "pretext",
+      "word": "pretext",
+      "pos": "n.",
+      "meaning": "借口， 托辞",
+      "example": "He’ll phone on some pretext or other.",
+      "exampleZh": "他会以这样或那样的理由打电话的。",
+      "collocations": [
+        "on the pretext of（以...为借口）",
+        "find a pretext for（为…找口实）"
+      ],
+      "phonetic": "'priːtekst",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_3"
+        ],
+        "examSources": [
+          "CET6 · 2012.6 · 阅读理解"
+        ],
+        "frequencyRank": 15841
+      },
+      "score": 8,
+      "difficulty": 3
     },
     {
       "id": "prevalence",
@@ -3412,6 +4320,37 @@
       "difficulty": 3
     },
     {
+      "id": "reap",
+      "word": "reap",
+      "pos": "vt.",
+      "meaning": "收割， 收获； 获得， 得到",
+      "example": "You'll soon begin to reap the benefits of being fitter.",
+      "exampleZh": "你很快就会获得身体更健康带来的好处。",
+      "collocations": [
+        "reap the benefits of（获得益处）"
+      ],
+      "phonetic": "riːp",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_1",
+          "CET6_3",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2013.6 · 第三套 · 阅读理解"
+        ],
+        "frequencyRank": 14399
+      },
+      "score": 7,
+      "difficulty": 3
+    },
+    {
       "id": "redundant",
       "word": "redundant",
       "pos": "adj.",
@@ -3445,6 +4384,38 @@
       "difficulty": 3
     },
     {
+      "id": "reflective",
+      "word": "reflective",
+      "pos": "adj.",
+      "meaning": "反映的，反射的；深思熟虑的",
+      "example": "She was in a reflective mood.",
+      "exampleZh": "她陷入沉思。",
+      "collocations": [
+        "reflective teaching（反映性教学）",
+        "reflective mirror（反光镜）",
+        "reflective glass（反光玻璃；反射玻璃）"
+      ],
+      "phonetic": "rɪ'flektɪv",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_1",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2009.12 · 听力题"
+        ],
+        "frequencyRank": 26138
+      },
+      "score": 8,
+      "difficulty": 4
+    },
+    {
       "id": "refute",
       "word": "refute",
       "pos": "vt.",
@@ -3470,6 +4441,38 @@
         "frequencyRank": 29610
       },
       "score": 6,
+      "difficulty": 4
+    },
+    {
+      "id": "reimbursement",
+      "word": "reimbursement",
+      "pos": "n.",
+      "meaning": "返还费用",
+      "example": "She is demanding reimbursement for medical and other expenses.",
+      "exampleZh": "她在要求医疗和其他费用的报销。",
+      "collocations": [
+        "tax reimbursement（退税）",
+        "apply for reimbursement（报销）",
+        "claim reimbursement（索赔，要求付款）"
+      ],
+      "phonetic": "ˌri:ɪm'bɜ:smənt",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_1",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2009.6 · 阅读理解"
+        ],
+        "frequencyRank": 48184
+      },
+      "score": 8,
       "difficulty": 4
     },
     {
@@ -3544,6 +4547,39 @@
           "CET6 · 2014.6 · 第一套 · 阅读理解"
         ],
         "frequencyRank": 12138
+      },
+      "score": 8,
+      "difficulty": 3
+    },
+    {
+      "id": "reproduction",
+      "word": "reproduction",
+      "pos": "n.",
+      "meaning": "繁殖",
+      "example": "Scientists studied the reproduction, diet, and health of the dolphins.",
+      "exampleZh": "科学家研究了海豚的繁殖情况、进食规律和健康状况。",
+      "collocations": [
+        "sexual reproduction（n. 有性生殖）",
+        "color reproduction（色彩再现；颜色复现）",
+        "human reproduction（人的复制）"
+      ],
+      "phonetic": "ˌri:prəˈdʌkʃn",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_1",
+          "CET6_2",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2009.6 · 阅读理解"
+        ],
+        "frequencyRank": 18442
       },
       "score": 8,
       "difficulty": 3
@@ -3655,6 +4691,35 @@
       "tags": []
     },
     {
+      "id": "rivalry",
+      "word": "rivalry",
+      "pos": "n.",
+      "meaning": "竞争， 竞赛； 对抗",
+      "example": "The two players have developed a friendly rivalry .",
+      "exampleZh": "这两名选手之间已形成一种友好的竞争关系。",
+      "collocations": [
+        "sibling rivalry（同胞争宠；手足之争）"
+      ],
+      "phonetic": "'raɪvlri",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_3"
+        ],
+        "examSources": [
+          "CET6 · 2014.6 · 第二套 · 听力题"
+        ],
+        "frequencyRank": 15600
+      },
+      "score": 7,
+      "difficulty": 3
+    },
+    {
       "id": "sanctuary",
       "word": "sanctuary",
       "pos": "n.",
@@ -3700,6 +4765,36 @@
         "frequencyRank": 22892
       },
       "score": 8,
+      "difficulty": 3
+    },
+    {
+      "id": "severity",
+      "word": "severity",
+      "pos": "n.",
+      "meaning": "严重性",
+      "example": "A prison sentence should match the severity of the crime.",
+      "exampleZh": "刑期长短要和罪行轻重一致。",
+      "collocations": [
+        "disease severity（疾病严重度；发病度）"
+      ],
+      "phonetic": "sɪ'verətɪ",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_1",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2015.12 · 第三套 · 写作题"
+        ],
+        "frequencyRank": 22473
+      },
+      "score": 7,
       "difficulty": 3
     },
     {
@@ -3778,6 +4873,36 @@
           "CET6 · 2009.6 · 写作题"
         ],
         "frequencyRank": 12223
+      },
+      "score": 7,
+      "difficulty": 3
+    },
+    {
+      "id": "situated",
+      "word": "situated",
+      "pos": "adj.",
+      "meaning": "位于…的， 坐落在…的； 处于…境地的",
+      "example": "His hotel is situated in one of the loveliest places on the Loire.",
+      "exampleZh": "他的旅馆坐落在卢瓦尔的一个最优美的地方。",
+      "collocations": [
+        "situated learning（情境学习）"
+      ],
+      "phonetic": "'sɪtʃueɪtɪd",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_2",
+          "CET6_3"
+        ],
+        "examSources": [
+          "CET6 · 2014.12 · 第一套 · 听力题"
+        ],
+        "frequencyRank": 20309
       },
       "score": 7,
       "difficulty": 3
@@ -3940,6 +5065,69 @@
       "tags": []
     },
     {
+      "id": "subscription",
+      "word": "subscription",
+      "pos": "n.",
+      "meaning": "订阅（费）；用户费（的缴纳）",
+      "example": "I’ve decided not to renew my subscription .",
+      "exampleZh": "我决定不再续订了。",
+      "collocations": [
+        "subscription service（订阅服务）",
+        "subscription fee（会员费；装机费；报费）",
+        "annual subscription（年度订阅）"
+      ],
+      "phonetic": "səb'skrɪpʃ(ə)n",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_2"
+        ],
+        "examSources": [
+          "CET6 · 2011.12 · 阅读理解"
+        ],
+        "frequencyRank": 19649
+      },
+      "score": 8,
+      "difficulty": 3
+    },
+    {
+      "id": "subsidiary",
+      "word": "subsidiary",
+      "pos": "adj.",
+      "meaning": "辅助的，补充的",
+      "example": "The marketing department has always played a subsidiary role to the sales department.",
+      "exampleZh": "营销部一直都扮演着销售部的辅助角色。",
+      "collocations": [
+        "subsidiary company（附属公司，子公司）",
+        "wholly owned subsidiary（全资子公司；全资附属机构；全资拥有子公司）",
+        "wholly-owned subsidiary（全资附属公司；全部控股子公司）"
+      ],
+      "phonetic": "səb'sɪdɪərɪ",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_2",
+          "CET6_3"
+        ],
+        "examSources": [
+          "CET6 · 2016.6 · 第三套 · 听力题"
+        ],
+        "frequencyRank": 30053
+      },
+      "score": 8,
+      "difficulty": 4
+    },
+    {
       "id": "subsidy",
       "word": "subsidy",
       "pos": "n.",
@@ -4004,6 +5192,36 @@
       "difficulty": 3
     },
     {
+      "id": "suffice",
+      "word": "suffice",
+      "pos": "vi.",
+      "meaning": "足够",
+      "example": "A light lunch will suffice .",
+      "exampleZh": "简单的午餐就够了。",
+      "collocations": [
+        "suffice for（满足……的需要）"
+      ],
+      "phonetic": "sə'faɪs",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_2",
+          "CET6_3"
+        ],
+        "examSources": [
+          "CET6 · 2017.6 · 第三套 · 阅读理解"
+        ],
+        "frequencyRank": 12550
+      },
+      "score": 7,
+      "difficulty": 3
+    },
+    {
       "id": "sun-drenched",
       "word": "sun-drenched",
       "pos": "adj.",
@@ -4014,6 +5232,68 @@
       "tags": [
         "Unit1"
       ]
+    },
+    {
+      "id": "superiority",
+      "word": "superiority",
+      "pos": "n.",
+      "meaning": "优越， 优等",
+      "example": "Janet always spoke with an air of superiority.",
+      "exampleZh": "珍妮特说话时总显得盛气凌人。",
+      "collocations": [
+        "air superiority（空中优势；空优战斗机；空优）",
+        "superiority complex（优越感；自尊情结；过于自尊）",
+        "overwhelming superiority（绝对优势）"
+      ],
+      "phonetic": "suːˌpɪəri'ɒrəti",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_2",
+          "CET6_3"
+        ],
+        "examSources": [
+          "CET6 · 2015.6 · 第一套 · 阅读理解"
+        ],
+        "frequencyRank": 18399
+      },
+      "score": 8,
+      "difficulty": 3
+    },
+    {
+      "id": "susceptible",
+      "word": "susceptible",
+      "pos": "adj.",
+      "meaning": "易受影响的； 过敏的； 能经受的， 容许的",
+      "example": "A lot of TV advertising is aimed at susceptible young children.",
+      "exampleZh": "很多电视广告瞄准了易受影响的幼儿。",
+      "collocations": [
+        "susceptible of（容许…的，能…的）",
+        "susceptible strain（易受感染菌株；感性品系）"
+      ],
+      "phonetic": "sə'septəbl",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_3"
+        ],
+        "examSources": [
+          "CET6 · 2008.12 · 听力题"
+        ],
+        "frequencyRank": 19279
+      },
+      "score": 8,
+      "difficulty": 3
     },
     {
       "id": "tariff",
@@ -4414,6 +5694,100 @@
       "difficulty": 3
     },
     {
+      "id": "validation",
+      "word": "validation",
+      "pos": "n.",
+      "meaning": "证实",
+      "example": "In this example, the validation fails.",
+      "exampleZh": "在这个示例中，验证失败。",
+      "collocations": [
+        "data validation（数据有效性）",
+        "verification and validation（[计]检验和确认）",
+        "cross validation（交叉验证，交叉确认；交互效度分析）"
+      ],
+      "phonetic": "ˌvælɪ'deɪʃn",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_1",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2010.6 · 阅读理解"
+        ],
+        "frequencyRank": 26101
+      },
+      "score": 8,
+      "difficulty": 4
+    },
+    {
+      "id": "validity",
+      "word": "validity",
+      "pos": "n.",
+      "meaning": "有效性；真实性",
+      "example": "The period of validity of the agreement has expired.",
+      "exampleZh": "本协议的有效期已过。",
+      "collocations": [
+        "period of validity（有效期）",
+        "validity period（有效期）",
+        "term of validity（有效期；有效期间）"
+      ],
+      "phonetic": "vəˈlɪdəti",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_1",
+          "CET6_2",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2012.12 · 第一套 · 阅读理解"
+        ],
+        "frequencyRank": 27143
+      },
+      "score": 8,
+      "difficulty": 4
+    },
+    {
+      "id": "vitality",
+      "word": "vitality",
+      "pos": "n.",
+      "meaning": "活力； 生机， 元气",
+      "example": "Despite her eighty years, Elsie was full of vitality.",
+      "exampleZh": "尽管已80岁了，埃尔茜依然充满活力。",
+      "collocations": [
+        "vigor and vitality（生机与活力）"
+      ],
+      "phonetic": "vaɪ'tæləti",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_3"
+        ],
+        "examSources": [
+          "CET6 · 2011.12 · 阅读理解"
+        ],
+        "frequencyRank": 22957
+      },
+      "score": 7,
+      "difficulty": 3
+    },
+    {
       "id": "wasteful",
       "word": "wasteful",
       "pos": "adj.",
@@ -4440,6 +5814,36 @@
       },
       "score": 6,
       "difficulty": 4
+    },
+    {
+      "id": "wishful",
+      "word": "wishful",
+      "pos": "adj.",
+      "meaning": "一厢情愿的",
+      "example": "This, I am sorry to say, is almost entirely wishful thinking.",
+      "exampleZh": "我很遗憾，这几乎完全是一厢情愿的想法。",
+      "collocations": [
+        "wishful thinking（n. 如意算盘；痴心妄想）"
+      ],
+      "phonetic": "'wɪʃfəl",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_1",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2013.6 · 第二套 · 阅读理解"
+        ],
+        "frequencyRank": 22322
+      },
+      "score": 7,
+      "difficulty": 3
     }
   ]
 }
