@@ -3,7 +3,7 @@
     "name": "WordDrill",
     "version": 1,
     "dailyWordTarget": 80,
-    "updated": "2026-10-30",
+    "updated": "2026-10-31",
     "source": "FlowUs · page 2220ec94-e0c2-4523-87be-f8277b09d786",
     "note": "词库由 FlowUs 生词页同步而来；新增单词请用 scripts/sync-from-flowus.py 或直接编辑本文件。"
   },
@@ -243,6 +243,37 @@
       },
       "score": 8,
       "difficulty": 3
+    },
+    {
+      "id": "appropriation",
+      "word": "appropriation",
+      "pos": "n.",
+      "meaning": "挪用",
+      "example": "Other charges include fraud and illegal appropriation of land.",
+      "exampleZh": "其他指控包括诈骗和非法占用土地。",
+      "collocations": [
+        "appropriation bill（n. 政府年出预算案）"
+      ],
+      "phonetic": "ə,prəʊprɪ'eɪʃ(ə)n",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_1",
+          "CET6_3",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2015.6 · 第一套 · 阅读理解"
+        ],
+        "frequencyRank": 48802
+      },
+      "score": 7,
+      "difficulty": 4
     },
     {
       "id": "aromatic",
@@ -571,6 +602,41 @@
         "chronicle the life of"
       ],
       "tags": []
+    },
+    {
+      "id": "classify",
+      "word": "classify",
+      "pos": "vt.",
+      "meaning": "把…分类， 把…分级",
+      "example": "We’d classify Drabble’s novels under ‘Romance’.",
+      "exampleZh": "我们把德拉布尔的小说归类为“言情小说”。",
+      "collocations": [
+        "classify as（把…分类为…）"
+      ],
+      "phonetic": "'klæsɪfaɪ",
+      "tags": [
+        "CET4"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET4_1",
+          "CET4_2",
+          "CET4_3",
+          "CET4luan_1",
+          "CET4luan_2",
+          "CET6_1",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2010.6 · 阅读理解"
+        ],
+        "frequencyRank": 27424
+      },
+      "score": 7,
+      "difficulty": 3
     },
     {
       "id": "cobble",
@@ -1228,6 +1294,36 @@
       "difficulty": 4
     },
     {
+      "id": "deterioration",
+      "word": "deterioration",
+      "pos": "n.",
+      "meaning": "恶化，退化",
+      "example": "A reading over 50 indicates an expansion of activity in the manufacturing sector, while one below 50 suggests a deterioration.",
+      "exampleZh": "这一指数高于50表明制造业处于扩张状态，低于50时则反映制造业状况在恶化。",
+      "collocations": [
+        "environmental deterioration（环境恶化）"
+      ],
+      "phonetic": "dɪ,tɪərɪə'reɪʃn",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_1",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2016.6 · 第一套 · 听力题"
+        ],
+        "frequencyRank": 27967
+      },
+      "score": 7,
+      "difficulty": 4
+    },
+    {
       "id": "developmental",
       "word": "developmental",
       "pos": "adj.",
@@ -1300,6 +1396,38 @@
           "CET6 · 2010.6 · 阅读理解"
         ],
         "frequencyRank": 19547
+      },
+      "score": 7,
+      "difficulty": 3
+    },
+    {
+      "id": "diminish",
+      "word": "diminish",
+      "pos": "vi./vt.",
+      "meaning": "变少，变小，降低；减少， 减小， 降低",
+      "example": "These drugs diminish blood flow to the brain.",
+      "exampleZh": "这些药物会减少流向脑部的血液量。",
+      "collocations": [
+        "diminish inflammation（消炎）"
+      ],
+      "phonetic": "dɪ'mɪnɪʃ",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_1",
+          "CET6_2",
+          "CET6_3",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2014.6 · 第一套 · 阅读理解"
+        ],
+        "frequencyRank": 22886
       },
       "score": 7,
       "difficulty": 3
@@ -3915,6 +4043,36 @@
       "tags": []
     },
     {
+      "id": "predecessor",
+      "word": "predecessor",
+      "pos": "n.",
+      "meaning": "前任， 前辈； 原有事物， 前身",
+      "example": "Kennedy’s predecessor as President was the war hero Dwight Eisenhower.",
+      "exampleZh": "肯尼迪总统的前任是战争英雄德怀特·艾森豪威尔。",
+      "collocations": [
+        "predecessor company（被接管公司）"
+      ],
+      "phonetic": "'priːdɪsesə",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_2",
+          "CET6_3"
+        ],
+        "examSources": [
+          "CET6 · 2008.12 · 阅读理解"
+        ],
+        "frequencyRank": 16746
+      },
+      "score": 7,
+      "difficulty": 3
+    },
+    {
       "id": "predominantly",
       "word": "predominantly",
       "pos": "adv.",
@@ -5692,6 +5850,35 @@
       },
       "score": 6,
       "difficulty": 3
+    },
+    {
+      "id": "utopian",
+      "word": "utopian",
+      "pos": "adj.",
+      "meaning": "乌托邦的； 理想的",
+      "example": "His was a utopian vision of nature in its purest form.",
+      "exampleZh": "他对大自然的看法是一种最纯粹的乌托邦式看法。",
+      "collocations": [
+        "utopian socialism（空想社会主义；乌托邦社会主义）"
+      ],
+      "phonetic": "juː'təupiən",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_3"
+        ],
+        "examSources": [
+          "CET6 · 2017.12 · 第二套 · 阅读理解"
+        ],
+        "frequencyRank": 37743
+      },
+      "score": 7,
+      "difficulty": 4
     },
     {
       "id": "validation",
