@@ -3,7 +3,7 @@
     "name": "WordDrill",
     "version": 1,
     "dailyWordTarget": 80,
-    "updated": "2026-10-31",
+    "updated": "2026-11-05",
     "source": "FlowUs · page 2220ec94-e0c2-4523-87be-f8277b09d786",
     "note": "词库由 FlowUs 生词页同步而来；新增单词请用 scripts/sync-from-flowus.py 或直接编辑本文件。"
   },
@@ -555,6 +555,34 @@
       ],
       "score": 6,
       "difficulty": 4
+    },
+    {
+      "id": "caregiver",
+      "word": "caregiver",
+      "pos": "n.",
+      "meaning": "照料者",
+      "example": "In addition to fulfilling the traditional roles of caregiver and homemaker, many Orthodox women also assume the role of primary breadwinner so their husbands can pursue religious studies full time.",
+      "exampleZh": "除了要践行传统的照料者和主妇角色，许多东正教女性也要承担起养家的责任以便她们的丈夫可以全身心进行宗教研究。",
+      "collocations": [],
+      "phonetic": "'keəgɪvə",
+      "tags": [
+        "CET4"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET4_1",
+          "CET4luan_1"
+        ],
+        "examSources": [
+          "CET4 · 2014.12 · 第三套 · 阅读理解"
+        ],
+        "frequencyRank": 35304
+      },
+      "score": 6,
+      "difficulty": 3
     },
     {
       "id": "certification",
@@ -1134,6 +1162,34 @@
       ]
     },
     {
+      "id": "cornerstone",
+      "word": "cornerstone",
+      "pos": "n.",
+      "meaning": "基石",
+      "example": "Research is the cornerstone of the profession.",
+      "exampleZh": "研究是该职业的基石。",
+      "collocations": [],
+      "phonetic": "'kɔrnɚston",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_1",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2015.12 · 第三套 · 阅读理解"
+        ],
+        "frequencyRank": 22985
+      },
+      "score": 6,
+      "difficulty": 3
+    },
+    {
       "id": "courier",
       "word": "courier",
       "pos": "n./v.",
@@ -1625,6 +1681,33 @@
       "difficulty": 3
     },
     {
+      "id": "dubious",
+      "word": "dubious",
+      "pos": "adj.",
+      "meaning": "怀疑的， 犹豫不决的， 无把握的； 有问题的； 靠不住的",
+      "example": "The firm was accused of dubious accounting practices.",
+      "exampleZh": "该公司被指控有不诚实的会计行为。",
+      "collocations": [],
+      "phonetic": "'djuːbjəs",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_3"
+        ],
+        "examSources": [
+          "CET6 · 2010.6 · 阅读理解"
+        ],
+        "frequencyRank": 17624
+      },
+      "score": 6,
+      "difficulty": 3
+    },
+    {
       "id": "duplicate",
       "word": "duplicate",
       "pos": "adj./n./vt.",
@@ -1964,6 +2047,34 @@
       "exampleSource": "Cambridge Dictionary 例句（非真题）"
     },
     {
+      "id": "endeavor",
+      "word": "endeavor",
+      "pos": "v./n.",
+      "meaning": "努力，尽力；努力，尝试",
+      "example": "We always endeavor to please our customers.",
+      "exampleZh": "我们总是竭尽全力让顾客满意。",
+      "collocations": [],
+      "phonetic": "ɪn'devə",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_2",
+          "CET6_3"
+        ],
+        "examSources": [
+          "CET6 · 2014.12 · 第一套 · 文本题"
+        ],
+        "frequencyRank": 17181
+      },
+      "score": 6,
+      "difficulty": 3
+    },
+    {
       "id": "enlightenment",
       "word": "enlightenment",
       "pos": "n.",
@@ -2060,6 +2171,34 @@
         "frequencyRank": 38289
       },
       "score": 8,
+      "difficulty": 3
+    },
+    {
+      "id": "entrepreneurship",
+      "word": "entrepreneurship",
+      "pos": "n.",
+      "meaning": "企业管理",
+      "example": "They, like other necessity entrepreneurs, may have resorted to entrepreneurship due to a lack of better options.",
+      "exampleZh": "他们像其他生存型企业家一样，因为没有更好的选择才会诉诸于创业。",
+      "collocations": [],
+      "phonetic": ",ɒntrəprə'nɜːʃɪp",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_1",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2012.12 · 第二套 · 阅读理解"
+        ],
+        "frequencyRank": null
+      },
+      "score": 6,
       "difficulty": 3
     },
     {
@@ -2366,6 +2505,36 @@
       "tags": []
     },
     {
+      "id": "forthcoming",
+      "word": "forthcoming",
+      "pos": "adj.",
+      "meaning": "即将到来的； 可得到的； 乐于提供消息的",
+      "example": "Keep an eye on the noticeboards for forthcoming events .",
+      "exampleZh": "请注意布告牌上的活动预告。",
+      "collocations": [],
+      "phonetic": "ˌfɔːθ'kʌmɪŋ",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_1",
+          "CET6_2",
+          "CET6_3",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2015.12 · 第二套 · 阅读理解"
+        ],
+        "frequencyRank": 17784
+      },
+      "score": 6,
+      "difficulty": 3
+    },
+    {
       "id": "garment",
       "word": "garment",
       "pos": "n.",
@@ -2456,6 +2625,34 @@
       "tags": [
         "Unit2"
       ]
+    },
+    {
+      "id": "handgun",
+      "word": "handgun",
+      "pos": "n.",
+      "meaning": "手枪",
+      "example": "They began to tussle with each other for the handgun.",
+      "exampleZh": "他们互相扭打起来,抢夺那支手枪。",
+      "collocations": [],
+      "phonetic": "ˈhændgʌn",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_1",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2011.6 · 听力题"
+        ],
+        "frequencyRank": 18257
+      },
+      "score": 6,
+      "difficulty": 3
     },
     {
       "id": "harmonious",
@@ -2656,6 +2853,34 @@
         "frequencyRank": 24135
       },
       "score": 7,
+      "difficulty": 3
+    },
+    {
+      "id": "immobile",
+      "word": "immobile",
+      "pos": "adj.",
+      "meaning": "稳定的，不变的",
+      "example": "She could see a figure sitting immobile, facing the sea.",
+      "exampleZh": "她看到一个人影面朝大海坐着，一动不动。",
+      "collocations": [],
+      "phonetic": "ɪ'məʊbaɪl",
+      "tags": [
+        "CET4"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET4_1",
+          "CET4luan_1"
+        ],
+        "examSources": [
+          "CET4 · 2013.12 · 第三套 · 阅读理解"
+        ],
+        "frequencyRank": 37108
+      },
+      "score": 6,
       "difficulty": 3
     },
     {
@@ -3411,6 +3636,61 @@
       "difficulty": 3
     },
     {
+      "id": "misconception",
+      "word": "misconception",
+      "pos": "n.",
+      "meaning": "误解",
+      "example": "It is a misconception that Peggy was fabulously wealthy.",
+      "exampleZh": "说佩吉以前极其富有，这是一个错误的看法。",
+      "collocations": [],
+      "phonetic": "ˌmɪskən'sepʃn",
+      "tags": [
+        "CET4"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET4_3"
+        ],
+        "examSources": [
+          "CET4 · 2014.12 · 第三套 · 阅读理解"
+        ],
+        "frequencyRank": 27400
+      },
+      "score": 6,
+      "difficulty": 3
+    },
+    {
+      "id": "misled",
+      "word": "misled",
+      "pos": "v.",
+      "meaning": "(mislead过去式)误导",
+      "example": "Don’t be misled by appearances, he’s a good worker.",
+      "exampleZh": "不要被表象迷惑，他工作干得挺不错的。",
+      "collocations": [],
+      "phonetic": ",mɪs'led",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_1",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2015.12 · 第三套 · 写作题"
+        ],
+        "frequencyRank": 18148
+      },
+      "score": 6,
+      "difficulty": 3
+    },
+    {
       "id": "missionary",
       "word": "missionary",
       "pos": "n.",
@@ -3471,6 +3751,34 @@
         "frequencyRank": 21641
       },
       "score": 8,
+      "difficulty": 3
+    },
+    {
+      "id": "modesty",
+      "word": "modesty",
+      "pos": "n.",
+      "meaning": "谦逊；端庄",
+      "example": "There were shrieks of embarrassment as the girls struggled to protect their modesty.",
+      "exampleZh": "竭力保持着端庄形象的女孩们发出了尴尬的尖叫。",
+      "collocations": [],
+      "phonetic": "'mɒdɪstɪ",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_2",
+          "CET6_3"
+        ],
+        "examSources": [
+          "CET6 · 2010.6 · 阅读理解"
+        ],
+        "frequencyRank": 12544
+      },
+      "score": 6,
       "difficulty": 3
     },
     {
@@ -4029,6 +4337,33 @@
       "difficulty": 3
     },
     {
+      "id": "plausible",
+      "word": "plausible",
+      "pos": "adj.",
+      "meaning": "似有道理的， 似乎正确的， 貌似可信的",
+      "example": "His story certainly sounds plausible.",
+      "exampleZh": "他的叙述听上去当然很合理。",
+      "collocations": [],
+      "phonetic": "'plɔːzəbl",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_3"
+        ],
+        "examSources": [
+          "CET6 · 2008.12 · 阅读理解"
+        ],
+        "frequencyRank": 14273
+      },
+      "score": 6,
+      "difficulty": 3
+    },
+    {
       "id": "prairie",
       "word": "prairie",
       "pos": "n.",
@@ -4433,6 +4768,34 @@
       "difficulty": 3
     },
     {
+      "id": "quantifiable",
+      "word": "quantifiable",
+      "pos": "adj.",
+      "meaning": "可量化的",
+      "example": "A clearly quantifiable measure of quality is not necessary.",
+      "exampleZh": "一种确切的可计量的质量检测是不必要的。",
+      "collocations": [],
+      "phonetic": "'kwɒntɪfaɪəbl",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_1",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2015.6 · 第一套 · 阅读理解"
+        ],
+        "frequencyRank": null
+      },
+      "score": 6,
+      "difficulty": 3
+    },
+    {
       "id": "quantitative",
       "word": "quantitative",
       "pos": "adj.",
@@ -4675,6 +5038,35 @@
         "frequencyRank": 33814
       },
       "score": 6,
+      "difficulty": 4
+    },
+    {
+      "id": "repetitive",
+      "word": "repetitive",
+      "pos": "adj.",
+      "meaning": "重复的， 反复性的",
+      "example": "The song was dreary and repetitive.",
+      "exampleZh": "这首歌又枯燥又重复。",
+      "collocations": [
+        "repetitive strain injury（（肢体的）重复性劳损）"
+      ],
+      "phonetic": "rɪ'petətɪv",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_3"
+        ],
+        "examSources": [
+          "CET6 · 2013.6 · 第一套 · 阅读理解"
+        ],
+        "frequencyRank": 26233
+      },
+      "score": 7,
       "difficulty": 4
     },
     {
@@ -5223,6 +5615,34 @@
       "tags": []
     },
     {
+      "id": "sturdy",
+      "word": "sturdy",
+      "pos": "adj.",
+      "meaning": "强壮的， 结实的， 坚固的； 坚定的， 坚强的",
+      "example": "That chair doesn’t look very sturdy.",
+      "exampleZh": "那把椅子看上去不太结实。",
+      "collocations": [],
+      "phonetic": "'stɜːdi",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_2",
+          "CET6_3"
+        ],
+        "examSources": [
+          "CET6 · 2013.6 · 第一套 · 阅读理解"
+        ],
+        "frequencyRank": 15979
+      },
+      "score": 6,
+      "difficulty": 3
+    },
+    {
       "id": "subscription",
       "word": "subscription",
       "pos": "n.",
@@ -5451,6 +5871,34 @@
         "frequencyRank": 19279
       },
       "score": 8,
+      "difficulty": 3
+    },
+    {
+      "id": "tangled",
+      "word": "tangled",
+      "pos": "adj.",
+      "meaning": "纠缠的；复杂的",
+      "example": "He had hair like tangled string.",
+      "exampleZh": "他的头发就像一团乱麻。",
+      "collocations": [],
+      "phonetic": "'tæŋɡld",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_1",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2012.12 · 第三套 · 阅读理解"
+        ],
+        "frequencyRank": 12583
+      },
+      "score": 6,
       "difficulty": 3
     },
     {
