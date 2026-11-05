@@ -178,6 +178,24 @@
       "tags": []
     },
     {
+      "id": "amend",
+      "word": "amend",
+      "pos": "v.",
+      "meaning": "修改，修订（法律、文件等）",
+      "example": "The senator proposed a bill to amend the existing tax law.",
+      "exampleZh": "这位参议员提出一项议案，要求修改现行税法。",
+      "collocations": [
+        "amend a law",
+        "amend the constitution",
+        "amend a contract"
+      ],
+      "phonetic": "ə'mend",
+      "tags": [
+        "手动添加"
+      ],
+      "exampleSource": "自编例句（非真题）"
+    },
+    {
       "id": "analytical",
       "word": "analytical",
       "pos": "adj.",
@@ -274,6 +292,24 @@
       },
       "score": 7,
       "difficulty": 4
+    },
+    {
+      "id": "ardent",
+      "word": "ardent",
+      "pos": "adj.",
+      "meaning": "热烈的，热情的；热心的",
+      "example": "He is an ardent supporter of Manchester United.",
+      "exampleZh": "他是曼联的忠实拥趸。",
+      "collocations": [
+        "an ardent supporter",
+        "an ardent admirer",
+        "an ardent believer"
+      ],
+      "phonetic": "'ɑːdənt",
+      "tags": [
+        "手动添加"
+      ],
+      "exampleSource": "Cambridge Dictionary 例句（非真题）"
     },
     {
       "id": "aromatic",
@@ -2612,6 +2648,24 @@
       "difficulty": 3
     },
     {
+      "id": "guts",
+      "word": "guts",
+      "pos": "n.",
+      "meaning": "内脏，肠子；（口语）勇气，胆量",
+      "example": "It takes a lot of guts to admit to so many people that you've made a mistake.",
+      "exampleZh": "在这么多人面前承认自己犯了错，需要很大的勇气。",
+      "collocations": [
+        "have the guts to do sth",
+        "it takes guts",
+        "spill your guts"
+      ],
+      "phonetic": "gʌts",
+      "tags": [
+        "手动添加"
+      ],
+      "exampleSource": "Cambridge Dictionary 例句（非真题）"
+    },
+    {
       "id": "hail",
       "word": "hail",
       "pos": "vt.",
@@ -2854,6 +2908,24 @@
       },
       "score": 7,
       "difficulty": 3
+    },
+    {
+      "id": "illuminate",
+      "word": "illuminate",
+      "pos": "v.",
+      "meaning": "照亮，照明；阐明，说明",
+      "example": "The study illuminates the link between sleep and memory.",
+      "exampleZh": "这项研究阐明了睡眠与记忆之间的联系。",
+      "collocations": [
+        "illuminate a room",
+        "be illuminated by",
+        "illuminate the problem"
+      ],
+      "phonetic": "ɪ'luːmɪneɪt",
+      "tags": [
+        "手动添加"
+      ],
+      "exampleSource": "自编例句（非真题）"
     },
     {
       "id": "immobile",
@@ -3397,6 +3469,24 @@
       "difficulty": 4
     },
     {
+      "id": "legislative",
+      "word": "legislative",
+      "pos": "adj.",
+      "meaning": "立法的；立法机关的",
+      "example": "The bill must pass through several legislative stages before it becomes law.",
+      "exampleZh": "该法案必须经过几个立法环节才能成为法律。",
+      "collocations": [
+        "legislative power",
+        "legislative reform",
+        "a legislative body"
+      ],
+      "phonetic": "'ledʒɪslətɪv",
+      "tags": [
+        "手动添加"
+      ],
+      "exampleSource": "自编例句（非真题）"
+    },
+    {
       "id": "likelihood",
       "word": "likelihood",
       "pos": "n.",
@@ -3877,6 +3967,42 @@
       "difficulty": 3
     },
     {
+      "id": "multifaceted",
+      "word": "multifaceted",
+      "pos": "adj.",
+      "meaning": "多方面的，多元的",
+      "example": "It's a multifaceted business, offering a range of services.",
+      "exampleZh": "这是一家多元化企业，提供各类服务。",
+      "collocations": [
+        "a multifaceted approach",
+        "a multifaceted problem",
+        "a multifaceted career"
+      ],
+      "phonetic": "ˌmʌltɪ'fæsɪtɪd",
+      "tags": [
+        "手动添加"
+      ],
+      "exampleSource": "Cambridge Dictionary 例句（非真题）"
+    },
+    {
+      "id": "multilateral",
+      "word": "multilateral",
+      "pos": "adj.",
+      "meaning": "多边的；多国参与的",
+      "example": "The agreement was reached through multilateral negotiations involving twenty countries.",
+      "exampleZh": "该协议是二十个国家通过多边谈判达成的。",
+      "collocations": [
+        "multilateral talks",
+        "a multilateral agreement",
+        "multilateral institutions"
+      ],
+      "phonetic": "ˌmʌltɪ'lætərəl",
+      "tags": [
+        "手动添加"
+      ],
+      "exampleSource": "自编例句（非真题）"
+    },
+    {
       "id": "multitude",
       "word": "multitude",
       "pos": "n.",
@@ -4080,6 +4206,24 @@
       },
       "score": 8,
       "difficulty": 4
+    },
+    {
+      "id": "oppression",
+      "word": "oppression",
+      "pos": "n.",
+      "meaning": "压迫，压制；压抑，沉闷的感觉",
+      "example": "Generations of families fled the country to escape political oppression.",
+      "exampleZh": "一代又一代家庭逃离这个国家，以摆脱政治压迫。",
+      "collocations": [
+        "political oppression",
+        "fight against oppression",
+        "a sense of oppression"
+      ],
+      "phonetic": "ə'preʃən",
+      "tags": [
+        "手动添加"
+      ],
+      "exampleSource": "自编例句（非真题）"
     },
     {
       "id": "optimal",
@@ -5041,6 +5185,24 @@
       "difficulty": 4
     },
     {
+      "id": "renewal",
+      "word": "renewal",
+      "pos": "n.",
+      "meaning": "更新，恢复；（合同、证件等的）续订，展期",
+      "example": "The city's waterfront is undergoing a process of urban renewal.",
+      "exampleZh": "这座城市的水岸地带正在经历城市更新。",
+      "collocations": [
+        "urban renewal",
+        "contract renewal",
+        "the renewal of a licence"
+      ],
+      "phonetic": "rɪ'njuːəl",
+      "tags": [
+        "手动添加"
+      ],
+      "exampleSource": "自编例句（非真题）"
+    },
+    {
       "id": "repetitive",
       "word": "repetitive",
       "pos": "adj.",
@@ -5198,6 +5360,24 @@
       "tags": [
         "Unit2"
       ]
+    },
+    {
+      "id": "revise",
+      "word": "revise",
+      "pos": "v.",
+      "meaning": "修改，修订；复习（功课）",
+      "example": "The draft was revised several times before publication.",
+      "exampleZh": "这篇稿子在发表前被修改了好几次。",
+      "collocations": [
+        "revise a draft",
+        "revise for an exam",
+        "revise sth upward"
+      ],
+      "phonetic": "rɪ'vaɪz",
+      "tags": [
+        "手动添加"
+      ],
+      "exampleSource": "自编例句（非真题）"
     },
     {
       "id": "rewarding",
@@ -5900,6 +6080,24 @@
       },
       "score": 6,
       "difficulty": 3
+    },
+    {
+      "id": "tapestry",
+      "word": "tapestry",
+      "pos": "n.",
+      "meaning": "挂毯，织锦；丰富多彩的整体（交织而成的事物）",
+      "example": "They all have contributed to the rich tapestry of mankind.",
+      "exampleZh": "他们都为人类丰富多彩的画卷做出了贡献。",
+      "collocations": [
+        "a rich tapestry of",
+        "cultural tapestry",
+        "a tapestry of sound"
+      ],
+      "phonetic": "'tæpɪstri",
+      "tags": [
+        "手动添加"
+      ],
+      "exampleSource": "Cambridge Dictionary 例句（非真题）"
     },
     {
       "id": "tariff",

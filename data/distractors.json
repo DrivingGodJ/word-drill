@@ -11,11 +11,6 @@
    "meaning": "容纳；供应，供给，提供住宿"
   },
   {
-   "w": "acquaint",
-   "pos": "v.",
-   "meaning": "使认识，使了解"
-  },
-  {
    "w": "adversity",
    "pos": "n.",
    "meaning": "逆境"
@@ -71,11 +66,6 @@
    "meaning": "集合；组装；集合"
   },
   {
-   "w": "assert",
-   "pos": "v.",
-   "meaning": "主张，断言"
-  },
-  {
    "w": "asset",
    "pos": "n.",
    "meaning": "有价值的人(或物)资产"
@@ -119,11 +109,6 @@
    "w": "bewilder",
    "pos": "v.",
    "meaning": "迷惑，把…弄糊涂"
-  },
-  {
-   "w": "bias",
-   "pos": "n.",
-   "meaning": "偏见"
   },
   {
    "w": "bloom",
@@ -276,11 +261,6 @@
    "meaning": "比较的，相对的"
   },
   {
-   "w": "compatible",
-   "pos": "adj.",
-   "meaning": "兼容的"
-  },
-  {
    "w": "complexity",
    "pos": "n.",
    "meaning": "复杂（性）"
@@ -364,11 +344,6 @@
    "w": "craft",
    "pos": "n.",
    "meaning": "技巧"
-  },
-  {
-   "w": "creativity",
-   "pos": "n.",
-   "meaning": "创造力"
   },
   {
    "w": "cripple",
@@ -506,11 +481,6 @@
    "meaning": "命令，规定"
   },
   {
-   "w": "diligence",
-   "pos": "n.",
-   "meaning": "勤奋"
-  },
-  {
    "w": "disable",
    "pos": "vt.",
    "meaning": "丧失能力， 伤残"
@@ -571,16 +541,6 @@
    "meaning": "糟透了的， 极不合意的； 极端的， 极其大的； 可怕的"
   },
   {
-   "w": "duplicate",
-   "pos": "adj.",
-   "meaning": "完全一样的， 复制的；完全一样的东西，复制品"
-  },
-  {
-   "w": "duplicate",
-   "pos": "n.",
-   "meaning": "副本，复制品"
-  },
-  {
    "w": "duplication",
    "pos": "n.",
    "meaning": "复制品"
@@ -616,11 +576,6 @@
    "meaning": "电子"
   },
   {
-   "w": "elevate",
-   "pos": "vt.",
-   "meaning": "提升…的职位， 提高， 改善； 使情绪高昂； 举起， 使上升"
-  },
-  {
    "w": "eloquent",
    "pos": "adj.",
    "meaning": "口才好的，雄辩的"
@@ -639,11 +594,6 @@
    "w": "enclose",
    "pos": "v.",
    "meaning": "附上；围住，圈起"
-  },
-  {
-   "w": "endeavor",
-   "pos": "n.",
-   "meaning": "努力， 尽力， 尝试"
   },
   {
    "w": "enroll",
@@ -784,11 +734,6 @@
    "w": "foam",
    "pos": "vi.",
    "meaning": "起泡沫， 吐白沫；泡沫；泡沫材料，泡沫状物"
-  },
-  {
-   "w": "foothold",
-   "pos": "n.",
-   "meaning": "立足处（攀登时脚踩的地方）"
   },
   {
    "w": "forge",
@@ -981,11 +926,6 @@
    "meaning": "文盲的；文盲"
   },
   {
-   "w": "illuminate",
-   "pos": "v.",
-   "meaning": "阐释，阐明"
-  },
-  {
    "w": "illustration",
    "pos": "n.",
    "meaning": "说明，图解；例证"
@@ -1116,11 +1056,6 @@
    "meaning": "恐吓， 威胁"
   },
   {
-   "w": "intuitive",
-   "pos": "adj.",
-   "meaning": "直觉的"
-  },
-  {
    "w": "invoice",
    "pos": "n.",
    "meaning": "发票，发货清单"
@@ -1196,11 +1131,6 @@
    "meaning": "升"
   },
   {
-   "w": "lofty",
-   "pos": "adj.",
-   "meaning": "崇高的"
-  },
-  {
    "w": "luxurious",
    "pos": "adj.",
    "meaning": "奢侈的，豪华的"
@@ -1256,11 +1186,6 @@
    "meaning": "优点，成绩；值得"
   },
   {
-   "w": "miniature",
-   "pos": "adj.",
-   "meaning": "小型的，微小的；微小的模型， 缩影； 微型画， 微型人物像"
-  },
-  {
    "w": "minimize",
    "pos": "v.",
    "meaning": "使减到最小"
@@ -1296,19 +1221,9 @@
    "meaning": "湿润的；多雨的"
   },
   {
-   "w": "monopoly",
-   "pos": "n.",
-   "meaning": "垄断， 专卖； 垄断物， 垄断商品， 专卖商品"
-  },
-  {
    "w": "mosque",
    "pos": "n.",
    "meaning": "清真寺"
-  },
-  {
-   "w": "multitude",
-   "pos": "n.",
-   "meaning": "大量， 许多； 大众， 民众"
   },
   {
    "w": "negligible",
@@ -1369,11 +1284,6 @@
    "w": "offense",
    "pos": "n.",
    "meaning": "过错，犯罪"
-  },
-  {
-   "w": "offset",
-   "pos": "v.",
-   "meaning": "抵销"
   },
   {
    "w": "omit",
@@ -1521,11 +1431,6 @@
    "meaning": "身体上；体格上"
   },
   {
-   "w": "physiological",
-   "pos": "adj.",
-   "meaning": "生理的， 生理学的"
-  },
-  {
    "w": "pillar",
    "pos": "n.",
    "meaning": "柱， 柱子； 栋梁"
@@ -1646,11 +1551,6 @@
    "meaning": "对…挑衅， 激怒； 激起， 引起"
   },
   {
-   "w": "proximity",
-   "pos": "n.",
-   "meaning": "接近， 邻近"
-  },
-  {
    "w": "prune",
    "pos": "vt.",
    "meaning": "修剪， 修整； 删除， 削减"
@@ -1709,11 +1609,6 @@
    "w": "reduction",
    "pos": "n.",
    "meaning": "减少，减小，缩减"
-  },
-  {
-   "w": "redundant",
-   "pos": "adj.",
-   "meaning": "失业的，被解雇的；过剩的"
   },
   {
    "w": "refine",
@@ -1814,11 +1709,6 @@
    "w": "revive",
    "pos": "v.",
    "meaning": "复苏"
-  },
-  {
-   "w": "rewarding",
-   "pos": "adj.",
-   "meaning": "有回报的"
   },
   {
    "w": "rifle",
@@ -2111,11 +2001,6 @@
    "meaning": "督导"
   },
   {
-   "w": "susceptible",
-   "pos": "adj.",
-   "meaning": "易受影响的； 过敏的； 能经受的， 容许的"
-  },
-  {
    "w": "suspicion",
    "pos": "n.",
    "meaning": "怀疑， 疑心， 猜疑； 一点儿， 少量"
@@ -2349,11 +2234,6 @@
    "w": "winding",
    "pos": "n.",
    "meaning": "蜿蜒曲折的路径；蜿蜒曲折的"
-  },
-  {
-   "w": "wishful",
-   "pos": "adj.",
-   "meaning": "一厢情愿的"
   },
   {
    "w": "workman",
