@@ -3,7 +3,7 @@
     "name": "WordDrill",
     "version": 1,
     "dailyWordTarget": 80,
-    "updated": "2026-11-05",
+    "updated": "2026-11-07",
     "source": "FlowUs · page 2220ec94-e0c2-4523-87be-f8277b09d786",
     "note": "词库由 FlowUs 生词页同步而来；新增单词请用 scripts/sync-from-flowus.py 或直接编辑本文件。"
   },
@@ -86,6 +86,34 @@
       "difficulty": 3
     },
     {
+      "id": "adhere",
+      "word": "adhere",
+      "pos": "vi.",
+      "meaning": "黏附， 附着； 遵守； 坚持； 追随， 支持",
+      "example": "All members of the association adhere to a strict code of practice.",
+      "exampleZh": "所有该协会的成员都遵守严格的业务守则。",
+      "collocations": [],
+      "phonetic": "əd'hɪə",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_2",
+          "CET6_3"
+        ],
+        "examSources": [
+          "CET6 · 2016.6 · 第一套 · 听力题"
+        ],
+        "frequencyRank": 24482
+      },
+      "score": 6,
+      "difficulty": 3
+    },
+    {
       "id": "adolescent",
       "word": "adolescent",
       "pos": "adj./n.",
@@ -114,6 +142,34 @@
         "frequencyRank": 16533
       },
       "score": 7,
+      "difficulty": 3
+    },
+    {
+      "id": "adversely",
+      "word": "adversely",
+      "pos": "adv.",
+      "meaning": "不利地",
+      "example": "Her health was adversely affected by the climate.",
+      "exampleZh": "那种气候损害了她的健康。",
+      "collocations": [],
+      "phonetic": "əd'vɜ:slɪ",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_1",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2013.12 · 第三套 · 阅读理解"
+        ],
+        "frequencyRank": null
+      },
+      "score": 6,
       "difficulty": 3
     },
     {
@@ -292,6 +348,34 @@
       },
       "score": 7,
       "difficulty": 4
+    },
+    {
+      "id": "apt",
+      "word": "apt",
+      "pos": "adj.",
+      "meaning": "恰当的；聪明的",
+      "example": "She had taught him French and he had been an apt student.",
+      "exampleZh": "她教过他法语，他一直是个聪慧的学生。",
+      "collocations": [],
+      "phonetic": "æpt",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_2",
+          "CET6_3"
+        ],
+        "examSources": [
+          "CET6 · 2014.6 · 第三套 · 阅读理解"
+        ],
+        "frequencyRank": 16592
+      },
+      "score": 6,
+      "difficulty": 3
     },
     {
       "id": "ardent",
@@ -974,6 +1058,35 @@
       "difficulty": 3
     },
     {
+      "id": "conscientious",
+      "word": "conscientious",
+      "pos": "adj.",
+      "meaning": "认真的， 勤勤恳恳的",
+      "example": "A conscientious teacher may feel inclined to take work home.",
+      "exampleZh": "一个认真负责的教师可能会想着把工作带回家去做。",
+      "collocations": [],
+      "phonetic": "ˌkɒnʃi'enʃəs",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_1",
+          "CET6_3",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2016.12 · 第一套 · 阅读理解"
+        ],
+        "frequencyRank": 20480
+      },
+      "score": 6,
+      "difficulty": 3
+    },
+    {
       "id": "consecutive",
       "word": "consecutive",
       "pos": "adj.",
@@ -1240,6 +1353,60 @@
       "tags": [
         "Unit1"
       ]
+    },
+    {
+      "id": "credible",
+      "word": "credible",
+      "pos": "adj.",
+      "meaning": "可信的， 可靠的",
+      "example": "Her excuse was barely credible.",
+      "exampleZh": "她的借口无法让人信服。",
+      "collocations": [],
+      "phonetic": "'kredəbl",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_3"
+        ],
+        "examSources": [
+          "CET6 · 2013.12 · 第二套 · 写作题"
+        ],
+        "frequencyRank": 12560
+      },
+      "score": 6,
+      "difficulty": 3
+    },
+    {
+      "id": "criminology",
+      "word": "criminology",
+      "pos": "n.",
+      "meaning": "犯罪学， 刑事学",
+      "example": "The relationship between victimology and criminology is a longstanding issue within the academic realm.",
+      "exampleZh": "被害人学与犯罪学之间的关系问题是学界的一个宿疑。",
+      "collocations": [],
+      "phonetic": "ˌkrɪmɪ'nɒlədʒi",
+      "tags": [
+        "CET4"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET4_3"
+        ],
+        "examSources": [
+          "CET4 · 2008.12 · 听力题"
+        ],
+        "frequencyRank": 34571
+      },
+      "score": 6,
+      "difficulty": 3
     },
     {
       "id": "cumulative",
@@ -1615,6 +1782,34 @@
       "difficulty": 4
     },
     {
+      "id": "disengagement",
+      "word": "disengagement",
+      "pos": "n.",
+      "meaning": "分离",
+      "example": "This policy of disengagement from the European war had its critics.",
+      "exampleZh": "从欧战中逐渐撤军的政策遭到了批评。",
+      "collocations": [],
+      "phonetic": "ˌdɪsɪn'ɡeɪdʒmənt",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_1",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2016.12 · 第三套 · 阅读理解"
+        ],
+        "frequencyRank": null
+      },
+      "score": 6,
+      "difficulty": 3
+    },
+    {
       "id": "displace",
       "word": "displace",
       "pos": "vt.",
@@ -1641,6 +1836,33 @@
       ],
       "score": 6,
       "difficulty": 4
+    },
+    {
+      "id": "disrupt",
+      "word": "disrupt",
+      "pos": "vt.",
+      "meaning": "使中断； 扰乱",
+      "example": "Climate change could disrupt the agricultural economy.",
+      "exampleZh": "气候变化可能给农业经济带来不良影响。",
+      "collocations": [],
+      "phonetic": "dɪs'rʌpt",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_3"
+        ],
+        "examSources": [
+          "CET6 · 2012.12 · 第三套 · 阅读理解"
+        ],
+        "frequencyRank": 14340
+      },
+      "score": 6,
+      "difficulty": 3
     },
     {
       "id": "distort",
@@ -2065,6 +2287,33 @@
       "difficulty": 3
     },
     {
+      "id": "empower",
+      "word": "empower",
+      "pos": "vt.",
+      "meaning": "授权于； 使能够",
+      "example": "The Voting Rights Act was needed to empower minority groups.",
+      "exampleZh": "《选举权法案》对于赋予少数民族自主权是必不可少的。",
+      "collocations": [],
+      "phonetic": "ɪm'pauə",
+      "tags": [
+        "CET4"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET4_3"
+        ],
+        "examSources": [
+          "CET4 · 2008.6 · 听力题"
+        ],
+        "frequencyRank": 35513
+      },
+      "score": 6,
+      "difficulty": 3
+    },
+    {
       "id": "enact",
       "word": "enact",
       "pos": "v.",
@@ -2106,6 +2355,34 @@
           "CET6 · 2014.12 · 第一套 · 文本题"
         ],
         "frequencyRank": 17181
+      },
+      "score": 6,
+      "difficulty": 3
+    },
+    {
+      "id": "endorsement",
+      "word": "endorsement",
+      "pos": "n.",
+      "meaning": "支持",
+      "example": "The election victory is a clear endorsement of their policies.",
+      "exampleZh": "竞选成功显然是对他们政策的支持。",
+      "collocations": [],
+      "phonetic": "ɪnˈdɔ:smənt",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_1",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2016.12 · 第三套 · 阅读理解"
+        ],
+        "frequencyRank": 17080
       },
       "score": 6,
       "difficulty": 3
@@ -2422,6 +2699,34 @@
       "difficulty": 3
     },
     {
+      "id": "extravagant",
+      "word": "extravagant",
+      "pos": "adj.",
+      "meaning": "奢侈的； 过度的， 过分的， 放肆的",
+      "example": "Would it be too extravagant to buy both?",
+      "exampleZh": "把两个都买下会不会太奢侈了？",
+      "collocations": [],
+      "phonetic": "ɪk'strævəgənt",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_2",
+          "CET6_3"
+        ],
+        "examSources": [
+          "CET6 · 2013.6 · 第三套 · 阅读理解"
+        ],
+        "frequencyRank": 15322
+      },
+      "score": 6,
+      "difficulty": 3
+    },
+    {
       "id": "fertile",
       "word": "fertile",
       "pos": "adj.",
@@ -2541,6 +2846,38 @@
       "tags": []
     },
     {
+      "id": "formulate",
+      "word": "formulate",
+      "pos": "v.",
+      "meaning": "规定，制定",
+      "example": "By visualizing where you want to be, you start helping your mind formulate ways to achieve that next goal in your life.",
+      "exampleZh": "通过把你想达到的程度形象化，你就开始帮助自己的头脑制定目标——为了达到你生活中的下一个目标。",
+      "collocations": [],
+      "phonetic": "'fɔːmjʊleɪt",
+      "tags": [
+        "CET4"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET4_1",
+          "CET4luan_1",
+          "CET6_1",
+          "CET6_2",
+          "CET6_3",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET4 · 2014.6 · 第二套 · 阅读理解"
+        ],
+        "frequencyRank": 31713
+      },
+      "score": 6,
+      "difficulty": 3
+    },
+    {
       "id": "forthcoming",
       "word": "forthcoming",
       "pos": "adj.",
@@ -2566,6 +2903,35 @@
           "CET6 · 2015.12 · 第二套 · 阅读理解"
         ],
         "frequencyRank": 17784
+      },
+      "score": 6,
+      "difficulty": 3
+    },
+    {
+      "id": "frantic",
+      "word": "frantic",
+      "pos": "adj.",
+      "meaning": "慌乱不安的； 发疯似的， 发狂的",
+      "example": "I spent three frantic days trying to get everything ready.",
+      "exampleZh": "我花了三天时间手忙脚乱地做准备。",
+      "collocations": [],
+      "phonetic": "'fræntɪk",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_1",
+          "CET6_3",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2013.6 · 第三套 · 阅读理解"
+        ],
+        "frequencyRank": 15174
       },
       "score": 6,
       "difficulty": 3
@@ -2802,6 +3168,34 @@
       "difficulty": 4
     },
     {
+      "id": "homemaker",
+      "word": "homemaker",
+      "pos": "n.",
+      "meaning": "主妇",
+      "example": "Whether you are a carpenter or a therapist, a homemaker or a professor, it makes no difference.",
+      "exampleZh": "不论你是一个木匠或是一个治疗师，一个家庭主妇还是教授，这都没有区别。",
+      "collocations": [],
+      "phonetic": "ˈhəʊmmeɪkə(r)",
+      "tags": [
+        "CET4"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET4_1",
+          "CET4luan_1"
+        ],
+        "examSources": [
+          "CET4 · 2014.12 · 第一套 · 阅读理解"
+        ],
+        "frequencyRank": 37794
+      },
+      "score": 6,
+      "difficulty": 3
+    },
+    {
       "id": "honorary",
       "word": "honorary",
       "pos": "adj.",
@@ -2831,6 +3225,34 @@
         "frequencyRank": 17052
       },
       "score": 8,
+      "difficulty": 3
+    },
+    {
+      "id": "hostility",
+      "word": "hostility",
+      "pos": "n.",
+      "meaning": "敌意",
+      "example": "The last decade has witnessed a serious rise in the levels of racism and hostility to black and ethnic groups.",
+      "exampleZh": "过去的10年里，种族主义及对黑人和少数民族的敌意变得更加严重了。",
+      "collocations": [],
+      "phonetic": "hɒ'stɪlɪtɪ",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_1",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2014.6 · 第二套 · 听力题"
+        ],
+        "frequencyRank": 13840
+      },
+      "score": 6,
       "difficulty": 3
     },
     {
@@ -3294,6 +3716,33 @@
       "difficulty": 3
     },
     {
+      "id": "insignificant",
+      "word": "insignificant",
+      "pos": "adj.",
+      "meaning": "无意义的；低微的",
+      "example": "You realize that your problems are insignificant in comparison.",
+      "exampleZh": "要知道，你的问题相对来说微不足道。",
+      "collocations": [],
+      "phonetic": "ɪnsɪg'nɪfɪk(ə)nt",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_2"
+        ],
+        "examSources": [
+          "CET6 · 2009.6 · 写作题"
+        ],
+        "frequencyRank": 12007
+      },
+      "score": 6,
+      "difficulty": 3
+    },
+    {
       "id": "instructional",
       "word": "instructional",
       "pos": "adj.",
@@ -3386,6 +3835,63 @@
       "difficulty": 3
     },
     {
+      "id": "invaluable",
+      "word": "invaluable",
+      "pos": "adj.",
+      "meaning": "非常宝贵的， 极为贵重的， 无价的",
+      "example": "The internet is an invaluable source of information.",
+      "exampleZh": "因特网是十分有价值的信息来源。",
+      "collocations": [],
+      "phonetic": "ɪn'væljuəbl",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_3"
+        ],
+        "examSources": [
+          "CET6 · 2011.6 · 写作题"
+        ],
+        "frequencyRank": 15257
+      },
+      "score": 6,
+      "difficulty": 3
+    },
+    {
+      "id": "invariably",
+      "word": "invariably",
+      "pos": "adv.",
+      "meaning": "不变地， 始终如一地， 总是",
+      "example": "It invariably rains when I go there.",
+      "exampleZh": "我每次去那儿都下雨。",
+      "collocations": [],
+      "phonetic": "ɪn'veəriəbli",
+      "tags": [
+        "CET4"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET4_1",
+          "CET4luan_1",
+          "CET6_2",
+          "CET6_3"
+        ],
+        "examSources": [
+          "CET6 · 2013.12 · 第一套 · 阅读理解"
+        ],
+        "frequencyRank": 27527
+      },
+      "score": 6,
+      "difficulty": 3
+    },
+    {
       "id": "irreversible",
       "word": "irreversible",
       "pos": "adj.",
@@ -3452,6 +3958,33 @@
         "frequencyRank": 20806
       },
       "score": 8,
+      "difficulty": 3
+    },
+    {
+      "id": "justification",
+      "word": "justification",
+      "pos": "n.",
+      "meaning": "正当的理由， 借口",
+      "example": "Hoggart felt, with some justification, that his colleagues had let him down.",
+      "exampleZh": "霍加特觉得同事令他失望，这是有理由的。",
+      "collocations": [],
+      "phonetic": "ˌdʒʌstɪfɪ'keɪʃn",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_3"
+        ],
+        "examSources": [
+          "CET6 · 2017.6 · 第一套 · 阅读理解"
+        ],
+        "frequencyRank": 18509
+      },
+      "score": 6,
       "difficulty": 3
     },
     {
@@ -3723,6 +4256,35 @@
         "frequencyRank": 12063
       },
       "score": 8,
+      "difficulty": 3
+    },
+    {
+      "id": "minimal",
+      "word": "minimal",
+      "pos": "adj.",
+      "meaning": "最小的， 最低限度的",
+      "example": "The storm caused only minimal damage.",
+      "exampleZh": "暴风雨只造成了轻微破坏。",
+      "collocations": [],
+      "phonetic": "'mɪnɪməl",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_1",
+          "CET6_3",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2008.12 · 阅读理解"
+        ],
+        "frequencyRank": 12802
+      },
+      "score": 6,
       "difficulty": 3
     },
     {
@@ -4341,6 +4903,37 @@
       "difficulty": 4
     },
     {
+      "id": "overestimate",
+      "word": "overestimate",
+      "pos": "v.",
+      "meaning": "对（数量）估计过高",
+      "example": "He tends to overestimate his own abilities.",
+      "exampleZh": "他往往高估自己的能力。",
+      "collocations": [],
+      "phonetic": "ˌəʊvər'estɪmeɪt",
+      "tags": [
+        "CET4"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET4_1",
+          "CET4luan_1",
+          "CET6_1",
+          "CET6_2",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET4 · 2012.12 · 第二套 · 阅读理解"
+        ],
+        "frequencyRank": 32235
+      },
+      "score": 6,
+      "difficulty": 3
+    },
+    {
       "id": "pedestrian",
       "word": "pedestrian",
       "pos": "n.",
@@ -4522,6 +5115,35 @@
       "tags": []
     },
     {
+      "id": "preceding",
+      "word": "preceding",
+      "pos": "adj.",
+      "meaning": "在前的， 在先的， 前面的",
+      "example": "As we saw in the preceding chapter, groups can be powerful agents of socialization.",
+      "exampleZh": "如我们在前一章所见，团组可以是社会化的有力动因。",
+      "collocations": [],
+      "phonetic": "prɪ'siːdɪŋ",
+      "tags": [
+        "CET4"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET4_2",
+          "CET4_3",
+          "CET4luan_2"
+        ],
+        "examSources": [
+          "CET4 · 2015.6 · 第一套 · 阅读理解"
+        ],
+        "frequencyRank": 33365
+      },
+      "score": 6,
+      "difficulty": 3
+    },
+    {
       "id": "predecessor",
       "word": "predecessor",
       "pos": "n.",
@@ -4584,6 +5206,36 @@
       "difficulty": 4
     },
     {
+      "id": "preferable",
+      "word": "preferable",
+      "pos": "adj.",
+      "meaning": "更可取的， 更好的， 更合意的",
+      "example": "For this dish, fresh herbs and garlic are preferable.",
+      "exampleZh": "做这道菜，用新鲜香草和大蒜更好。",
+      "collocations": [],
+      "phonetic": "'prefrəbl",
+      "tags": [
+        "CET4"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET4_2",
+          "CET4_3",
+          "CET4luan_2",
+          "CET6_3"
+        ],
+        "examSources": [
+          "CET6 · 2014.6 · 第三套 · 阅读理解"
+        ],
+        "frequencyRank": 25145
+      },
+      "score": 6,
+      "difficulty": 3
+    },
+    {
       "id": "preparatory",
       "word": "preparatory",
       "pos": "adj.",
@@ -4612,6 +5264,64 @@
           "CET6 · 2012.12 · 第二套 · 听力题"
         ]
       }
+    },
+    {
+      "id": "presidency",
+      "word": "presidency",
+      "pos": "n.",
+      "meaning": "总统任期",
+      "example": "There were few real improvements during his presidency.",
+      "exampleZh": "在他的总统任期内几乎没有什么真正的改善。",
+      "collocations": [],
+      "phonetic": "'prezɪdənsɪ",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_1",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2010.6 · 阅读理解"
+        ],
+        "frequencyRank": 12858
+      },
+      "score": 6,
+      "difficulty": 3
+    },
+    {
+      "id": "prestige",
+      "word": "prestige",
+      "pos": "n.",
+      "meaning": "威信， 威望",
+      "example": "The king wanted to enhance his prestige through war.",
+      "exampleZh": "国王想通过战争来提高自己的威信。",
+      "collocations": [],
+      "phonetic": "pre'stiːʒ",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_1",
+          "CET6_2",
+          "CET6_3",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2009.6 · 阅读理解"
+        ],
+        "frequencyRank": 13208
+      },
+      "score": 6,
+      "difficulty": 3
     },
     {
       "id": "pretext",
@@ -4881,6 +5591,33 @@
       "difficulty": 3
     },
     {
+      "id": "provocative",
+      "word": "provocative",
+      "pos": "adj.",
+      "meaning": "挑衅的， 煽动的， 刺激的； 挑逗的",
+      "example": "She was accused of being deliberately provocative .",
+      "exampleZh": "她被指责故意挑衅。",
+      "collocations": [],
+      "phonetic": "prə'vɒkətɪv",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_3"
+        ],
+        "examSources": [
+          "CET6 · 2014.12 · 第三套 · 阅读理解"
+        ],
+        "frequencyRank": 16881
+      },
+      "score": 6,
+      "difficulty": 3
+    },
+    {
       "id": "proximity",
       "word": "proximity",
       "pos": "n.",
@@ -5107,6 +5844,33 @@
       },
       "score": 6,
       "difficulty": 4
+    },
+    {
+      "id": "regenerate",
+      "word": "regenerate",
+      "pos": "vi./vt.",
+      "meaning": "新生， 再生， 起革新作用；使新生，重建，改革，革新",
+      "example": "Small nodules form as the liver cells regenerate.",
+      "exampleZh": "肝细胞再生时会形成一些小结节。",
+      "collocations": [],
+      "phonetic": "rɪ'dʒenər3ɪt",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_3"
+        ],
+        "examSources": [
+          "CET6 · 2015.6 · 第一套 · 阅读理解"
+        ],
+        "frequencyRank": 24155
+      },
+      "score": 6,
+      "difficulty": 3
     },
     {
       "id": "reimbursement",
@@ -5466,6 +6230,33 @@
       ]
     },
     {
+      "id": "scrutiny",
+      "word": "scrutiny",
+      "pos": "n.",
+      "meaning": "详细检查， 仔细观察",
+      "example": "Their activities have come under police scrutiny .",
+      "exampleZh": "他们的活动受到警方的严密监视。",
+      "collocations": [],
+      "phonetic": "'skruːtəni",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_3"
+        ],
+        "examSources": [
+          "CET6 · 2013.12 · 第一套 · 阅读理解"
+        ],
+        "frequencyRank": 18301
+      },
+      "score": 6,
+      "difficulty": 3
+    },
+    {
       "id": "segregation",
       "word": "segregation",
       "pos": "n.",
@@ -5540,6 +6331,35 @@
       "tags": [
         "短语动词"
       ]
+    },
+    {
+      "id": "shrewd",
+      "word": "shrewd",
+      "pos": "adj.",
+      "meaning": "机灵的， 敏锐的， 精明的",
+      "example": "Malcolm is a shrewd businessman.",
+      "exampleZh": "马尔科姆是个精明的商人。",
+      "collocations": [],
+      "phonetic": "ʃruːd",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_1",
+          "CET6_3",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2009.12 · 听力题"
+        ],
+        "frequencyRank": 17548
+      },
+      "score": 6,
+      "difficulty": 3
     },
     {
       "id": "simultaneous",
@@ -6323,6 +7143,34 @@
       "difficulty": 3
     },
     {
+      "id": "underscore",
+      "word": "underscore",
+      "pos": "v.",
+      "meaning": "强调",
+      "example": "The Labour Department figures underscore the shaky state of the economic recovery.",
+      "exampleZh": "劳工部的数字突出显示了经济复苏的不稳定。",
+      "collocations": [],
+      "phonetic": "ˌʌndəˈskɔː(r)",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_1",
+          "CET6luan_1"
+        ],
+        "examSources": [
+          "CET6 · 2014.12 · 第二套 · 阅读理解"
+        ],
+        "frequencyRank": null
+      },
+      "score": 6,
+      "difficulty": 3
+    },
+    {
       "id": "undertake",
       "word": "undertake",
       "pos": "vt.",
@@ -6618,6 +7466,33 @@
         "frequencyRank": 22957
       },
       "score": 7,
+      "difficulty": 3
+    },
+    {
+      "id": "vocation",
+      "word": "vocation",
+      "pos": "n.",
+      "meaning": "职业，行业",
+      "example": "At 17 she found her true vocation as a writer.",
+      "exampleZh": "17岁时她找到了自己真正的使命——当一名作家。",
+      "collocations": [],
+      "phonetic": "və(ʊ)'keɪʃ(ə)n",
+      "tags": [
+        "CET6"
+      ],
+      "exampleSource": "词书配对例句（非真题）",
+      "selection": {
+        "version": 2,
+        "source": "kajweb/dict",
+        "books": [
+          "CET6_2"
+        ],
+        "examSources": [
+          "CET6 · 2016.6 · 第三套 · 阅读理解"
+        ],
+        "frequencyRank": 17743
+      },
+      "score": 6,
       "difficulty": 3
     },
     {
