@@ -2,60 +2,42 @@
 
 # WordDrill
 
-A personal vocabulary trainer: recognition and spelling for CET-4 and manually added words, recognition for CET-6 words, with independent recall across days and FSRS-6 review scheduling.
+Try to recall first, then check. A personal CET vocabulary trainer connecting recognition, spelling and review across days.
 
-[Open WordDrill](https://drivinggodj.github.io/word-drill/) · [Learning rationale](docs/learning-upgrade.md) · [Detailed usage and maintenance](docs/readme-reference.zh-CN.md)
+[Start training](https://drivinggodj.github.io/word-drill/)
 
-## Features
+## Practice recognition and spelling separately
 
-- **Due reviews first**, with up to 40 questions per round and a shared daily new-word quota.
-- **Learning stages** progress from unseen to recognition, spelling and mastered; CET-6 words can be mastered through recognition.
-- **Independent recall** excludes hinted answers, same-day repeats and free practice from direct promotion credit.
-- **Extra practice** covers mistakes, sentence context and dictation without changing formal review schedules.
-- **Static and offline** operation needs no npm build. Progress stays in the current browser by default, with optional private GitHub synchronization.
+CET-4 and manually added words require both recognition and spelling; CET-6 words focus on recognition. Recall the meaning before revealing choices. For spelling, produce the English word from Chinese and correct mistakes before continuing.
 
-## Quick start
+Words progress from unseen through recognition and spelling to mastered. Each stage keeps its own evidence instead of treating recognition as proof that you can write the word.
 
-Open the website and start training. Add it to your phone's home screen for offline use. You can also open `index.html` directly; full local PWA behavior requires localhost or HTTPS hosting.
+## Can you recall it a few days later?
 
-Set your daily new-word quota and retention target, then start a session. Recall the meaning before revealing choices; use `1`–`4` to answer and `Enter` to continue. Spelling hides the first-letter hint by default and requires correction after a mistake.
+Formal sessions prioritize due reviews before adding new words within the daily quota. FSRS-6 schedules future intervals from answers, while promotion also requires independent correct recall on different days. Repeating a word today or answering after a hint cannot directly earn mastery.
 
-## Usage
+## Practice a little more when you want
 
-**Learning rules:** FSRS-6 uses the bundled `ts-fsrs 5.4.2`. Target retention defaults to 90%, adjustable from 80–95%; it is a model target, not guaranteed accuracy. Promotion defaults to independent correct answers on 3 different days, plus stability of 7 days for recognition or 21 for spelling. These are this app's thresholds, not FSRS or Anki defaults.
+- Revisit mistakes and hinted words separately.
+- Fill gaps in complete example sentences, revealing Chinese hints only when needed.
+- Listen to device speech and try spelling the word.
+- Inspect learning stages, answer counts and upcoming reviews in the vocabulary list.
 
-**Daily word preparation:** the current `meta.dailyWordTarget: 80` enables a server task at 06:00 Beijing time. It fills the gap after counting today's practiced words, currently due words and unseen stock. It does not require learning 80 words every day. Insufficient source material leaves a reported shortfall; unsynced offline practice cannot be counted. See the detailed reference for the older candidate mode and server setup.
+Extra practice preserves formal review schedules instead of reshuffling existing progress.
 
-**Device synchronization:** create a separate private repository. On each device, enter its owner, repository, file path (default `progress.json`) and a fine-grained token granting Contents read/write only to that repository. Tokens remain in that browser's `localStorage` and are sent only to GitHub's API; never place them in the public vocabulary repository. Test Connection checks access, branch and file permissions.
+## Start anywhere and continue later
 
-Per-word state uses the latest practice time. Correct/wrong counts use the maximum rather than a sum; learning settings use the newer compatible version, while pronunciation remains device-specific. Concurrent writes reread and merge for up to 3 attempts. Fully offline devices cannot share a real-time daily quota.
+Use a phone or desktop browser and add it to the home screen for offline practice. Progress stays in the current browser by default. Enable separate private GitHub sync for multiple devices, or export a backup manually.
 
-**Progress protection:** storage remains `worddrill.v1`. The v6 migration preserves prior fields and FSRS state, backing up first to `worddrill.backup.before-v6`; older v5 backups remain. Corrupt or newer-version data is not blindly overwritten. Export before upgrading and refresh every device before syncing. Clearing site data removes progress and tokens; Clear Credentials removes only this device's sync configuration.
+[Open WordDrill](https://drivinggodj.github.io/word-drill/)
 
-## Development and checks
+## Explore further
 
-Learning checks require **Node.js 20+**, with no dependency installation:
+| Topic | Documentation |
+| --- | --- |
+| Training, learning rules and progress backups | [User guide](docs/GUIDE.en.md) |
+| Device sync, daily word preparation and maintenance | [Full reference (Chinese)](docs/readme-reference.zh-CN.md) |
+| Research and learning-rule rationale | [Learning logic (Chinese)](docs/learning-upgrade.md) |
+| Feedback | [Issues](https://github.com/DrivingGodJ/word-drill/issues) |
 
-```bash
-node scripts/check-learning.cjs
-```
-
-FlowUs synchronization and word import use Python 3. Preview before modifying files:
-
-```bash
-python3 scripts/sync-from-flowus.py --dry-run
-python3 scripts/add-words.py --list words.txt --dry-run
-python3 scripts/check-cet.py
-```
-
-Actual word-import runs may commit and push automatically. Use `--no-commit` for file-only changes and read the full reference first. Word IDs must remain stable; changing an ID creates a new word. Configure timers, private-progress reads and publication keys separately, and avoid running two word-preparation schedulers simultaneously.
-
-## Documentation and support
-
-- [Synchronization, migration, vocabulary, icons and scheduled preparation (Chinese)](docs/readme-reference.zh-CN.md)
-- [Learning research, exam requirements and evidence limits (Chinese)](docs/learning-upgrade.md)
-- [Report an issue](https://github.com/DrivingGodJ/word-drill/issues)
-
-## License and credits
-
-No standalone repository-wide license is declared. Bundled ts-fsrs in `vendor/` retains its MIT license. Dictionaries, frequencies and example sentences have separate sources; a dependency's license does not license the entire repository or all learning data.
+See [licensing and source details](docs/GUIDE.en.md#license-and-credits) for the code, algorithm dependency and vocabulary sources.
