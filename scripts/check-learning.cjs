@@ -11,15 +11,15 @@ const documentEvents = {}, windowEvents = {}, intervals = [];
 const element = (key) => {
   if (!elements.has(key)) elements.set(key, {
     value: '', hidden: false, disabled: false, style: {}, dataset: {},
-    classList: { add() {}, remove() {}, toggle() {}, contains() { return false; } },
-    events: {}, addEventListener(type, fn) { this.events[type] = fn; }, setAttribute() {}, focus() {},
+    classList: { values: new Set(), add(x) { this.values.add(x); }, remove(x) { this.values.delete(x); }, toggle(x, on) { on ? this.values.add(x) : this.values.delete(x); }, contains(x) { return this.values.has(x); } },
+    events: {}, addEventListener(type, fn) { this.events[type] = fn; }, setAttribute() {}, removeAttribute() {}, scrollIntoView() {}, focus() {},
     querySelector: (selector) => element(key + selector),
     querySelectorAll: () => [], insertAdjacentHTML() {}
   });
   return elements.get(key);
 };
 const context = vm.createContext({
-  document: { querySelector: element, querySelectorAll: () => [], visibilityState: 'visible',
+  document: { body: element('body'), documentElement: element('html'), querySelector: element, querySelectorAll: () => [], visibilityState: 'visible',
     addEventListener: (type, fn) => { documentEvents[type] = fn; } },
   localStorage: { getItem: (key) => storage.get(key) || null, setItem: (key, value) => storage.set(key, value) },
   navigator: {}, location: { protocol: 'http:', hash: '' },
@@ -36,7 +36,7 @@ const source = fs.readFileSync(path.join(root, 'app.js'), 'utf8')
   .replace("document.addEventListener('DOMContentLoaded', boot);", `globalThis.check = {
     defaultStore, readStore, migrateStore, loadStore, grade, mergeRemote, buildPayload,
     newAllowance, dailyCoverage, normalMemory, normalize, hasFillExample, dayKey, startSession, remoteRead,
-    requiresWriting, progressOf, quizTypeFor, renderLibrary,
+    requiresWriting, progressOf, quizTypeFor, renderLibrary, switchView,
     nextQuestion, answer, revealOptions, onPickOption, speak, canSpeak, bindEvents,
     syncNow, autoSync, bindAutoSync, endSession, getSync: () => sync, isSyncing: () => syncing,
     setSync: (config) => { sync = config; }, setSession: (s) => { session = s; },
@@ -395,6 +395,29 @@ app.answer(true, listenQ.word.word);
 assert.equal(app.getStore().words[listenQ.word.id].due, beforeListen.due);
 assert.deepEqual(plain(app.getStore().words[listenQ.word.id].credits), beforeListen.credits);
 
+// Training locks navigation; every exit restores a usable route to the intro.
+reset({ alpha: rec() });
+app.setSession(null);
+app.setWords(trainingWords);
+app.startSession('review');
+assert.equal(elements.get('body').classList.contains('is-training'), true);
+const routeBefore = context.location.hash;
+app.switchView('settings');
+assert.equal(context.location.hash, routeBefore, 'navigation is blocked during training');
+app.endSession();
+assert.equal(elements.get('body').classList.contains('is-training'), false);
+assert.equal(elements.get('#session-intro').hidden, false, 'ending without answers returns home');
+app.startSession('review');
+app.answer(true, 'correct');
+app.endSession();
+assert.equal(elements.get('#session-summary').hidden, false);
+assert.equal(elements.get('body').classList.contains('is-training'), false);
+app.switchView('learn');
+assert.equal(elements.get('#session-summary').hidden, true, 'training tab leaves the summary');
+assert.equal(elements.get('#session-intro').hidden, false);
+elements.get('#btn-summary-home').events.click();
+assert.equal(elements.get('#session-intro').hidden, false, 'explicit home button works');
+
 // The summary can drill an assisted-only word even when there is no historical mistake.
 reset({ alpha: { ...rec(), wrong: 0 } });
 app.setWords(trainingWords);
@@ -403,6 +426,23 @@ assert.deepEqual(plain(app.getSession().queue), ['alpha']);
 assert.equal(app.getSession().practice, true);
 // Corrupt remote progress must stop the read/write cycle before merging any data.
 (async () => {
+  // Rejected native fullscreen keeps training usable; completing the queue unlocks home.
+  reset({ alpha: rec() });
+  app.setSession(null);
+  app.setWords(trainingWords);
+  context.document.fullscreenEnabled = true;
+  context.document.documentElement.requestFullscreen = async () => { throw new Error('unsupported'); };
+  app.startSession('review');
+  await Promise.resolve();
+  assert.equal(elements.get('body').classList.contains('is-training'), true);
+  app.answer(true, 'correct');
+  app.nextQuestion();
+  assert.equal(app.getSession(), null);
+  assert.equal(elements.get('#session-summary').hidden, false);
+  assert.equal(elements.get('body').classList.contains('is-training'), false);
+  elements.get('#btn-summary-home').events.click();
+  assert.equal(elements.get('#session-intro').hidden, false);
+  context.document.fullscreenEnabled = false;
   context.fetch = async () => ({ ok: true, json: async () => ({
     sha: 'check', content: Buffer.from('broken json').toString('base64')
   }) });

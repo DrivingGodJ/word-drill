@@ -847,6 +847,7 @@
       requeued: 0
     };
 
+    switchView('learn');
     showPanel('quiz');
     nextQuestion();
   }
@@ -960,10 +961,24 @@
   }
 
   /* ---------- 渲染：训练视图 ---------- */
+  async function setTrainingMode(active) {
+    document.body.classList.toggle('is-training', active);
+    try {
+      if (active && document.fullscreenEnabled && !document.fullscreenElement) {
+        await document.documentElement.requestFullscreen();
+        // 结束操作可能早于浏览器完成全屏切换。
+        if (!session) await document.exitFullscreen();
+      } else if (!active && document.fullscreenElement === document.documentElement) {
+        await document.exitFullscreen();
+      }
+    } catch { /* 不支持或拒绝全屏时仍保持应用内专注布局。 */ }
+  }
+
   function showPanel(which) {
     $('#session-intro').hidden = which !== 'intro';
     $('#session-quiz').hidden = which !== 'quiz';
     $('#session-summary').hidden = which !== 'summary';
+    setTrainingMode(which === 'quiz');
   }
 
   function refreshIntro() {
@@ -1645,6 +1660,7 @@
 
   /* ---------- 视图切换 ---------- */
   function switchView(name) {
+    if (session && name !== 'learn') return;
     $$('.view').forEach((v) => {
       const on = v.id === `view-${name}`;
       v.classList.toggle('is-active', on);
@@ -1656,7 +1672,10 @@
       if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
     });
     if (name === 'library') renderLibrary();
-    if (name === 'learn') refreshIntro();
+    if (name === 'learn') {
+      if (!session) showPanel('intro');
+      refreshIntro();
+    }
     location.hash = name === 'learn' ? '' : `#${name}`;
     $('#main').scrollIntoView({ block: 'start', behavior: 'instant' in window ? 'instant' : 'auto' });
   }
@@ -1675,6 +1694,7 @@
     $('#btn-listen').addEventListener('click', () => startSession('listen'));
     $('#btn-mistakes').addEventListener('click', () => startSession('mistakes'));
     $('#btn-summary-mistakes').addEventListener('click', () => startSession('mistakes', summaryMistakes));
+    $('#btn-summary-home').addEventListener('click', () => switchView('learn'));
     $('#btn-again').addEventListener('click', () => { showPanel('intro'); refreshIntro(); startSession(); });
     $('#btn-end').addEventListener('click', endSession);
     $('#btn-next').addEventListener('click', () => {
