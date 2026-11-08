@@ -514,6 +514,12 @@ body.is-training { background: var(--color-card); }
 }
 .field--stack input::placeholder { color: var(--color-muted-fg); opacity: .65; }
 .field--stack input:focus-visible { border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-ring); }
+.field--stack textarea {
+  width: 100%; padding: var(--s-3) var(--s-4); resize: vertical;
+  font: inherit; font-size: .9375rem; line-height: 1.6;
+  color: var(--color-fg); background: var(--color-card);
+  border: 1px solid var(--color-border-strong); border-radius: var(--radius-md);
+}
 .field__row { display: flex; gap: var(--s-3); }
 .field__row input { flex: 1; min-width: 0; }
 .btn--sm { min-height: 44px; padding: 0 var(--s-4); font-size: .875rem; }

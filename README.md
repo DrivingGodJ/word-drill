@@ -41,3 +41,7 @@
 | 问题反馈 | [Issues](https://github.com/DrivingGodJ/word-drill/issues) |
 
 代码、算法依赖与词库来源的使用条件见[许可与来源说明](docs/GUIDE.zh-CN.md#许可与致谢)。
+
+## 让自己的 Agent 帮忙
+
+在「设置 → 让 Agent 帮你设置」复制提示词，发给自己的 Agent。仓库内的 [worddrill-assistant Skill](skills/worddrill-assistant/SKILL.md) 说明如何创建私有进度仓库、配置多设备同步，以及按指定词表安全加词。提示词不含个人凭据或学习数据。

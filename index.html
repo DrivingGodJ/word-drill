@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap">
-<link rel="stylesheet" href="styles.css?v=8">
+<link rel="stylesheet" href="styles.css?v=9">
 <link rel="manifest" href="manifest.webmanifest">
 <!-- iOS「添加到主屏幕」不认 SVG 图标，必须是 PNG（180×180 且不透明）；
      也读不了 manifest 里的 short_name，主屏名字只认 apple-mobile-web-app-title。 -->
@@ -303,6 +303,20 @@
     </div>
 
     <div class="card settings-card">
+      <h2 class="card__title">让 Agent 帮你设置</h2>
+      <p class="card__desc">复制提示词发给自己的 Agent，让它帮你创建私有进度仓库、配置多设备同步，以后也能按你给的词表加词。提示词不包含你的 token 或学习数据。</p>
+      <div class="field field--stack">
+        <label for="agent-prompt">发给 Agent 的提示词</label>
+        <textarea id="agent-prompt" rows="6" readonly spellcheck="false">请从 https://github.com/DrivingGodJ/word-drill/tree/main/skills/worddrill-assistant 安装并使用 worddrill-assistant Skill（不支持安装时，读取其中的 SKILL.md 并按说明执行）。帮我在自己的 GitHub 账号下创建或复用私有进度仓库，指导我配置 WordDrill 多设备同步，进度文件统一使用 progress.json，保留已有学习进度。以后我提供词表时，也请按这个 Skill 帮我手动加词。</textarea>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn--primary" id="btn-copy-agent-prompt" type="button">复制给 Agent 的提示词</button>
+        <a class="btn btn--ghost" href="https://github.com/DrivingGodJ/word-drill/tree/main/skills/worddrill-assistant" target="_blank" rel="noopener noreferrer">查看 Skill</a>
+      </div>
+      <p class="hint" id="agent-copy-status" role="status" aria-live="polite"></p>
+    </div>
+
+    <div class="card settings-card">
       <h2 class="card__title">词库来源</h2>
       <p class="card__desc">
         词库文件：<code>data/words.json</code>，当前 <b id="meta-count">0</b> 个词，更新于 <span id="meta-updated">—</span>。
@@ -319,6 +333,6 @@
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
 <script src="vendor/ts-fsrs-5.4.2.js"></script>
-<script src="app.js?v=11"></script>
+<script src="app.js?v=12"></script>
 </body>
 </html>

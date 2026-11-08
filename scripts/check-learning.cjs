@@ -12,7 +12,7 @@ const element = (key) => {
   if (!elements.has(key)) elements.set(key, {
     value: '', hidden: false, disabled: false, style: {}, dataset: {},
     classList: { values: new Set(), add(x) { this.values.add(x); }, remove(x) { this.values.delete(x); }, toggle(x, on) { on ? this.values.add(x) : this.values.delete(x); }, contains(x) { return this.values.has(x); } },
-    events: {}, addEventListener(type, fn) { this.events[type] = fn; }, setAttribute() {}, removeAttribute() {}, scrollIntoView() {}, focus() {},
+    events: {}, addEventListener(type, fn) { this.events[type] = fn; }, setAttribute() {}, removeAttribute() {}, scrollIntoView() {}, focus() {}, select() { this.selected = true; },
     querySelector: (selector) => element(key + selector),
     querySelectorAll: () => [], insertAdjacentHTML() {}
   });
@@ -36,7 +36,7 @@ const source = fs.readFileSync(path.join(root, 'app.js'), 'utf8')
   .replace("document.addEventListener('DOMContentLoaded', boot);", `globalThis.check = {
     defaultStore, readStore, migrateStore, loadStore, grade, mergeRemote, buildPayload,
     newAllowance, dailyCoverage, normalMemory, normalize, hasFillExample, dayKey, startSession, remoteRead,
-    requiresWriting, progressOf, quizTypeFor, renderLibrary, switchView,
+    requiresWriting, progressOf, quizTypeFor, renderLibrary, switchView, bindSettings,
     nextQuestion, answer, revealOptions, onPickOption, speak, canSpeak, bindEvents,
     syncNow, autoSync, bindAutoSync, endSession, getSync: () => sync, isSyncing: () => syncing,
     setSync: (config) => { sync = config; }, setSession: (s) => { session = s; },
@@ -426,6 +426,23 @@ assert.deepEqual(plain(app.getSession().queue), ['alpha']);
 assert.equal(app.getSession().practice, true);
 // Corrupt remote progress must stop the read/write cycle before merging any data.
 (async () => {
+  // Copy the actual public onboarding prompt; clipboard failures leave it selectable.
+  app.bindSettings();
+  const onboarding = fs.readFileSync(path.join(root, 'index.html'), 'utf8').match(/<textarea id="agent-prompt"[^>]*>([\s\S]*?)<\/textarea>/)[1];
+  element('#agent-prompt').value = onboarding;
+  let copied;
+  context.navigator.clipboard = { writeText: async value => { copied = value; } };
+  await elements.get('#btn-copy-agent-prompt').events.click();
+  assert.equal(copied, onboarding);
+  assert.match(copied, /https:\/\/github.com\/DrivingGodJ\/word-drill\/tree\/main\/skills\/worddrill-assistant/);
+  context.navigator.clipboard.writeText = async () => { throw new Error('permission denied'); };
+  await elements.get('#btn-copy-agent-prompt').events.click();
+  assert.equal(elements.get('#agent-prompt').selected, true);
+  assert.match(elements.get('#agent-copy-status').textContent, /已选中/);
+  delete context.navigator.clipboard;
+  await elements.get('#btn-copy-agent-prompt').events.click();
+  assert.equal(elements.get('#agent-prompt').selected, true);
+
   // Rejected native fullscreen keeps training usable; completing the queue unlocks home.
   reset({ alpha: rec() });
   app.setSession(null);
