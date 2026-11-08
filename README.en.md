@@ -41,3 +41,7 @@ Use a phone or desktop browser and add it to the home screen for offline practic
 | Feedback | [Issues](https://github.com/DrivingGodJ/word-drill/issues) |
 
 See [licensing and source details](docs/GUIDE.en.md#license-and-credits) for the code, algorithm dependency and vocabulary sources.
+
+## Agent assistance
+
+Copy the agent prompt in Settings to set up a private progress repository and learn the manual vocabulary workflow. The installable [worddrill-assistant skill](skills/worddrill-assistant/SKILL.md) is included in this repository. The prompt contains no credentials or learning data.

@@ -1450,6 +1450,19 @@
 
   /* ---------- 设置 ---------- */
   function bindSettings() {
+    $('#btn-copy-agent-prompt').addEventListener('click', async () => {
+      const prompt = $('#agent-prompt');
+      const status = $('#agent-copy-status');
+      try {
+        await navigator.clipboard.writeText(prompt.value);
+        status.textContent = '已复制，粘贴给你的 Agent 即可。';
+      } catch {
+        prompt.focus();
+        prompt.select();
+        status.textContent = '自动复制不可用，已选中提示词，请长按或使用复制快捷键。';
+      }
+    });
+
     const nl = $('#set-newlimit');
     const nlo = $('#set-newlimit-out');
     nl.value = store.settings.newLimit;
