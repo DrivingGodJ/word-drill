@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap">
-<link rel="stylesheet" href="styles.css?v=7">
+<link rel="stylesheet" href="styles.css?v=8">
 <link rel="manifest" href="manifest.webmanifest">
 <!-- iOS「添加到主屏幕」不认 SVG 图标，必须是 PNG（180×180 且不透明）；
      也读不了 manifest 里的 short_name，主屏名字只认 apple-mobile-web-app-title。 -->
@@ -151,6 +151,7 @@
       <div class="summary__list" id="summary-list"></div>
       <div class="summary__actions">
         <button class="btn btn--primary" id="btn-again" type="button">再来一轮</button>
+        <button class="btn btn--ghost" id="btn-summary-home" type="button">返回训练主页</button>
         <button class="btn btn--ghost" id="btn-summary-mistakes" type="button" hidden>重练待巩固词</button>
         <button class="btn btn--ghost" data-view="library" type="button">看词库</button>
       </div>
@@ -304,8 +305,7 @@
     <div class="card settings-card">
       <h2 class="card__title">词库来源</h2>
       <p class="card__desc">
-        词库文件：<code>data/words.json</code>，当前 <b id="meta-count">0</b> 个词，更新于 <span id="meta-updated">—</span>。<br>
-        新增生词：先在 FlowUs 生词页记下，再用 <code>scripts/sync-from-flowus.py</code> 同步进词库。
+        词库文件：<code>data/words.json</code>，当前 <b id="meta-count">0</b> 个词，更新于 <span id="meta-updated">—</span>。
       </p>
     </div>
   </section>
@@ -319,6 +319,6 @@
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
 <script src="vendor/ts-fsrs-5.4.2.js"></script>
-<script src="app.js?v=10"></script>
+<script src="app.js?v=11"></script>
 </body>
 </html>

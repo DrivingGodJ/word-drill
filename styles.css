@@ -195,6 +195,23 @@ button { cursor: pointer; background: none; border: none; padding: 0; }
 }
 .view { display: none; }
 .view.is-active { display: block; animation: viewIn 260ms var(--ease) both; }
+
+/* 训练独占页面；长题目和手机键盘弹出时仍可滚动。 */
+:fullscreen { background: var(--color-bg); }
+.is-training .topbar, .is-training .footer, .is-training #cet-review { display: none; }
+body.is-training { background: var(--color-card); }
+.is-training #main {
+  max-width: 800px;
+  padding: max(var(--s-4), env(safe-area-inset-top)) max(var(--s-4), env(safe-area-inset-right)) max(var(--s-4), env(safe-area-inset-bottom)) max(var(--s-4), env(safe-area-inset-left));
+}
+.is-training .view.is-active { animation: none; }
+.is-training #session-quiz {
+  display: flex; flex-direction: column;
+  min-height: calc(100vh - 2 * var(--s-4));
+  min-height: calc(100dvh - max(var(--s-4), env(safe-area-inset-top)) - max(var(--s-4), env(safe-area-inset-bottom)));
+  padding: 0; border: 0; border-radius: 0; box-shadow: none;
+}
+.is-training .quiz__body { flex: 1; }
 @keyframes viewIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
 .page-title { font-size: 1.75rem; font-weight: 700; letter-spacing: -.025em; margin-bottom: var(--s-5); }
