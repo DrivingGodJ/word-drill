@@ -3,7 +3,7 @@
     "name": "WordDrill",
     "version": 1,
     "dailyWordTarget": 80,
-    "updated": "2026-11-07",
+    "updated": "2026-11-09",
     "source": "FlowUs · page 2220ec94-e0c2-4523-87be-f8277b09d786",
     "note": "词库由 FlowUs 生词页同步而来；新增单词请用 scripts/sync-from-flowus.py 或直接编辑本文件。"
   },
@@ -530,6 +530,23 @@
       "tags": []
     },
     {
+      "id": "be-projected-to",
+      "word": "be projected to",
+      "pos": "phr.",
+      "meaning": "预计将（达到、增长到）；据预测会",
+      "example": "Sales are projected to rise by 12 percent next year.",
+      "exampleZh": "预计明年销售额将增长 12%。",
+      "collocations": [
+        "be projected to rise",
+        "be projected to reach",
+        "be projected to grow"
+      ],
+      "tags": [
+        "手动添加"
+      ],
+      "exampleSource": "自编例句（非真题）"
+    },
+    {
       "id": "belittle",
       "word": "belittle",
       "pos": "vt.",
@@ -861,6 +878,23 @@
       },
       "score": 8,
       "difficulty": 3
+    },
+    {
+      "id": "colonizer",
+      "word": "colonizer",
+      "pos": "n.",
+      "meaning": "殖民者；殖民主义者",
+      "example": "Colonizers brought new crops, languages and diseases to the region.",
+      "exampleZh": "殖民者给这一地区带来了新的作物、语言和疾病。",
+      "collocations": [
+        "European colonizers",
+        "a former colonizer"
+      ],
+      "phonetic": "'kɒlənaɪzə",
+      "tags": [
+        "手动添加"
+      ],
+      "exampleSource": "自编例句（非真题）"
     },
     {
       "id": "commencement",
@@ -1583,6 +1617,24 @@
       "difficulty": 4
     },
     {
+      "id": "detrimental",
+      "word": "detrimental",
+      "pos": "adj.",
+      "meaning": "有害的，不利的",
+      "example": "Excessive screen time is detrimental to children's eyesight.",
+      "exampleZh": "过长的屏幕时间对孩子的视力有害。",
+      "collocations": [
+        "detrimental to",
+        "a detrimental effect",
+        "detrimental to health"
+      ],
+      "phonetic": "ˌdetrɪ'mentl",
+      "tags": [
+        "手动添加"
+      ],
+      "exampleSource": "自编例句（非真题）"
+    },
+    {
       "id": "developmental",
       "word": "developmental",
       "pos": "adj.",
@@ -1838,6 +1890,23 @@
       "difficulty": 4
     },
     {
+      "id": "disputable",
+      "word": "disputable",
+      "pos": "adj.",
+      "meaning": "有争议的，可质疑的",
+      "example": "Whether the policy actually works is still disputable.",
+      "exampleZh": "这项政策是否真的有效仍有争议。",
+      "collocations": [
+        "highly disputable",
+        "a disputable claim"
+      ],
+      "phonetic": "dɪ'spjuːtəbl",
+      "tags": [
+        "手动添加"
+      ],
+      "exampleSource": "自编例句（非真题）"
+    },
+    {
       "id": "disrupt",
       "word": "disrupt",
       "pos": "vt.",
@@ -1847,7 +1916,8 @@
       "collocations": [],
       "phonetic": "dɪs'rʌpt",
       "tags": [
-        "CET6"
+        "CET6",
+        "手动添加"
       ],
       "exampleSource": "词书配对例句（非真题）",
       "selection": {
@@ -2257,6 +2327,24 @@
       ]
     },
     {
+      "id": "embedded",
+      "word": "embedded",
+      "pos": "adj.",
+      "meaning": "嵌入的，内置的；根深蒂固的",
+      "example": "These values are deeply embedded in the local culture.",
+      "exampleZh": "这些价值观深深植根于当地文化之中。",
+      "collocations": [
+        "deeply embedded",
+        "embedded in",
+        "embedded systems"
+      ],
+      "phonetic": "ɪm'bedɪd",
+      "tags": [
+        "手动添加"
+      ],
+      "exampleSource": "自编例句（非真题）"
+    },
+    {
       "id": "emergence",
       "word": "emergence",
       "pos": "n.",
@@ -2515,6 +2603,22 @@
       "difficulty": 3
     },
     {
+      "id": "equate-to",
+      "word": "equate to",
+      "pos": "phr.",
+      "meaning": "相当于，等同于；把…等同于",
+      "example": "For many people, success equates to a high salary.",
+      "exampleZh": "对很多人来说，成功等同于高薪。",
+      "collocations": [
+        "equate to success",
+        "equate A with B"
+      ],
+      "tags": [
+        "手动添加"
+      ],
+      "exampleSource": "自编例句（非真题）"
+    },
+    {
       "id": "equip",
       "word": "equip",
       "pos": "vt.",
@@ -2564,6 +2668,42 @@
       ]
     },
     {
+      "id": "escalate",
+      "word": "escalate",
+      "pos": "v.",
+      "meaning": "（使）升级，加剧；（使）逐步扩大",
+      "example": "Small disputes can escalate into serious conflicts if nobody steps in.",
+      "exampleZh": "如果没人介入，小的争执可能升级为严重冲突。",
+      "collocations": [
+        "escalate into",
+        "escalate the conflict",
+        "tensions escalate"
+      ],
+      "phonetic": "'eskəleɪt",
+      "tags": [
+        "手动添加"
+      ],
+      "exampleSource": "自编例句（非真题）"
+    },
+    {
+      "id": "escalation",
+      "word": "escalation",
+      "pos": "n.",
+      "meaning": "升级，加剧；（事态的）逐步扩大",
+      "example": "Both sides called for talks to prevent further escalation.",
+      "exampleZh": "双方都呼吁通过谈判防止事态进一步升级。",
+      "collocations": [
+        "further escalation",
+        "escalation of the conflict",
+        "prevent an escalation"
+      ],
+      "phonetic": "ˌeskə'leɪʃn",
+      "tags": [
+        "手动添加"
+      ],
+      "exampleSource": "自编例句（非真题）"
+    },
+    {
       "id": "ethnic",
       "word": "ethnic",
       "pos": "adj.",
@@ -2596,6 +2736,42 @@
       },
       "score": 8,
       "difficulty": 3
+    },
+    {
+      "id": "evoke",
+      "word": "evoke",
+      "pos": "v.",
+      "meaning": "唤起，引起（记忆、情感、联想）",
+      "example": "The smell of pine needles evokes memories of childhood winters.",
+      "exampleZh": "松针的气味唤起了对童年冬天的回忆。",
+      "collocations": [
+        "evoke memories",
+        "evoke a response",
+        "evoke strong feelings"
+      ],
+      "phonetic": "ɪ'vəʊk",
+      "tags": [
+        "手动添加"
+      ],
+      "exampleSource": "自编例句（非真题）"
+    },
+    {
+      "id": "exceed",
+      "word": "exceed",
+      "pos": "v.",
+      "meaning": "超过，超出（数量、限度）；胜过",
+      "example": "Costs must not exceed the agreed budget.",
+      "exampleZh": "费用不得超过约定的预算。",
+      "collocations": [
+        "exceed expectations",
+        "exceed the limit",
+        "exceed a budget"
+      ],
+      "phonetic": "ɪk'siːd",
+      "tags": [
+        "手动添加"
+      ],
+      "exampleSource": "自编例句（非真题）"
     },
     {
       "id": "exemption",
@@ -3288,6 +3464,42 @@
       "difficulty": 3
     },
     {
+      "id": "hurdle",
+      "word": "hurdle",
+      "pos": "n.",
+      "meaning": "障碍，难关；跨栏",
+      "example": "Funding remains the biggest hurdle for the project.",
+      "exampleZh": "资金仍是这个项目最大的障碍。",
+      "collocations": [
+        "clear a hurdle",
+        "overcome a hurdle",
+        "the biggest hurdle"
+      ],
+      "phonetic": "'hɜːdl",
+      "tags": [
+        "手动添加"
+      ],
+      "exampleSource": "自编例句（非真题）"
+    },
+    {
+      "id": "hypothesis",
+      "word": "hypothesis",
+      "pos": "n.",
+      "meaning": "假设，假说",
+      "example": "The data failed to support the original hypothesis.",
+      "exampleZh": "这些数据未能支持最初的假设。",
+      "collocations": [
+        "test a hypothesis",
+        "support a hypothesis",
+        "form a hypothesis"
+      ],
+      "phonetic": "haɪ'pɒθəsɪs",
+      "tags": [
+        "手动添加"
+      ],
+      "exampleSource": "自编例句（非真题）"
+    },
+    {
       "id": "idealism",
       "word": "idealism",
       "pos": "n.",
@@ -3743,6 +3955,24 @@
       "difficulty": 3
     },
     {
+      "id": "instantaneous",
+      "word": "instantaneous",
+      "pos": "adj.",
+      "meaning": "瞬间的，即刻发生的",
+      "example": "The response from the online audience was almost instantaneous.",
+      "exampleZh": "线上观众的反应几乎是瞬间出现的。",
+      "collocations": [
+        "an instantaneous response",
+        "instantaneous reaction",
+        "almost instantaneous"
+      ],
+      "phonetic": "ˌɪnstən'teɪniəs",
+      "tags": [
+        "手动添加"
+      ],
+      "exampleSource": "自编例句（非真题）"
+    },
+    {
       "id": "instructional",
       "word": "instructional",
       "pos": "adj.",
@@ -3986,6 +4216,24 @@
       },
       "score": 6,
       "difficulty": 3
+    },
+    {
+      "id": "lavish",
+      "word": "lavish",
+      "pos": "adj.",
+      "meaning": "奢华的，盛大的；过分慷慨的",
+      "example": "They held a lavish wedding reception in a five-star hotel.",
+      "exampleZh": "他们在一家五星级酒店办了场奢华的婚宴。",
+      "collocations": [
+        "a lavish party",
+        "lavish spending",
+        "lavish gifts"
+      ],
+      "phonetic": "'lævɪʃ",
+      "tags": [
+        "手动添加"
+      ],
+      "exampleSource": "自编例句（非真题）"
     },
     {
       "id": "leakage",
@@ -4770,6 +5018,23 @@
       "difficulty": 4
     },
     {
+      "id": "on-top-of",
+      "word": "on top of",
+      "pos": "phr.",
+      "meaning": "除…之外（还）；在…之上；掌控（局面）",
+      "example": "We missed our flight, and on top of that we had to wait seven hours for the next one.",
+      "exampleZh": "我们错过了航班，而且还得再等七个小时才能坐下一班。",
+      "collocations": [
+        "on top of that",
+        "on top of everything else",
+        "stay on top of sth"
+      ],
+      "tags": [
+        "手动添加"
+      ],
+      "exampleSource": "Cambridge Dictionary 例句（非真题）"
+    },
+    {
       "id": "oppression",
       "word": "oppression",
       "pos": "n.",
@@ -5101,6 +5366,24 @@
       "difficulty": 3
     },
     {
+      "id": "poised",
+      "word": "poised",
+      "pos": "adj.",
+      "meaning": "准备就绪的，即将（做某事）；镇定的，从容的",
+      "example": "The company is poised to launch its first electric model.",
+      "exampleZh": "这家公司随时准备推出首款电动车型。",
+      "collocations": [
+        "poised to do sth",
+        "poised for growth",
+        "remain poised"
+      ],
+      "phonetic": "pɔɪzd",
+      "tags": [
+        "手动添加"
+      ],
+      "exampleSource": "自编例句（非真题）"
+    },
+    {
       "id": "prairie",
       "word": "prairie",
       "pos": "n.",
@@ -5420,6 +5703,24 @@
           "CET4 · 2013.12 · 第一套 · 听力题"
         ]
       }
+    },
+    {
+      "id": "proceed",
+      "word": "proceed",
+      "pos": "v.",
+      "meaning": "继续进行；前进；（向某处）走去",
+      "example": "The construction work will proceed as planned despite the rain.",
+      "exampleZh": "尽管下雨，施工仍将按计划进行。",
+      "collocations": [
+        "proceed with",
+        "proceed as planned",
+        "proceed to do sth"
+      ],
+      "phonetic": "prə'siːd",
+      "tags": [
+        "手动添加"
+      ],
+      "exampleSource": "自编例句（非真题）"
     },
     {
       "id": "productivity",
@@ -6567,6 +6868,24 @@
       "difficulty": 4
     },
     {
+      "id": "streamline",
+      "word": "streamline",
+      "pos": "v.",
+      "meaning": "精简（流程），提高效率；使成流线型",
+      "example": "The agency streamlined its approval process to cut waiting times.",
+      "exampleZh": "该机构精简了审批流程，以缩短等待时间。",
+      "collocations": [
+        "streamline the process",
+        "streamline operations",
+        "streamline procedures"
+      ],
+      "phonetic": "'striːmlaɪn",
+      "tags": [
+        "手动添加"
+      ],
+      "exampleSource": "自编例句（非真题）"
+    },
+    {
       "id": "strive",
       "word": "strive",
       "pos": "v.",
@@ -6874,6 +7193,24 @@
       "difficulty": 3
     },
     {
+      "id": "tangible",
+      "word": "tangible",
+      "pos": "adj.",
+      "meaning": "有形的，可触摸的；切实的，实际可见的",
+      "example": "The reforms have brought tangible benefits to ordinary families.",
+      "exampleZh": "这些改革给普通家庭带来了切实的好处。",
+      "collocations": [
+        "tangible benefits",
+        "tangible results",
+        "tangible assets"
+      ],
+      "phonetic": "'tændʒəbl",
+      "tags": [
+        "手动添加"
+      ],
+      "exampleSource": "自编例句（非真题）"
+    },
+    {
       "id": "tangled",
       "word": "tangled",
       "pos": "adj.",
@@ -6933,6 +7270,22 @@
         "a tariff war"
       ],
       "phonetic": "'tærɪf",
+      "tags": [
+        "手动添加"
+      ],
+      "exampleSource": "自编例句（非真题）"
+    },
+    {
+      "id": "to-that-end",
+      "word": "to that end",
+      "pos": "phr.",
+      "meaning": "为此，为了那个目的",
+      "example": "The company wants to cut costs; to that end it has frozen all new hiring.",
+      "exampleZh": "公司想削减成本，为此已经冻结了所有新招聘。",
+      "collocations": [
+        "to this end",
+        "to that end, ..."
+      ],
       "tags": [
         "手动添加"
       ],
@@ -7141,6 +7494,24 @@
       },
       "score": 8,
       "difficulty": 3
+    },
+    {
+      "id": "undermining",
+      "word": "undermining",
+      "pos": "v.-ing",
+      "meaning": "削弱，逐渐破坏；暗中损害（动词 undermine 的 -ing 形式）",
+      "example": "Constant criticism is undermining her confidence.",
+      "exampleZh": "不断的批评正在削弱她的自信。",
+      "collocations": [
+        "undermine confidence",
+        "undermine authority",
+        "undermine the argument"
+      ],
+      "phonetic": "ˌʌndə'maɪnɪŋ",
+      "tags": [
+        "手动添加"
+      ],
+      "exampleSource": "自编例句（非真题）"
     },
     {
       "id": "underscore",
@@ -7552,6 +7923,22 @@
       },
       "score": 7,
       "difficulty": 3
+    },
+    {
+      "id": "within-a-moment-s-notice",
+      "word": "within a moment's notice",
+      "pos": "phr.",
+      "meaning": "一经通知即可；随时（常见写法为 at a moment's notice）",
+      "example": "The rescue team can be deployed within a moment's notice.",
+      "exampleZh": "这支救援队一经通知即可出动。",
+      "collocations": [
+        "at a moment's notice",
+        "within a moment's notice"
+      ],
+      "tags": [
+        "手动添加"
+      ],
+      "exampleSource": "自编例句（非真题）"
     }
   ]
 }
