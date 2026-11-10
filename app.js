@@ -51,6 +51,11 @@
   /* ---------- 状态 ---------- */
   let WORDS = [];          // 词库
   let META = {};
+  let PENDING = [];
+  let activeRepository = '';
+  const repositoryId = (config = sync) => config?.owner && config?.repo
+    ? `${config.owner.toLowerCase()}/${config.repo.toLowerCase()}@${config.branch || 'main'}:${config.path || 'progress.json'}` : '';
+  const scopedKey = (key) => activeRepository ? `${key}:${encodeURIComponent(activeRepository)}` : key;
   let DISTRACTORS = [];    // 词库外的干扰释义池（data/distractors.json，只为凑选项用，不进训练队列）
   const byId = new Map();
   let store = null;        // 持久化状态
@@ -147,11 +152,11 @@
   }
 
   function keepBackup(raw) {
-    if (raw && !localStorage.getItem(BACKUP_KEY)) localStorage.setItem(BACKUP_KEY, raw);
+    if (raw && !localStorage.getItem(scopedKey(BACKUP_KEY))) localStorage.setItem(scopedKey(BACKUP_KEY), raw);
   }
 
   function loadStore() {
-    const raw = localStorage.getItem(STORE_KEY);
+    const raw = localStorage.getItem(scopedKey(STORE_KEY));
     if (!raw) return defaultStore();
     const parsed = JSON.parse(raw);
     const merged = readStore(parsed);
@@ -165,7 +170,7 @@
 
   function saveStore() {
     try {
-      localStorage.setItem(STORE_KEY, JSON.stringify(store));
+      localStorage.setItem(scopedKey(STORE_KEY), JSON.stringify(store));
     } catch {
       toast('进度保存失败：浏览器存储被禁用');
     }
@@ -416,7 +421,7 @@
     try {
       const raw = localStorage.getItem(SYNC_KEY);
       if (!raw) return defaultSync();
-      return Object.assign(defaultSync(), JSON.parse(raw));
+      return Object.assign(defaultSync(), JSON.parse(raw), { path: 'progress.json' });
     } catch { return defaultSync(); }
   }
 
@@ -439,8 +444,8 @@
     return new TextDecoder().decode(bytes);
   };
 
-  const syncApiUrl = () => {
-    const p = String(sync.path || 'progress.json').replace(/^\/+/, '');
+  const syncApiUrl = (path = sync.path || 'progress.json') => {
+    const p = String(path).replace(/^\/+/, '');
     return `${SYNC_API}/repos/${encodeURIComponent(sync.owner)}/${encodeURIComponent(sync.repo)}/contents/${p}`;
   };
 
@@ -464,6 +469,93 @@
       ));
     }
     return new Error(`请求失败（${status}）`);
+  }
+
+  function setVocabulary(data) {
+    if (!data || !Array.isArray(data.words)) throw new Error('词库格式错误：需要 words 数组');
+    const ids = new Set();
+    for (const w of data.words) {
+      if (!w || typeof w.id !== 'string' || !w.id || ids.has(w.id)
+          || typeof w.word !== 'string' || !w.word || typeof w.meaning !== 'string' || !w.meaning) {
+        throw new Error('词库存在缺失字段或重复 ID，已保留原词库');
+      }
+      ids.add(w.id);
+    }
+    WORDS = data.words; META = data.meta || {};
+    DISTRACTORS = data.distractors || [];
+    PENDING = data.pending || [];
+    byId.clear(); WORDS.forEach(w => byId.set(w.id, w));
+  }
+
+  function restoreVocabulary() {
+    const raw = localStorage.getItem(scopedKey('worddrill.vocabulary.v1'));
+    setVocabulary(raw ? JSON.parse(raw) : { words: [] });
+  }
+
+  async function repositoryJson(path, optional = false) {
+    const res = await fetch(`${syncApiUrl(path)}?ref=${encodeURIComponent(sync.branch)}&t=${now()}`,
+      { headers: syncHeaders(), cache: 'no-store' });
+    if (optional && res.status === 404) return { words: [] };
+    if (!res.ok) throw syncHttpError(res.status, `无法读取 ${path}；确认账号、仓库和 token 的仓库授权`);
+    const file = await res.json();
+    try { return JSON.parse(b64Decode(file.content)); }
+    catch { throw new Error(`${path} 无法解析，已停止同步`); }
+  }
+
+  async function loadRepositoryVocabulary() {
+    const infoRes = await fetch(`${SYNC_API}/repos/${encodeURIComponent(sync.owner)}/${encodeURIComponent(sync.repo)}`, { headers: syncHeaders(), cache: 'no-store' });
+    if (!infoRes.ok) throw syncHttpError(infoRes.status);
+    if (!(await infoRes.json()).private) throw new Error('数据仓库必须是私有仓库，已停止同步');
+    const [vocab, distractors, pending] = await Promise.all([
+      repositoryJson('data/words.json'), repositoryJson('data/distractors.json', true),
+      repositoryJson('data/cet-pending.json', true)
+    ]);
+    const data = { ...vocab, distractors: distractors.words || [], pending: pending.words || [] };
+    // 先完整验证再替换；私人文件不经过 Service Worker，只缓存在本机仓库对应的键中。
+    setVocabulary(data);
+    localStorage.setItem(scopedKey('worddrill.vocabulary.v1'), JSON.stringify(data));
+  }
+
+  function saveProfile() {
+    const profiles = JSON.parse(localStorage.getItem('worddrill.repositories.v1') || '{}');
+    if (repositoryId()) profiles[repositoryId()] = { ...sync };
+    localStorage.setItem('worddrill.repositories.v1', JSON.stringify(profiles));
+  }
+
+  function selectRepository(next) {
+    if (syncing || session) throw new Error('请等待当前同步或训练结束后再切换仓库');
+    const id = repositoryId(next);
+    if (!id) throw new Error('请填写仓库所有者与数据仓库名');
+    if ((next.path || 'progress.json') !== 'progress.json') throw new Error('进度文件路径请使用 progress.json');
+    if (store) saveStore();
+    saveProfile();
+    const previous = { id: activeRepository, sync, store, words: WORDS, meta: META, distractors: DISTRACTORS, pending: PENDING };
+    try {
+      activeRepository = id;
+      sync = { ...defaultSync(), ...next };
+      store = loadStore();
+      restoreVocabulary();
+    } catch (error) {
+      activeRepository = previous.id; sync = previous.sync; store = previous.store;
+      setVocabulary({ words: previous.words, meta: previous.meta, distractors: previous.distractors, pending: previous.pending });
+      throw error;
+    }
+    lastAutoSyncAt = 0;
+    saveSync(); saveProfile();
+    applySyncToUI(); applySettingsToUI(); refreshIntro(); renderLibrary(); refreshCetReview();
+  }
+
+  function migrateRepositoryStorage() {
+    activeRepository = repositoryId();
+    const raw = localStorage.getItem(STORE_KEY);
+    // 首次升级只把旧进度绑定到当时已配置的仓库；之后新仓库从空状态开始。
+    if (activeRepository && raw && !localStorage.getItem('worddrill.legacy-repository.v1')) {
+      for (const key of [STORE_KEY, BACKUP_KEY, 'worddrill.backup.before-v5']) {
+        const value = localStorage.getItem(key);
+        if (value && !localStorage.getItem(scopedKey(key))) localStorage.setItem(scopedKey(key), value);
+      }
+      localStorage.setItem('worddrill.legacy-repository.v1', activeRepository);
+    }
   }
 
   /** 读远端进度；文件还不存在返回 null。 */
@@ -537,6 +629,7 @@
     if (!res.ok) return { mode: 'error', text: `查询仓库失败（${res.status}）` };
 
     const info = await res.json();
+    if (!info.private) return { mode: 'error', text: '请选择私有数据仓库，不能把学习进度上传到公开仓库' };
     if (!(info.permissions && info.permissions.push)) {
       return {
         mode: 'error',
@@ -730,8 +823,11 @@
     }
     if (syncing) { syncQueued = true; return null; }
     syncing = true;
+    $('#btn-use-repository').disabled = true;
+    $('#data-repository').disabled = true;
     setSyncStatus('同步中…');
     try {
+      await loadRepositoryVocabulary();
       let changed = false, pushed = false, deferred = false;
       for (let attempt = 0; attempt < 3; attempt++) {
         const remote = await remoteRead();
@@ -762,7 +858,7 @@
         : changed ? (pushed ? '双向合并' : '已拉取') : (pushed ? '已上传' : '已是最新');
       saveSync();
       setSyncStatus(describeSync(), 'ok');
-      if (changed) { applySettingsToUI(); refreshIntro(); renderLibrary(); refreshCetReview(); }
+      applySettingsToUI(); refreshIntro(); renderLibrary(); refreshCetReview();
       return { changed, pushed };
     } catch (e) {
       const msg = '同步失败：' + ((e && e.message) || '未知错误');
@@ -773,6 +869,8 @@
       return null;
     } finally {
       syncing = false;
+      $('#btn-use-repository').disabled = false;
+      $('#data-repository').disabled = false;
       // 网络请求进行时又答了题或结束了本轮，必须补同步最后一次变化。
       if (syncQueued) { syncQueued = false; await syncNow({ silent: true }); }
     }
@@ -994,6 +1092,9 @@
         else recognize++;
       }
     }
+    $('#meta-count').textContent = WORDS.length;
+    $('#meta-updated').textContent = META.updated || '—';
+    $('#active-repository').textContent = activeRepository ? `${sync.owner}/${sync.repo}` : '尚未选择数据仓库';
     $('#stat-due').textContent = due;
     const remaining = Math.min(fresh, newAllowance(t));
     $('#stat-new').textContent = remaining;
@@ -1002,7 +1103,7 @@
     const totalToday = due + remaining;
     $('#intro-hint').textContent = totalToday
       ? `本轮最多 ${Math.min(totalToday, REQUESTS_PER_ROUND)} 个词 · 待复习 ${due} · 今日可加新词 ${remaining}`
-      : (!WORDS.length ? '词库还是空的。'
+      : (!WORDS.length ? '请在设置里选择数据仓库并同步词库。'
         : '暂时没有到期的词；自由加练不会提前推迟下次复习。');
     if (dailyWordTarget()) {
       $('#intro-hint').textContent += ` · 每日备词目标 ${dailyWordTarget()} 词（2 × 40），今日已练 ${dailyCoverage(t).seen} 个不同词`;
@@ -1032,15 +1133,7 @@
   async function refreshCetReview() {
     const box = $('#cet-review');
     if (!box) return;
-    let pending = [];
-    try {
-      // 时间戳绕开 SW 的 stale-while-revalidate，保证候选词列表是新的
-      const res = await fetch(`data/cet-pending.json?t=${now()}`, { cache: 'no-store' });
-      if (res.ok) {
-        const data = await res.json();
-        pending = Array.isArray(data.words) ? data.words : [];
-      }
-    } catch { /* 离线 / 还没有候选词文件：不出卡片 */ }
+    let pending = PENDING;
 
     const decided = new Set([...(store.cet?.approved || []), ...(store.cet?.rejected || [])]);
     const known = new Set(WORDS.map((w) => w.id));
@@ -1508,8 +1601,8 @@
     });
 
     $('#btn-export').addEventListener('click', () => exportProgress(JSON.stringify(store, null, 2)));
-    $('#btn-backup').disabled = !localStorage.getItem(BACKUP_KEY);
-    $('#btn-backup').addEventListener('click', () => exportProgress(localStorage.getItem(BACKUP_KEY), 'before-upgrade'));
+    $('#btn-backup').disabled = !localStorage.getItem(scopedKey(BACKUP_KEY));
+    $('#btn-backup').addEventListener('click', () => exportProgress(localStorage.getItem(scopedKey(BACKUP_KEY)), 'before-upgrade'));
 
     $('#import-file').addEventListener('change', async (e) => {
       const file = e.target.files?.[0];
@@ -1519,7 +1612,7 @@
         const imported = readStore(data);
         // 导入的也可能是旧版导出的文件，同样按版本升级语义
         migrateStore(imported, data.version);
-        keepBackup(localStorage.getItem(STORE_KEY) || JSON.stringify(data));
+        keepBackup(localStorage.getItem(scopedKey(STORE_KEY)) || JSON.stringify(data));
         store = imported;
         saveStore();
         $('#btn-backup').disabled = false;
@@ -1561,6 +1654,9 @@
 
   /* ---------- 同步面板 ---------- */
   function applySyncToUI() {
+    const profiles = JSON.parse(localStorage.getItem('worddrill.repositories.v1') || '{}');
+    $('#data-repository').innerHTML = '<option value="">选择已保存的数据仓库</option>' + Object.entries(profiles).map(([id, p]) =>
+      `<option value="${esc(id)}"${id === activeRepository ? ' selected' : ''}>${esc(p.owner)}/${esc(p.repo)}</option>`).join('');
     $('#sync-owner').value = sync.owner || '';
     $('#sync-repo').value = sync.repo || '';
     $('#sync-path').value = sync.path || 'progress.json';
@@ -1569,36 +1665,43 @@
     $('#sync-device').textContent = sync.deviceId;
     setSyncStatus(describeSync(), /失败/.test(sync.lastResult || '') ? 'error' : sync.lastSyncAt ? 'ok' : '');
     $('#btn-sync-now').disabled = !sync.enabled;
+    $('#btn-use-repository').disabled = syncing;
+    $('#data-repository').disabled = syncing;
   }
 
   function bindSync() {
     const readForm = () => {
       normalizeRepoFields();
-      sync.owner = $('#sync-owner').value.trim();
-      sync.repo = $('#sync-repo').value.trim();
-      sync.path = $('#sync-path').value.trim() || 'progress.json';
-      sync.token = $('#sync-token').value.trim();
+      const next = { ...sync, owner: $('#sync-owner').value.trim(), repo: $('#sync-repo').value.trim(),
+        path: $('#sync-path').value.trim() || 'progress.json', token: $('#sync-token').value.trim(),
+        enabled: $('#sync-enabled').checked };
+      if (syncing) { toast('同步中，请稍后再修改仓库设置'); return false; }
+      try {
+        if (repositoryId(next) !== activeRepository) {
+          next.lastSyncAt = 0; next.lastResult = '';
+          selectRepository(next);
+        } else { sync = next; saveSync(); saveProfile(); }
+        return true;
+      } catch (e) { toast(e.message); return false; }
     };
-
-    ['#sync-owner', '#sync-repo', '#sync-path'].forEach((sel) => {
-      $(sel).addEventListener('change', () => { readForm(); saveSync(); });
-    });
-    $('#sync-token').addEventListener('change', () => { readForm(); saveSync(); });
-
-    $('#sync-enabled').addEventListener('change', (e) => {
-      readForm();
-      sync.enabled = e.target.checked;
-      saveSync();
-      applySyncToUI();
-      if (sync.enabled) {
-        if (!sync.owner || !sync.repo || !sync.token) {
-          toast('还差仓库名或 token');
-        } else {
-          syncNow({ silent: false });
-        }
-      } else {
-        toast('已关闭同步（token 仍留在本机，可点「清除凭据」删掉）');
+    $('#btn-use-repository').addEventListener('click', () => {
+      if (readForm()) {
+        sync.enabled = true; saveSync(); saveProfile();
+        applySyncToUI(); syncNow({ silent: false });
       }
+    });
+    $('#data-repository').addEventListener('change', (e) => {
+      if (!e.target.value) return;
+      try {
+        const profiles = JSON.parse(localStorage.getItem('worddrill.repositories.v1') || '{}');
+        selectRepository(profiles[e.target.value]);
+        syncNow({ silent: false });
+      } catch (err) { toast(err.message); applySyncToUI(); }
+    });
+    $('#sync-enabled').addEventListener('change', () => {
+      if (!readForm()) { applySyncToUI(); return; }
+      applySyncToUI();
+      if (sync.enabled) syncNow({ silent: false });
     });
 
     $('#btn-toggle-token').addEventListener('click', () => {
@@ -1607,12 +1710,11 @@
       $('#btn-toggle-token').textContent = el.type === 'password' ? '显示' : '隐藏';
     });
 
-    $('#btn-sync-now').addEventListener('click', () => { readForm(); saveSync(); syncNow({ silent: false }); });
+    $('#btn-sync-now').addEventListener('click', () => { if (readForm()) syncNow({ silent: false }); });
 
     // 分层探测，避免用户对着一个 404 猜原因
     $('#btn-sync-test').addEventListener('click', async () => {
-      readForm();
-      saveSync();
+      if (!readForm()) return;
       const btn = $('#btn-sync-test');
       btn.disabled = true;
       setSyncStatus('测试中…');
@@ -1628,12 +1730,13 @@
     });
 
     $('#btn-sync-forget').addEventListener('click', () => {
-      if (!confirm('清除本机保存的仓库地址和 token？\n（只影响这台设备；远端进度文件不删，学习进度也不动）')) return;
-      const keepId = sync.deviceId;
-      sync = Object.assign(defaultSync(), { deviceId: keepId });
+      if (!confirm('清除当前数据仓库在本机保存的 token？\n（只影响这台设备；远端进度文件不删，学习进度也不动）')) return;
+      if (syncing) { toast('请等待同步结束'); return; }
+      sync = { ...sync, token: '', enabled: false, lastResult: '' };
+      saveProfile();
       saveSync();
       applySyncToUI();
-      toast('已清除同步凭据');
+      toast('已清除当前仓库的 token，词库和进度仍保留在本机');
     });
   }
 
@@ -1646,7 +1749,7 @@
     $('#set-speak').checked = !!store.settings.speak;
     $('#set-retention').value = store.settings.retention;
     $('#set-retention-out').textContent = store.settings.retention + '%';
-    $('#btn-backup').disabled = !localStorage.getItem(BACKUP_KEY);
+    $('#btn-backup').disabled = !localStorage.getItem(scopedKey(BACKUP_KEY));
   }
 
   /* ---------- 主题 ----------
@@ -1756,53 +1859,22 @@
 
   /* ---------- 启动 ---------- */
   async function boot() {
+    sync = loadSync();
     try {
+      migrateRepositoryStorage();
       if (typeof FSRS === 'undefined') throw new Error('复习算法未载入，请联网刷新一次');
       store = loadStore();
     } catch (err) {
       $('#session-intro').innerHTML = `<h2 class="intro__title">进度未被改动</h2>
         <p class="intro__sub">${esc(err.message || '无法读取进度')}。为保护原记录，本次暂停训练。</p>
         <button class="btn btn--ghost" id="btn-rescue" type="button">导出原始进度</button>`;
-      $('#btn-rescue').addEventListener('click', () => exportProgress(localStorage.getItem(STORE_KEY), 'original'));
+      $('#btn-rescue').addEventListener('click', () => exportProgress(localStorage.getItem(scopedKey(STORE_KEY)), 'original'));
       return;
     }
+    saveProfile();
     if (storeMigrated) saveStore();   // 迁移结果立刻落盘：同浏览器的旧标签页不该再读到旧语义的 threshold
-    sync = loadSync();
-
-    try {
-      const res = await fetch('data/words.json', { cache: 'no-cache' });
-      if (!res.ok) throw new Error(String(res.status));
-      const data = await res.json();
-      WORDS = Array.isArray(data.words) ? data.words : [];
-      META = data.meta || {};
-    } catch (err) {
-      WORDS = [];
-      document.querySelector('#session-intro').innerHTML = `
-        <p class="eyebrow">无法载入词库</p>
-        <h2 class="intro__title">读不到 data/words.json</h2>
-        <p class="intro__sub">如果这是直接双击打开的本地文件，浏览器会因为安全策略拦下读取请求。
-        请用本地服务器打开，例如在项目目录运行：</p>
-        <p class="prompt__blank" style="margin-top:16px"><b>python3 -m http.server 8000</b><br>然后访问 http://localhost:8000</p>`;
-      return;
-    }
-
-    WORDS.forEach((w) => byId.set(w.id, w));
-
-    // 库外干扰释义池：拿不到就退化成只用库内词当干扰项，不影响训练
-    try {
-      const dres = await fetch('data/distractors.json', { cache: 'no-cache' });
-      if (dres.ok) {
-        const ddata = await dres.json();
-        DISTRACTORS = Array.isArray(ddata.words) ? ddata.words : [];
-      }
-    } catch (err) {
-      DISTRACTORS = [];
-    }
-
-    if (!WORDS.length) {
-      $('#session-intro').innerHTML = '<p class="eyebrow">词库是空的</p><h2 class="intro__title">还没有单词</h2><p class="intro__sub">把生词写进 data/words.json 就能开始。</p>';
-      return;
-    }
+    try { restoreVocabulary(); }
+    catch { setVocabulary({ words: [] }); }
 
     bindEvents();
     bindSettings();
@@ -1814,6 +1886,7 @@
 
     const hash = location.hash.replace('#', '');
     if (['library', 'settings'].includes(hash)) switchView(hash);
+    else if (!WORDS.length) switchView('settings');
 
     // 打开就同步一次：把另一台设备上练的进度合并进来（不阻塞首屏，失败也不打扰）
     autoSync();

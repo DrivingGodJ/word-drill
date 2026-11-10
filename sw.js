@@ -1,13 +1,11 @@
 /* WordDrill service worker —— 静态资源 stale-while-revalidate，导航 network-first */
-const CACHE = 'worddrill-v23';
+const CACHE = 'worddrill-v24';
 const SHELL = [
   './',
   './index.html',
-  './styles.css?v=9',
-  './app.js?v=12',
+  './styles.css?v=10',
+  './app.js?v=13',
   './vendor/ts-fsrs-5.4.2.js',
-  './data/words.json',
-  './data/distractors.json',
   './icon.svg',
   './apple-touch-icon.png',
   './icon-192.png',
@@ -35,20 +33,6 @@ self.addEventListener('fetch', (e) => {
   if (request.method !== 'GET') return;
   const url = new URL(request.url);
   if (url.origin !== self.location.origin && !url.host.includes('fonts.g')) return;
-
-  // data/ 下的数据文件：优先网络，保证每次拿到最新内容；离线时回退缓存
-  if (url.pathname.includes('/data/')) {
-    e.respondWith(
-      fetch(request)
-        .then((res) => {
-          const copy = res.clone();
-          caches.open(CACHE).then((c) => c.put(request, copy));
-          return res;
-        })
-        .catch(() => caches.match(request))
-    );
-    return;
-  }
 
   // 导航：优先网络，失败回退缓存的 shell
   if (request.mode === 'navigate') {

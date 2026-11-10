@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""安装本机每日 9 点补词任务；安装本身不运行补词、不改词库。
+"""安装本机每日 6 点补词任务；安装本身不运行补词、不改词库。
 
 python3 scripts/install-cet-timer.py --repo /path/to/clean/main/checkout
 --preview 安装只预演的任务，可 kickstart 验证后再次安装正常任务。
@@ -20,6 +20,7 @@ LABEL = 'com.drivinggodj.worddrill.cet'
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument('--repo', type=Path, required=True)
+    ap.add_argument('--data-repository', default='DrivingGodJ/worddrill-data', help='目标私有数据仓库 owner/name')
     ap.add_argument('--preview', action='store_true')
     args = ap.parse_args()
     if sys.platform != 'darwin':
@@ -42,8 +43,8 @@ def main():
     installed = root / source.name
     payload = source.read_bytes()
     compile(payload, str(installed), 'exec')
-    config = {'Label': LABEL, 'ProgramArguments': ['/usr/bin/python3', str(installed), '--repo', str(repo)],
-              'WorkingDirectory': str(repo), 'StartCalendarInterval': {'Hour': 9, 'Minute': 0},
+    config = {'Label': LABEL, 'ProgramArguments': ['/usr/bin/python3', str(installed), '--repo', str(repo), '--data-repository', args.data_repository],
+              'WorkingDirectory': str(repo), 'StartCalendarInterval': {'Hour': 6, 'Minute': 0},
               'RunAtLoad': False, 'ProcessType': 'Background',
               'EnvironmentVariables': {'PATH': f'{Path(gh).parent}:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin',
                                        'PYTHONUNBUFFERED': '1'},
@@ -75,7 +76,7 @@ def main():
         if existing and plist.exists():
             subprocess.run(['launchctl', 'bootstrap', domain, str(plist)], check=True)
         raise
-    print(f'已安装 {LABEL}，每天 9 点，休眠错过的任务在唤醒后合并执行一次。')
+    print(f'已安装 {LABEL}，每天 6 点，休眠错过的任务在唤醒后合并执行一次。')
     print('模式：' + ('仅预演' if args.preview else '处理已确认词与新候选'))
     print(f'补词代码 SHA-256：{hashlib.sha256(payload).hexdigest()}')
     print(f'配置：{plist}\n日志：{log}')

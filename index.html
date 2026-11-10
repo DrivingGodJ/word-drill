@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap">
-<link rel="stylesheet" href="styles.css?v=9">
+<link rel="stylesheet" href="styles.css?v=10">
 <link rel="manifest" href="manifest.webmanifest">
 <!-- iOS「添加到主屏幕」不认 SVG 图标，必须是 PNG（180×180 且不透明）；
      也读不了 manifest 里的 short_name，主屏名字只认 apple-mobile-web-app-title。 -->
@@ -239,7 +239,7 @@
     </div>
 
     <div class="card settings-card">
-      <h2 class="card__title">进度数据</h2>
+      <h2 class="card__title">当前仓库的进度数据</h2>
       <p class="card__desc">学习进度保存在本机浏览器。升级前会自动备份旧进度；可导出备份留存。换设备或换浏览器时，用导出/导入搬运。</p>
       <div class="btn-row">
         <button class="btn btn--ghost" id="btn-export" type="button">导出进度</button>
@@ -251,9 +251,15 @@
     </div>
 
     <div class="card settings-card">
-      <h2 class="card__title">多设备同步</h2>
+      <h2 class="card__title">数据仓库与同步</h2>
+      <p class="hint" id="active-repository"></p>
+      <div class="field field--stack">
+        <label for="data-repository">切换已保存的数据仓库</label>
+        <select id="data-repository"><option value="">选择已保存的数据仓库</option></select>
+        <p class="hint">每个仓库独立保存词库、学习进度和本机缓存；切换后不会混用。</p>
+      </div>
       <p class="card__desc">
-        进度存进一个<strong>私有</strong> GitHub 仓库，每答完一题自动上传；打开或切回页面时自动合并。
+        词库和进度存进同一个<strong>私有</strong> GitHub 数据仓库，每答完一题自动上传；打开或切回页面时自动合并。
         前台闲置时每分钟检查一次，正在答题时保留当前题目，结束本轮再拉取合并。
         两台设备各练各的词不会互相覆盖 —— 按每个词「最后练习时间」取新的那条，对错次数取较大值。
       </p>
@@ -271,13 +277,13 @@
       </div>
 
       <div class="field field--stack">
-        <label for="sync-repo">私有仓库名</label>
+        <label for="sync-repo">私有数据仓库名</label>
         <input type="text" id="sync-repo" placeholder="worddrill-data" autocomplete="off" spellcheck="false">
       </div>
 
       <div class="field field--stack">
         <label for="sync-path">进度文件路径</label>
-        <input type="text" id="sync-path" placeholder="progress.json" autocomplete="off" spellcheck="false">
+        <input readonly type="text" id="sync-path" placeholder="progress.json" autocomplete="off" spellcheck="false">
       </div>
 
       <div class="field field--stack">
@@ -293,7 +299,8 @@
       </div>
 
       <div class="btn-row">
-        <button class="btn btn--primary" id="btn-sync-now" type="button">立即同步</button>
+        <button class="btn btn--primary" id="btn-use-repository" type="button">使用此数据仓库</button>
+        <button class="btn btn--ghost" id="btn-sync-now" type="button">立即同步</button>
         <button class="btn btn--ghost" id="btn-sync-test" type="button">测试连接</button>
         <button class="btn btn--ghost" id="btn-sync-forget" type="button">清除凭据</button>
       </div>
@@ -304,10 +311,10 @@
 
     <div class="card settings-card">
       <h2 class="card__title">让 Agent 帮你设置</h2>
-      <p class="card__desc">复制提示词发给自己的 Agent，让它帮你创建私有进度仓库、配置多设备同步，以后也能按你给的词表加词。提示词不包含你的 token 或学习数据。</p>
+      <p class="card__desc">复制提示词发给自己的 Agent，让它帮你创建私有数据仓库、在数据仓库中保存词库和进度、切换词表，以后也能按你给的词表加词。提示词不包含你的 token 或学习数据。</p>
       <div class="field field--stack">
         <label for="agent-prompt">发给 Agent 的提示词</label>
-        <textarea id="agent-prompt" rows="6" readonly spellcheck="false">请从 https://github.com/DrivingGodJ/word-drill/tree/main/skills/worddrill-assistant 安装并使用 worddrill-assistant Skill（不支持安装时，读取其中的 SKILL.md 并按说明执行）。帮我在自己的 GitHub 账号下创建或复用私有进度仓库，指导我配置 WordDrill 多设备同步，进度文件统一使用 progress.json，保留已有学习进度。以后我提供词表时，也请按这个 Skill 帮我手动加词。</textarea>
+        <textarea id="agent-prompt" rows="6" readonly spellcheck="false">请从 https://github.com/DrivingGodJ/word-drill/tree/main/skills/worddrill-assistant 安装并使用 worddrill-assistant Skill（不支持安装时，读取其中的 SKILL.md 并按说明执行）。帮我在自己的 GitHub 账号下创建或复用私有数据仓库（包含 data/words.json 和 progress.json），指导我配置 WordDrill 多设备同步，进度文件统一使用 progress.json，保留已有学习进度。以后我提供词表时，也请按这个 Skill 帮我手动加词。</textarea>
       </div>
       <div class="btn-row">
         <button class="btn btn--primary" id="btn-copy-agent-prompt" type="button">复制给 Agent 的提示词</button>
@@ -319,7 +326,7 @@
     <div class="card settings-card">
       <h2 class="card__title">词库来源</h2>
       <p class="card__desc">
-        词库文件：<code>data/words.json</code>，当前 <b id="meta-count">0</b> 个词，更新于 <span id="meta-updated">—</span>。
+        当前数据仓库中的词库：<code>data/words.json</code>，当前 <b id="meta-count">0</b> 个词，更新于 <span id="meta-updated">—</span>。
       </p>
     </div>
   </section>
@@ -333,6 +340,6 @@
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
 <script src="vendor/ts-fsrs-5.4.2.js"></script>
-<script src="app.js?v=12"></script>
+<script src="app.js?v=13"></script>
 </body>
 </html>
