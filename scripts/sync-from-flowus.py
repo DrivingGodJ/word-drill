@@ -161,12 +161,17 @@ def merge(existing: list[dict], incoming: list[dict]) -> tuple[list[dict], list[
 
 
 def main() -> None:
+    global ROOT, WORDS_FILE
     ap = argparse.ArgumentParser(description="同步 FlowUs 生词页到 data/words.json")
     ap.add_argument("--page-id", default=DEFAULT_PAGE_ID, help="FlowUs 生词页 ID")
     ap.add_argument("--dry-run", action="store_true", help="只显示差异，不写入")
     ap.add_argument("--replace", action="store_true", help="全量替换而不是合并")
     ap.add_argument("--markdown-file", help="跳过联网，直接读本地 markdown 文件（调试用）")
+    ap.add_argument('--repo', type=Path, help='私有数据仓库的本地工作副本')
     args = ap.parse_args()
+    if args.repo:
+        ROOT = args.repo.expanduser().resolve()
+        WORDS_FILE = ROOT/'data/words.json'
 
     md = (Path(args.markdown_file).read_text(encoding="utf-8")
           if args.markdown_file else fetch_page_markdown(args.page_id))

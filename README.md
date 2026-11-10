@@ -27,7 +27,7 @@
 
 ## 随时开始，接着上次继续
 
-手机和电脑浏览器都可使用，添加到主屏幕后支持离线练习。进度默认留在当前浏览器；需要跨设备时，可以开启独立的私有 GitHub 同步，也可手动导出备份。
+手机和电脑浏览器都可使用，添加到主屏幕后支持离线练习。软件本体与数据分开：在设置中连接私有数据仓库，词库和进度放在同一仓库。支持切换多套词表，分别缓存和记录进度；首次同步后可离线练习，也可导出备份。
 
 [打开 WordDrill](https://drivinggodj.github.io/word-drill/)
 
@@ -44,4 +44,4 @@
 
 ## 让自己的 Agent 帮忙
 
-在「设置 → 让 Agent 帮你设置」复制提示词，发给自己的 Agent。仓库内的 [worddrill-assistant Skill](skills/worddrill-assistant/SKILL.md) 说明如何创建私有进度仓库、配置多设备同步，以及按指定词表安全加词。提示词不含个人凭据或学习数据。
+在「设置 → 让 Agent 帮你设置」复制提示词，发给自己的 Agent。仓库内的 [worddrill-assistant Skill](skills/worddrill-assistant/SKILL.md) 说明如何创建私有数据仓库、配置多设备同步，以及按指定词表安全加词。提示词不含个人凭据或学习数据。

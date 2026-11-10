@@ -6,7 +6,7 @@
 
 ## 快速开始
 
-打开网站开始训练，建议添加到手机主屏幕以便离线使用。也可直接打开仓库中的 `index.html`；本地完整 PWA 体验需通过 localhost 或 HTTPS 托管。
+打开网站，在设置中连接包含词库的私有数据仓库后开始训练，建议添加到手机主屏幕以便离线使用。也可直接打开仓库中的 `index.html`；本地完整 PWA 体验需通过 localhost 或 HTTPS 托管。
 
 先在设置中调整每日新词额度和记忆目标，再点“开始训练”。认词题先回想词义，再显示选项；选项可用 `1`–`4` 作答、`Enter` 继续。拼写默认隐藏首字母提示，答错后需订正。
 
@@ -16,7 +16,7 @@
 
 **每日备词**：当前词库 `meta.dailyWordTarget: 80` 启用北京时间 06:00 的服务器补词，按已练词、当前到期词与未学库存补足缺口；不是强制每天完成 80 词。资料不足会记录缺口，离线尚未同步的练习无法计入。旧候选模式与服务器配置见完整参考。
 
-**多设备同步**：另建一个私有仓库，在各设备的设置中填写所有者、仓库、文件路径（默认 `progress.json`）及仅授权该仓库 Contents 读写的细粒度 token。token 只存当前浏览器 `localStorage`，仅发往 GitHub API；不得放进公开词库仓库。使用“测试连接”排查访问、分支与文件权限。
+**多设备同步**：把词库（`data/words.json`）与进度（`progress.json`）放进同一个私有仓库，在各设备的设置中填写所有者、仓库、文件路径（默认 `progress.json`）及仅授权该仓库 Contents 读写的细粒度 token。token 只存当前浏览器 `localStorage`，仅发往 GitHub API；不得放进公开词库仓库。使用“测试连接”排查访问、分支与文件权限。
 
 同步按词条最近练习时间合并；对错次数取较大值、不相加，学习设置取较新版本，发音保持设备独立。并发冲突会重读合并，最多 3 轮；两台完全离线的设备无法共享实时新词配额。
 
@@ -33,8 +33,8 @@ node scripts/check-learning.cjs
 FlowUs 同步和手动加词使用 Python 3。先预览，不立即修改：
 
 ```bash
-python3 scripts/sync-from-flowus.py --dry-run
-python3 scripts/add-words.py --list words.txt --dry-run
+python3 scripts/sync-from-flowus.py --repo /本地数据副本 --dry-run
+python3 scripts/add-words.py --repo /本地数据副本 --list words.txt --dry-run
 python3 scripts/check-cet.py
 ```
 
@@ -49,3 +49,5 @@ python3 scripts/check-cet.py
 ## 许可与致谢
 
 仓库未声明独立的整仓许可证。`vendor/` 中的 ts-fsrs 保留其 MIT 许可；词书、词频和例句等资料有各自来源，不应把依赖许可视作整仓或所有学习数据的授权。
+
+数据仓库切换和迁移详见[完整参考](readme-reference.zh-CN.md)。各仓库学习进度与离线词库独立。

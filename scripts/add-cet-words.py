@@ -41,6 +41,7 @@ DICT_REPO = 'kajweb/dict'
 FREQ_REPO = 'hermitdave/FrequencyWords'
 FREQ_PATH = 'content/2018/en/en_50k.txt'
 PROGRESS_REPO = 'DrivingGodJ/worddrill-data'
+DATA_REPO = PROGRESS_REPO
 PROGRESS_FILE = 'progress.json'
 WINDOW_DAYS, LIMIT, MIN_FRESH, BATCH_SIZE = 2, 7, 15, 10
 MAX_SUPPLY = 14
@@ -87,8 +88,8 @@ def sync_repo() -> None:
     if git('branch', '--show-current').strip() != 'main':
         sys.exit('自动补词只能在 main 发布；开发预演请用 --dry-run 或 --no-commit。')
     if git('remote', 'get-url', 'origin').strip() not in (
-            'https://github.com/DrivingGodJ/word-drill.git', 'git@github.com:DrivingGodJ/word-drill.git'):
-        sys.exit('origin 不是 DrivingGodJ/word-drill，停止自动发布。')
+            f'https://github.com/{DATA_REPO}.git', f'git@github.com:{DATA_REPO}.git'):
+        sys.exit('origin 与指定的私有数据仓库不匹配，停止自动发布。')
     if git('status', '--porcelain').strip():
         sys.exit('工作副本有未提交改动，停止补词，避免顺带发布其它改动。')
     git('pull', '--ff-only', '-q', 'origin', 'main')
@@ -310,6 +311,8 @@ def load_progress(args) -> dict:
         progress = load_json(Path(args.progress_file))
     elif args.decisions_file:
         progress = {'words': {}, 'cet': load_json(Path(args.decisions_file))}
+    elif getattr(args, 'data_repository', None):
+        progress = json.loads(git('show', f'HEAD:{PROGRESS_FILE}'))
     else:
         raw = gh(f'repos/{PROGRESS_REPO}/contents/{PROGRESS_FILE}', allow_404=True)
         # 缺进度不能推断所有词未开始，更不能据此继续自动扩库。
@@ -499,8 +502,9 @@ def plan_update(data: dict, pending: list[dict], state: dict, progress: dict,
 
 
 def main() -> None:
-    global ROOT, WORDS_FILE, PENDING_FILE, STATE_FILE, CACHE_DIR
+    global ROOT, WORDS_FILE, PENDING_FILE, STATE_FILE, CACHE_DIR, DATA_REPO
     ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument('--data-repository', default=DATA_REPO, help='目标私有数据仓库 owner/name；与 --repo 的 origin 必须一致')
     ap.add_argument('--repo', type=Path, default=ROOT, help='词库工作副本（定时任务使用干净的 main）')
     ap.add_argument('--dry-run', action='store_true', help='只预演，不拉取词库、不改数据、不提交；可更新下载缓存')
     ap.add_argument('--no-commit', action='store_true', help='只写本地文件，不拉取、提交或推送')
@@ -516,6 +520,9 @@ def main() -> None:
         ap.error('min-fresh 必须为正数，batch-size 必须在 1～50 内。')
     if (args.progress_file or args.decisions_file) and not (args.dry_run or args.no_commit):
         ap.error('本地进度只用于预演/本地写入，必须配 --dry-run 或 --no-commit。')
+    if not re.fullmatch(r'[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+', args.data_repository):
+        ap.error('data-repository 必须是 owner/name')
+    DATA_REPO = args.data_repository
     ROOT = args.repo.expanduser().resolve()
     WORDS_FILE, PENDING_FILE, STATE_FILE, CACHE_DIR = (ROOT / p for p in ('data/words.json', 'data/cet-pending.json', 'scripts/cet-state.json', 'scripts/.cache-cet'))
     if not args.dry_run and not args.no_commit:
@@ -559,8 +566,17 @@ def main() -> None:
         return
     git('add', 'data/words.json', 'data/cet-pending.json', 'scripts/cet-state.json')
     git('commit', '-q', '-m', f"chore(dict): 四六级补词入库 {len(added)} 个、候选 {len(pending)} 个")
-    # 推送失败保留本地提交并退出；不自动 rebase，也不带上其它提交。
-    git('push', '-q', 'origin', 'HEAD:main')
+    # 数据与进度共仓后，手机可能在补词提交期间更新进度；仅对此类无数据冲突的前进重试一次。
+    pushed = subprocess.run(['git', '-C', str(ROOT), 'push', '-q', 'origin', 'HEAD:main'], capture_output=True, text=True)
+    if pushed.returncode:
+        if not re.search(r'fetch first|non-fast-forward', pushed.stderr, re.I):
+            sys.exit('推送失败，已保留本地补词提交：' + pushed.stderr[:200])
+        git('fetch', '-q', 'origin', 'main')
+        incoming = set(git('diff', '--name-only', 'HEAD...origin/main').splitlines())
+        if not incoming <= {'progress.json', 'README.md', 'README.en.md'}:
+            sys.exit('远端词库也有变化，保留本地提交，停止自动合并。')
+        git('rebase', 'origin/main')
+        git('push', '-q', 'origin', 'HEAD:main')
     print('已提交并推送词库数据。')
 
 

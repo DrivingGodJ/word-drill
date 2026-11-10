@@ -7,8 +7,8 @@ After=network-online.target
 Type=oneshot
 User=worddrill
 Group=worddrill
-WorkingDirectory=/var/lib/worddrill/repo
-ExecStart=/usr/bin/python3 /opt/worddrill/add-cet-words.py --repo /var/lib/worddrill/repo --progress-repo /var/lib/worddrill/progress.git
+WorkingDirectory=/var/lib/worddrill/data
+ExecStart=/usr/bin/python3 /opt/worddrill/add-cet-words.py --repo /var/lib/worddrill/data --data-repository DrivingGodJ/worddrill-data
 Environment=PYTHONUNBUFFERED=1
 Environment=PYTHONDONTWRITEBYTECODE=1
 Environment=GIT_TERMINAL_PROMPT=0

@@ -22,7 +22,7 @@ const context = vm.createContext({
   document: { body: element('body'), documentElement: element('html'), querySelector: element, querySelectorAll: () => [], visibilityState: 'visible',
     addEventListener: (type, fn) => { documentEvents[type] = fn; } },
   localStorage: { getItem: (key) => storage.get(key) || null, setItem: (key, value) => storage.set(key, value) },
-  navigator: {}, location: { protocol: 'http:', hash: '' },
+  crypto: require('node:crypto').webcrypto, navigator: {}, location: { protocol: 'http:', hash: '' },
   window: { addEventListener: (type, fn) => { windowEvents[type] = fn; } },
   setInterval: (fn) => intervals.push(fn),
   setTimeout() {}, clearTimeout() {}, requestAnimationFrame() {}, console,
@@ -35,13 +35,13 @@ const source = fs.readFileSync(path.join(root, 'app.js'), 'utf8')
   .replace('const now = () => Date.now();', 'const now = () => globalThis.testNow;')
   .replace("document.addEventListener('DOMContentLoaded', boot);", `globalThis.check = {
     defaultStore, readStore, migrateStore, loadStore, grade, mergeRemote, buildPayload,
-    newAllowance, dailyCoverage, normalMemory, normalize, hasFillExample, dayKey, startSession, remoteRead,
+    newAllowance, dailyCoverage, normalMemory, normalize, selectRepository, repositoryId, migrateRepositoryStorage, restoreVocabulary, saveStore, hasFillExample, dayKey, startSession, remoteRead,
     requiresWriting, progressOf, quizTypeFor, renderLibrary, switchView, bindSettings,
     nextQuestion, answer, revealOptions, onPickOption, speak, canSpeak, bindEvents,
     syncNow, autoSync, bindAutoSync, endSession, getSync: () => sync, isSyncing: () => syncing,
     setSync: (config) => { sync = config; }, setSession: (s) => { session = s; },
     getStore: () => store, setStore: (s) => { store = readStore(s); },
-    getSession: () => session, setMeta: (meta) => { META = meta; },
+    getVocabulary: () => ({words: WORDS, meta: META}), getSession: () => session, setMeta: (meta) => { META = meta; },
     setWords: (words) => { WORDS = words; byId.clear(); words.forEach(w => byId.set(w.id, w)); }
   }; sync = { deviceId: 'check' };`);
 vm.runInContext(source, context);
@@ -207,7 +207,7 @@ assert.match(elements.get('#wordlist').innerHTML, /认词＋拼写/);
 
 if (process.argv[3]) {
   const current = JSON.parse(fs.readFileSync(process.argv[3], 'utf8'));
-  app.setWords(JSON.parse(fs.readFileSync(path.join(root, 'data/words.json'), 'utf8')).words);
+  app.setWords((process.argv[4] ? JSON.parse(fs.readFileSync(process.argv[4], 'utf8')).words : []));
   app.setStore(current);
   const original = plain(app.getStore());
   let legacySix = 0;
@@ -480,6 +480,8 @@ assert.equal(app.getSession().practice, true);
   let holdWrite, releaseWrite, conflictOnce = false;
   context.fetch = async (url, options = {}) => {
     if (!url.startsWith('https://api.github.com/')) return { ok: true, json: async () => ({ words: [] }) };
+    if (!url.includes('/contents/')) return { ok: true, json: async () => ({ private: true }) };
+    if (url.includes('/contents/data/')) return { ok: true, json: async () => ({content: Buffer.from(JSON.stringify({words: url.includes('data/words.json') ? trainingWords : []})).toString('base64')}) };
     if (options.method !== 'PUT') {
       reads++;
       return { ok: true, json: async () => ({ sha: String(sha), content: Buffer.from(JSON.stringify(cloud)).toString('base64') }) };
@@ -544,6 +546,8 @@ assert.equal(app.getSession().practice, true);
   assert.equal(app.getSession().done, 1);
   app.nextQuestion();
   app.answer(true, 'correct');
+  assert.throws(()=>app.selectRepository({owner:'test',repo:'other'}), /等待/, 'in-flight requests cannot switch repositories');
+  assert.equal(elements.get('#data-repository').disabled, true);
   releaseWrite();
   await waitFor(() => !app.isSyncing());
   assert.equal(cloud.words[app.getSession().current.word.id].lastSeen, context.testNow, 'last answer was not dropped while a write was in flight');
@@ -573,7 +577,48 @@ assert.equal(app.getSession().practice, true);
   assert.equal(await app.remoteRead(), null, 'an accessible branch with no file still allows first sync');
   context.fetch = async (url) => url.includes('/branches/') || url.includes('/contents/')
     ? { ok: false, status: 404 }
-    : { ok: true, json: async () => ({ permissions: { push: true } }) };
+    : { ok: true, json: async () => ({ permissions: { push: true }, private: true }) };
   await assert.rejects(() => app.remoteRead(), /分支 main 不存在/, 'a wrong branch cannot create an empty progress file');
+  // Each data repository has independent local progress, vocabulary, and credentials.
+  app.setSession(null);
+  const configA = {enabled: true, owner: 'test', repo: 'data-a', branch: 'main', path: 'progress.json', token: 'token-a'};
+  const configB = {...configA, repo: 'data-b', token: 'token-b'};
+  app.setSync(configA);
+  storage.set('worddrill.v1', JSON.stringify({...plain(app.defaultStore()), words: {legacy: rec()}}));
+  storage.delete('worddrill.legacy-repository.v1');
+  app.migrateRepositoryStorage();
+  app.setStore(app.loadStore());
+  assert.ok(app.getStore().words.legacy, 'existing config receives legacy records');
+  app.saveStore();
+  app.selectRepository(configB);
+  assert.deepEqual(plain(app.getStore().words), {}, 'new repository cannot inherit old progress');
+  assert.equal(app.newAllowance(), 10);
+  app.getStore().words.midterm = rec();
+  app.saveStore();
+  app.selectRepository(configA);
+  assert.ok(app.getStore().words.legacy);
+  assert.equal(app.getStore().words.midterm, undefined);
+  assert.equal(app.getSync().token, 'token-a');
+  app.selectRepository(configB);
+  assert.ok(app.getStore().words.midterm);
+  assert.equal(app.getStore().words.legacy, undefined);
+  assert.equal(app.getSync().token, 'token-b');
+  // A corrupt selected profile cannot leave the previous in-memory progress bound to a new repo.
+  const bad = {...configA, repo:'broken'};
+  storage.set('worddrill.v1:'+encodeURIComponent(app.repositoryId(bad)), '{broken');
+  assert.throws(()=>app.selectRepository(bad));
+  assert.equal(app.getSync().repo, 'data-b');
+  assert.ok(app.getStore().words.midterm);
+  // Cache is repo-scoped and can restore the selected book without a network request.
+  const cacheKey = 'worddrill.vocabulary.v1:'+encodeURIComponent(app.repositoryId(configB));
+  storage.set(cacheKey, JSON.stringify({words: [{id:'book-b',word:'word',meaning:'词'}],meta:{name:'B'}}));
+  app.restoreVocabulary();
+  assert.equal(app.getVocabulary().words[0].id, 'book-b');
+  app.selectRepository(configA);
+  assert.equal(app.getVocabulary().words.length, 0);
+  assert.equal(app.getSession(), null);
+  app.selectRepository(configB);
+  assert.equal(app.getVocabulary().words[0].id, 'book-b');
+  assert.ok(app.getStore().words.midterm);
   console.log(`Learning checks passed; ${Object.keys(old.words).length} legacy records preserved.`);
 })().catch((error) => { console.error(error); process.exitCode = 1; });

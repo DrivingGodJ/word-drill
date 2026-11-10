@@ -45,3 +45,5 @@ See [licensing and source details](docs/GUIDE.en.md#license-and-credits) for the
 ## Agent assistance
 
 Copy the agent prompt in Settings to set up a private progress repository and learn the manual vocabulary workflow. The installable [worddrill-assistant skill](skills/worddrill-assistant/SKILL.md) is included in this repository. The prompt contains no credentials or learning data.
+
+Vocabulary (`data/words.json`) and progress (`progress.json`) now live together in private data repositories. Configure a repository in Settings before training. Saved repositories have isolated progress and offline caches; the public website serves software only.

@@ -153,6 +153,7 @@ def prune_pool(dropped_ids: set[str], lib_words: set[str], lib_meanings: set[str
 
 
 def main() -> None:
+    global ROOT, WORDS_FILE, POOL_FILE, GIT_DIR
     ap = argparse.ArgumentParser(description="向词库加新词", formatter_class=argparse.RawDescriptionHelpFormatter,
                                  epilog=__doc__)
     src = ap.add_mutually_exclusive_group(required=True)
@@ -162,7 +163,13 @@ def main() -> None:
     ap.add_argument("--dry-run", action="store_true", help="只预览，不写文件不提交")
     ap.add_argument("--no-commit", action="store_true", help="写文件但不 commit/push")
     ap.add_argument("--tag", action="append", default=[], help="给这批词统一打标签，可重复")
+    ap.add_argument('--repo', type=Path, help='目标私有数据仓库的本地工作副本；词库位于 data/words.json')
     args = ap.parse_args()
+    if args.repo:
+        ROOT = GIT_DIR = args.repo.expanduser().resolve()
+        WORDS_FILE, POOL_FILE = ROOT/'data/words.json', ROOT/'data/distractors.json'
+    elif not WORDS_FILE.exists():
+        ap.error('软件仓库不再包含词库；请用 --repo 指定私有数据仓库')
 
     if args.json_file:
         entries = json.loads(Path(args.json_file).read_text(encoding="utf-8"))
@@ -230,14 +237,13 @@ def main() -> None:
         return
 
     names = "、".join([w["word"] for w in added] + marked)
-    git("add", "data/words.json", "data/distractors.json")
+    git("add", *[str(p.relative_to(ROOT)) for p in (WORDS_FILE, POOL_FILE) if p.exists()])
     git("commit", "-q", "-m", f"feat(dict): 加词 {len(added)} 个、手动标记 {len(marked)} 个：{names}")
     push = subprocess.run(["git", "-C", str(GIT_DIR), "push", "-q", "origin", "main"],
                           capture_output=True, text=True)
     if push.returncode != 0:
-        git("pull", "--rebase", "-q", "origin", "main")
-        git("push", "-q", "origin", "main")
-    print(f"已提交并推送：{names}（GitHub Pages 会自动重新部署）")
+        sys.exit("推送失败，已保留本地提交；请从最新数据仓库重新应用同批次，不自动变基或强推。")
+    print(f"已提交并推送：{names}（应用下次同步会读取新词库）")
 
 
 if __name__ == "__main__":

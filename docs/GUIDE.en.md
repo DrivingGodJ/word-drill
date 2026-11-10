@@ -49,3 +49,7 @@ Actual word-import runs may commit and push automatically. Use `--no-commit` for
 ## License and credits
 
 No standalone repository-wide license is declared. Bundled ts-fsrs in `vendor/` retains its MIT license. Dictionaries, frequencies and example sentences have separate sources; a dependency's license does not license the entire repository or all learning data.
+
+## Private data repositories
+
+The public app contains no vocabulary. Connect a private repository with `data/words.json` and `progress.json` in Settings. Switch saved repositories independently; progress and offline caches are isolated. Add words with `python3 scripts/add-words.py --repo /path/to/data-repo --json-file batch.json --dry-run`. Data updates are read from the private GitHub API and do not deploy to Pages.
