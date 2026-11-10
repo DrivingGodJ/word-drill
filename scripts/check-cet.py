@@ -265,3 +265,47 @@ with tempfile.TemporaryDirectory() as folder, contextlib.redirect_stdout(io.Stri
     assert added == [] and updated == ['proficient'] and '手动添加' in merged[0]['tags']
     assert merged[0]['custom'] == 'keep' and merged[0]['example'] == original['example']
 print('CET checks passed: adaptive supply, 48h quota, approval/rejection, reserve, replay, dry-run, no-op, bad progress, manual-word priority.')
+
+# Exercise a real same-repository progress race: only data files may be rebased/pushed.
+import subprocess
+with tempfile.TemporaryDirectory() as folder, contextlib.redirect_stdout(io.StringIO()):
+    base = Path(folder); origin = base/'cloud.git'; worker = base/'worker'; phone = base/'phone'
+    def command(*args):
+        return subprocess.check_output(['git', *map(str, args)], stderr=subprocess.DEVNULL, text=True)
+    command('init', '--bare', '--initial-branch=main', origin)
+    command('clone', origin, worker)
+    for key, value in [('user.name', 'Fixture'), ('user.email', 'fixture@example.invalid')]:
+        command('-C', worker, 'config', key, value)
+    (worker/'data').mkdir(); (worker/'scripts').mkdir()
+    for name, value in {'data/words.json': {'meta': {'dailyWordTarget': 1}, 'words': []},
+                        'data/cet-pending.json': {'words': [item]}, 'scripts/cet-state.json': {'added': []},
+                        'progress.json': {'words': {}, 'cet': {'approved': ['proficient'], 'rejected': []}}}.items():
+        (worker/name).write_text(json.dumps(value))
+    (worker/'.gitignore').write_text('scripts/.cache-cet/\n')
+    command('-C', worker, 'add', '.'); command('-C', worker, 'commit', '-m', 'fixture'); command('-C', worker, 'push', 'origin', 'main')
+    command('clone', origin, phone)
+    for key, value in [('user.name', 'Phone'), ('user.email', 'fixture@example.invalid')]: command('-C', phone, 'config', key, value)
+    spec = importlib.util.spec_from_file_location('race', Path(__file__).with_name('add-cet-words.py'))
+    race = importlib.util.module_from_spec(spec); spec.loader.exec_module(race)
+    real_git, real_run = race.git, subprocess.run
+    def checked_git(*args, repo=None):
+        if args == ('remote', 'get-url', 'origin'): return 'git@github.com:DrivingGodJ/worddrill-data.git'
+        return real_git(*args, repo=repo)
+    incoming = {'words': {'phone': {'stage': 'recognize', 'lastSeen': 123}}, 'cet': {'approved': ['proficient'], 'rejected': []}}
+    raced = []
+    def run_with_phone_update(args, **kwargs):
+        if args[:2] == ['git', '-C'] and Path(args[2]).resolve() == worker.resolve() and 'push' in args and not raced:
+            raced.append(True)
+            (phone/'progress.json').write_text(json.dumps(incoming))
+            real_run(['git','-C',str(phone),'add','progress.json'],check=True,capture_output=True)
+            real_run(['git','-C',str(phone),'commit','-m','phone progress'],check=True,capture_output=True)
+            real_run(['git','-C',str(phone),'push','origin','main'],check=True,capture_output=True)
+        return real_run(args, **kwargs)
+    with patch.object(race, 'git', side_effect=checked_git), patch.object(subprocess, 'run', side_effect=run_with_phone_update), patch.object(
+            race, 'build_scored_candidates', side_effect=AssertionError('approved fixture needs no source')):
+        sys.argv = ['check', '--repo', str(worker)]
+        race.main()
+    assert raced and json.loads(command('--git-dir', origin, 'show', 'main:progress.json')) == incoming
+    assert json.loads(command('--git-dir', origin, 'show', 'main:data/words.json'))['words'][0]['id'] == 'proficient'
+    assert command('-C', worker, 'rev-list', '--count', 'origin/main..HEAD').strip() == '0'
+print('Private data race check passed: phone progress survives concurrent automatic vocabulary push.')
