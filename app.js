@@ -29,7 +29,10 @@
   const SYNC_KEY = 'worddrill.sync.v1';
   const SYNC_API = 'https://api.github.com';
   /** 学习参数才同步；主题/发音是设备偏好，各设备自己存 */
-  const SYNCED_SETTINGS = ['newLimit', 'threshold', 'retention'];
+  const SYNCED_SETTINGS = ['newLimit', 'threshold', 'retention', 'spelling'];
+  /** 拼写要求：auto = 按词表标签判定（六级词只认，四级/手动词要拼）；off = 本词表全部只认不拼。 */
+  const SPELLING_MODES = ['auto', 'off'];
+  const normSpelling = (v) => (SPELLING_MODES.includes(v) ? v : 'auto');
   /** 学习参数的合法区间，必须和设置页滑块的 min/max 一致，否则同步进来的值会让界面与实际不一致 */
   const SETTING_RANGE = { newLimit: [0, 40], threshold: [CREDIT_NEED_MIN, CREDIT_NEED_MAX], retention: [80, 95] };
 
@@ -45,6 +48,7 @@
       const c = clampSetting(k, s[k]);
       s[k] = c === undefined ? defaultStore().settings[k] : c;
     }
+    s.spelling = normSpelling(s.spelling);
     return s;
   }
 
@@ -107,7 +111,7 @@
   function defaultStore() {
     return {
       version: STORE_VERSION,
-      settings: { newLimit: 10, threshold: CREDIT_NEED_DEFAULT, retention: 90, speak: true },
+      settings: { newLimit: 10, threshold: CREDIT_NEED_DEFAULT, retention: 90, speak: true, spelling: 'auto' },
       settingsAt: 0,                   // 学习参数最后修改时间，用于多设备合并
       cet: { approved: [], rejected: [] },   // 四六级候选词的取舍决定，随进度一起同步
       words: {},                       // id → 进度
@@ -176,9 +180,14 @@
     }
   }
 
-  /** 四级、手动词优先要求拼写；没有考试标签的词也按手动词处理。 */
+  /**
+   * 四级、手动词优先要求拼写；没有考试标签的词也按手动词处理。
+   * 两处例外：词表设置「只认不拼」（settings.spelling = 'off'），或单个词打了「只认」标签。
+   */
   function requiresWriting(id) {
+    if (store?.settings?.spelling === 'off') return false;
     const tags = byId.get(id)?.tags || [];
+    if (tags.includes('只认')) return false;
     return !tags.includes('CET6') || tags.includes('CET4')
       || tags.includes('手动添加') || tags.some((tag) => /^Unit\d+$/i.test(tag));
   }
@@ -760,6 +769,11 @@
     const settingsOk = remoteModel >= 5;
     if (settingsOk && (remote.settingsAt || 0) > (target.settingsAt || 0) && remote.settings) {
       for (const k of SYNCED_SETTINGS) {
+        if (k === 'spelling') {
+          const s = SPELLING_MODES.includes(remote.settings.spelling) ? remote.settings.spelling : undefined;
+          if (s !== undefined && target.settings.spelling !== s) { target.settings.spelling = s; changed = true; }
+          continue;
+        }
         const v = clampSetting(k, remote.settings[k]);
         if (v !== undefined && target.settings[k] !== v) { target.settings[k] = v; changed = true; }
       }
@@ -1593,6 +1607,17 @@
       saveStore();
     });
 
+    const noSpell = $('#set-no-spelling');
+    noSpell.checked = store.settings.spelling === 'off';
+    noSpell.addEventListener('change', () => {
+      store.settings.spelling = noSpell.checked ? 'off' : 'auto';
+      store.settingsAt = now();
+      saveStore();
+      refreshIntro();
+      renderLibrary();
+      toast(noSpell.checked ? '已关闭拼写关：本词表只考认词' : '已恢复按词表标签判定拼写要求');
+    });
+
     const sp = $('#set-speak');
     sp.checked = !!store.settings.speak;
     sp.addEventListener('change', () => {
@@ -1749,6 +1774,7 @@
     $('#set-speak').checked = !!store.settings.speak;
     $('#set-retention').value = store.settings.retention;
     $('#set-retention-out').textContent = store.settings.retention + '%';
+    $('#set-no-spelling').checked = store.settings.spelling === 'off';
     $('#btn-backup').disabled = !localStorage.getItem(scopedKey(BACKUP_KEY));
   }
 

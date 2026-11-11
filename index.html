@@ -209,7 +209,7 @@
     <div class="card settings-card">
       <h2 class="card__title">升阶判级</h2>
       <p class="card__desc">
-        每关至少要在多少个<strong>不同日子</strong>独立答对。认词稳定性需达 7 天：六级词即可掌握，四级和手动词还需通过拼写关（稳定性 21 天）。
+        每关至少要在多少个<strong>不同日子</strong>独立答对。认词稳定性需达 7 天：六级词即可掌握，四级和手动词还需通过拼写关（稳定性 21 天）；需要整库只认不拼时，用下方的「拼写要求」开关。
         当天重复、提前加练和借助提示不增加升阶天数；答错只撤销当天证据，保留之前的积累。
       </p>
       <div class="field">
@@ -217,6 +217,20 @@
         <output id="set-threshold-out" for="set-threshold">3</output>
       </div>
       <p class="hint">当前：至少 <b id="set-threshold-text">3</b> 天独立答对，再结合记忆稳定性升阶。既有天数保留，不再限定一个月。</p>
+    </div>
+
+    <div class="card settings-card">
+      <h2 class="card__title">拼写要求</h2>
+      <p class="card__desc">
+        默认按词表标签判定：六级词认词达标即可掌握，四级词、手动添加的词和按单元整理的教材词还要过拼写关。
+        打开下面的开关后，<strong>本词表所有词只考认词</strong>，认词稳定达标即掌握，不再进入拼写关；已进入拼写关的词会按认词成果直接计入掌握。
+      </p>
+      <label class="switch">
+        <input type="checkbox" id="set-no-spelling">
+        <span class="switch__track" aria-hidden="true"><span class="switch__thumb"></span></span>
+        <span class="switch__label">只认不拼（关闭拼写关）</span>
+      </label>
+      <p class="hint" id="set-no-spelling-hint">仅对当前数据仓库生效，随进度一起同步到其他设备。</p>
     </div>
 
     <div class="card settings-card">
@@ -340,6 +354,6 @@
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
 <script src="vendor/ts-fsrs-5.4.2.js"></script>
-<script src="app.js?v=13"></script>
+<script src="app.js?v=14"></script>
 </body>
 </html>
