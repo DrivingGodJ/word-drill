@@ -94,6 +94,8 @@
   let libQuery = '';
   let libVisibleCount = LIB_PAGE_SIZE;
   let summaryMistakes = [];
+  let expandedBookId = '';
+  const bookCardStatus = {};
 
   // 词库管理弹窗状态
   let catalogState = { repo: DEFAULT_WORDLIST_REPO, branch: DEFAULT_WORDLIST_BRANCH, data: null, nameEdited: false };
@@ -1060,18 +1062,19 @@
 
   async function syncNow(opts) {
     const silent = !!(opts && opts.silent);
+    const manual = !!(opts && opts.manual);
     if (!isCloudBook()) {
       if (!silent) toast('当前是本地词库，无需 GitHub 同步');
       return null;
     }
-    if (!sync.enabled || !sync.token || !sync.owner || !sync.repo) {
+    if ((!manual && !sync.enabled) || !sync.token || !sync.owner || !sync.repo) {
       if (!silent) toast('先把云端仓库和 token 填好');
       return null;
     }
     if (syncing) { syncQueued = true; return null; }
     syncing = true;
-    $('#btn-use-repository').disabled = true;
-    $('#data-repository').disabled = true;
+    const useBtn = $('#btn-use-repository'); if (useBtn) useBtn.disabled = true;
+    const repoSel = $('#data-repository'); if (repoSel) repoSel.disabled = true;
     setSyncStatus('同步中…');
     try {
       await loadRepositoryVocabulary();
@@ -1105,6 +1108,7 @@
       saveSync();
       saveProfile();
       syncWordbooksRegistry();
+      bookCardStatus[activeRepository] = { text: describeSync(), mode: 'ok' };
       setSyncStatus(describeSync(), 'ok');
       applySettingsToUI(); refreshIntro(); renderLibrary(); refreshCetReview(); renderWordbooks();
       return { changed, pushed };
@@ -1113,13 +1117,14 @@
       sync.lastResult = msg;
       saveSync();
       saveProfile();
+      bookCardStatus[activeRepository] = { text: describeSync(), mode: 'error' };
       setSyncStatus(describeSync(), 'error');
       if (!silent) toast(msg);
       return null;
     } finally {
       syncing = false;
-      $('#btn-use-repository').disabled = false;
-      $('#data-repository').disabled = false;
+      const useBtnEnd = $('#btn-use-repository'); if (useBtnEnd) useBtnEnd.disabled = false;
+      const repoSelEnd = $('#data-repository'); if (repoSelEnd) repoSelEnd.disabled = false;
       if (syncQueued) { syncQueued = false; await syncNow({ silent: true }); }
     }
   }
@@ -1792,9 +1797,10 @@
         if (p.stage === 'mastered') mastered++;
       }
     }
-    $('#meta-count').textContent = WORDS.length;
-    $('#meta-updated').textContent = META.updated || '—';
-    $('#active-repository').textContent = isCloudBook() ? `${sync.owner}/${sync.repo}` : '当前未连接云端仓库';
+    const metaCount = $('#meta-count'); if (metaCount) metaCount.textContent = WORDS.length;
+    const metaUpdated = $('#meta-updated'); if (metaUpdated) metaUpdated.textContent = META.updated || '—';
+    const activeRepoEl = $('#active-repository');
+    if (activeRepoEl) activeRepoEl.textContent = isCloudBook() ? `${sync.owner}/${sync.repo}` : '当前未连接云端仓库';
     $('#stat-due').textContent = due;
     const remaining = Math.min(fresh, newAllowance(t));
     $('#stat-new').textContent = remaining;
@@ -2520,20 +2526,12 @@
       }
     });
 
-    $('#btn-reset').addEventListener('click', () => {
-      if (!confirm('确认清空当前词库的全部学习进度？词库单词不受影响，此操作不可撤销。')) return;
-      store = defaultStore();
-      saveStore();
-      applySettingsToUI();
-      refreshIntro();
-      renderLibrary();
-      renderWordbooks();
-      toast('进度已清空');
-    });
+    const resetBtn = $('#btn-reset');
+    if (resetBtn) resetBtn.addEventListener('click', () => resetBookProgress(activeRepository));
 
     applySettingsToUI();
-    $('#meta-count').textContent = WORDS.length;
-    $('#meta-updated').textContent = META.updated || '—';
+    const metaCount = $('#meta-count'); if (metaCount) metaCount.textContent = WORDS.length;
+    const metaUpdated = $('#meta-updated'); if (metaUpdated) metaUpdated.textContent = META.updated || '—';
   }
 
   function exportProgress(raw, suffix = dayKey(now())) {
@@ -2568,6 +2566,119 @@
     return { total, mastered, started, due, pct };
   }
 
+  function resetBookProgress(bookId = activeRepository) {
+    if (syncing || session) { toast('请等待当前同步或训练结束后再操作'); return; }
+    const reg = loadWordbooks();
+    const book = reg.books[bookId];
+    const name = book?.name || (bookId === activeRepository ? getActiveBookInfo()?.name : '') || '当前词库';
+    const isCloud = book ? book.type === 'cloud' : isCloudBook(bookId);
+    const msg = isCloud
+      ? `确认清空云端词库「${name}」的本机学习进度？\n单词表不受影响，此操作不可撤销。`
+      : `确认清空本地词库「${name}」的学习进度？\n单词表不受影响，此操作不可撤销。`;
+    if (!confirm(msg)) return;
+    if (bookId === activeRepository) {
+      store = defaultStore();
+      saveStore();
+      applySettingsToUI();
+      refreshIntro();
+      renderLibrary();
+    } else if (bookId) {
+      localStorage.setItem(scopedKey(STORE_KEY, bookId), JSON.stringify(defaultStore()));
+    }
+    renderWordbooks();
+    toast('进度已清空');
+  }
+
+  function saveCloudBookProfile(bookId, patch) {
+    const profiles = JSON.parse(localStorage.getItem('worddrill.repositories.v1') || '{}');
+    const cur = profiles[bookId] || (bookId === activeRepository ? { ...sync } : {});
+    const next = { ...defaultSync(), deviceId: sync?.deviceId || randomId(), ...cur, ...patch };
+    profiles[bookId] = next;
+    localStorage.setItem('worddrill.repositories.v1', JSON.stringify(profiles));
+    if (bookId === activeRepository) {
+      sync = { ...sync, ...patch };
+      saveSync();
+    }
+    return next;
+  }
+
+  function readCloudCardConfig(bookId) {
+    const profiles = JSON.parse(localStorage.getItem('worddrill.repositories.v1') || '{}');
+    const base = profiles[bookId] || (bookId === activeRepository ? sync : {});
+    const tokenEl = $(`[data-book-token="${typeof CSS !== 'undefined' && CSS.escape ? CSS.escape(bookId) : bookId}"]`);
+    const autoEl = $(`[data-book-autosync="${typeof CSS !== 'undefined' && CSS.escape ? CSS.escape(bookId) : bookId}"]`);
+    return {
+      ...defaultSync(),
+      deviceId: sync?.deviceId || randomId(),
+      ...base,
+      ...(tokenEl ? { token: tokenEl.value.trim() } : {}),
+      ...(autoEl ? { enabled: autoEl.checked } : {})
+    };
+  }
+
+  function renderLocalSubcard(b, s) {
+    const updatedLabel = b.updatedAt ? dayKey(b.updatedAt) : '—';
+    return `
+      <div class="book-subcard">
+        <div class="book-subcard__meta">
+          <span>已学 ${s.started} · 已掌握 ${s.mastered} · 待复习 ${s.due}</span>
+          <span>更新于 ${esc(updatedLabel)}</span>
+        </div>
+        <div class="book-subcard__row">
+          <label class="book-subcard__label" for="book-name-${esc(b.id)}">词库名称</label>
+          <div class="field__row">
+            <input id="book-name-${esc(b.id)}" type="text" data-book-name-input="${esc(b.id)}" value="${esc(b.name)}" autocomplete="off">
+            <button class="btn btn--ghost btn--sm" data-book-rename-save="${esc(b.id)}" type="button">保存</button>
+          </div>
+        </div>
+        <div class="book-subcard__actions">
+          <button class="btn btn--ghost btn--sm" data-book-upload="${esc(b.id)}" type="button">上传到云端</button>
+          <button class="btn btn--ghost btn--sm" data-book-export="${esc(b.id)}" type="button">导出词库</button>
+          <button class="btn btn--ghost btn--sm" data-book-reset="${esc(b.id)}" type="button">清空进度</button>
+          <button class="btn btn--danger btn--sm" data-book-delete="${esc(b.id)}" type="button">删除词库</button>
+        </div>
+      </div>`;
+  }
+
+  function renderCloudSubcard(b, p, active) {
+    const enabled = !!(active ? sync.enabled : p.enabled);
+    const tokenVal = active ? (sync.token || '') : (p.token || '');
+    const repoPath = p.path || (active ? sync.path : '') || 'progress.json';
+    const cardStat = bookCardStatus[b.id];
+    const statText = cardStat?.text || (active ? describeSync() : (p.lastResult || ''));
+    const statMode = cardStat?.mode || (/失败/.test(statText) ? 'error' : statText && !/未开启|还没同步/.test(statText) ? 'ok' : '');
+    const statCls = statMode === 'error' ? 'is-error' : statMode === 'ok' ? 'is-ok' : '';
+    return `
+      <div class="book-subcard">
+        <div class="book-subcard__meta">
+          <span>仓库：${esc(p.owner || '')}/${esc(p.repo || '')} · ${esc(repoPath)}</span>
+          <span>本机 <code>${esc(sync?.deviceId || '—')}</code></span>
+        </div>
+        <label class="switch">
+          <input type="checkbox" data-book-autosync="${esc(b.id)}" ${enabled ? 'checked' : ''}>
+          <span class="switch__track" aria-hidden="true"><span class="switch__thumb"></span></span>
+          <span class="switch__label">开启自动同步</span>
+        </label>
+        <div class="book-subcard__row">
+          <label class="book-subcard__label" for="book-token-${esc(b.id)}">访问令牌 Token</label>
+          <div class="field__row">
+            <input id="book-token-${esc(b.id)}" type="password" data-book-token="${esc(b.id)}" value="${esc(tokenVal)}" placeholder="github_pat_…" autocomplete="off" spellcheck="false">
+            <button class="btn btn--ghost btn--sm" data-book-toggle-token="${esc(b.id)}" type="button">显示</button>
+            <button class="btn btn--primary btn--sm" data-book-save-token="${esc(b.id)}" type="button">保存</button>
+          </div>
+        </div>
+        ${statText ? `<p class="hint sync-status book-subcard__status ${statCls}" data-book-status="${esc(b.id)}">${esc(statText)}</p>` : `<p class="hint sync-status book-subcard__status" data-book-status="${esc(b.id)}" hidden></p>`}
+        <div class="book-subcard__actions">
+          <button class="btn btn--ghost btn--sm" data-book-sync="${esc(b.id)}" type="button">立即同步</button>
+          <button class="btn btn--ghost btn--sm" data-book-test="${esc(b.id)}" type="button">测试连接</button>
+          <button class="btn btn--ghost btn--sm" data-book-export="${esc(b.id)}" type="button">导出词库</button>
+          <button class="btn btn--ghost btn--sm" data-book-reset="${esc(b.id)}" type="button">清空进度</button>
+          <button class="btn btn--ghost btn--sm" data-book-forget-token="${esc(b.id)}" type="button">清除凭据</button>
+          <button class="btn btn--danger btn--sm" data-book-remove-cloud="${esc(b.id)}" type="button">移出列表</button>
+        </div>
+      </div>`;
+  }
+
   function renderWordbooks() {
     const localBox = $('#local-books-list');
     const cloudBox = $('#cloud-books-list');
@@ -2582,6 +2693,7 @@
     $('#local-books-empty').hidden = locals.length > 0;
     localBox.innerHTML = locals.map((b) => {
       const active = b.id === activeRepository;
+      const isOpen = expandedBookId === b.id;
       const s = readBookProgressSummary(b.id, b.wordCount);
       return `
         <div class="book-item ${active ? 'is-active' : ''}">
@@ -2595,27 +2707,26 @@
               ${b.sources.map((src) => `<span class="source-tag">${esc(src)}</span>`).join('')}
             </div>` : ''}
           <div class="book-item__stats">
-            <span>共 <b>${s.total}</b> 词 · 已掌握 ${s.mastered}（${s.pct}%）· 已学 ${s.started} · 待复习 ${s.due}</span>
+            <span>共 <b>${s.total}</b> 词 · 已掌握 ${s.mastered}（${s.pct}%）· 待复习 ${s.due}</span>
             <div class="book-item__bar" aria-hidden="true"><span class="book-item__bar-fill" style="width:${s.pct}%"></span></div>
           </div>
           <div class="book-item__actions">
             ${active
               ? '<button class="btn btn--primary btn--sm" data-book-train="1" type="button">去训练</button>'
               : `<button class="btn btn--primary btn--sm" data-book-use="${esc(b.id)}" type="button">切换使用</button>`}
-            <button class="btn btn--ghost btn--sm" data-book-upload="${esc(b.id)}" type="button">上传到云端</button>
-            <button class="btn btn--ghost btn--sm" data-book-export="${esc(b.id)}" type="button">导出</button>
-            <button class="btn btn--ghost btn--sm" data-book-rename="${esc(b.id)}" type="button">重命名</button>
-            <button class="btn btn--danger btn--sm" data-book-delete="${esc(b.id)}" type="button">删除</button>
+            <button class="btn btn--ghost btn--sm book-item__manage-btn ${isOpen ? 'is-open' : ''}" data-book-manage="${esc(b.id)}" aria-expanded="${isOpen ? 'true' : 'false'}" type="button">${isOpen ? '收起 ▴' : '管理 ▾'}</button>
           </div>
+          ${isOpen ? renderLocalSubcard(b, s) : ''}
         </div>`;
     }).join('');
 
     $('#cloud-books-empty').hidden = clouds.length > 0;
     cloudBox.innerHTML = clouds.map((b) => {
       const active = b.id === activeRepository;
+      const isOpen = expandedBookId === b.id;
       const p = profiles[b.id] || {};
       const s = readBookProgressSummary(b.id, b.wordCount);
-      const syncText = active ? describeSync() : (p.lastResult || '已保存');
+      const syncText = active ? describeSync() : (p.lastResult || (p.token ? '已保存' : '未配置 token'));
       return `
         <div class="book-item ${active ? 'is-active' : ''}">
           <div class="book-item__top">
@@ -2630,16 +2741,20 @@
           <div class="book-item__actions">
             ${active
               ? `<button class="btn btn--primary btn--sm" data-book-train="1" type="button">去训练</button>
-                 <button class="btn btn--ghost btn--sm" data-book-sync="${esc(b.id)}" type="button">立即同步</button>`
+                 <button class="btn btn--ghost btn--sm" data-book-sync="${esc(b.id)}" type="button">同步</button>`
               : `<button class="btn btn--primary btn--sm" data-book-use="${esc(b.id)}" type="button">切换并同步</button>`}
-            <button class="btn btn--ghost btn--sm" data-book-config="${esc(b.id)}" type="button">配置 / Token</button>
-            <button class="btn btn--ghost btn--sm" data-book-export="${esc(b.id)}" type="button">导出</button>
-            <button class="btn btn--danger btn--sm" data-book-remove-cloud="${esc(b.id)}" type="button">移出列表</button>
+            <button class="btn btn--ghost btn--sm book-item__manage-btn ${isOpen ? 'is-open' : ''}" data-book-manage="${esc(b.id)}" aria-expanded="${isOpen ? 'true' : 'false'}" type="button">${isOpen ? '收起 ▴' : '管理 ▾'}</button>
           </div>
+          ${isOpen ? renderCloudSubcard(b, p, active) : ''}
         </div>`;
     }).join('');
 
     $$('[data-book-train]').forEach((btn) => btn.addEventListener('click', () => switchView('learn')));
+    $$('[data-book-manage]').forEach((btn) => btn.addEventListener('click', () => {
+      const id = btn.dataset.bookManage;
+      expandedBookId = expandedBookId === id ? '' : id;
+      renderWordbooks();
+    }));
     $$('[data-book-use]').forEach((btn) => btn.addEventListener('click', async () => {
       const id = btn.dataset.bookUse;
       try {
@@ -2648,27 +2763,31 @@
         if (isCloudBook(id) && sync.enabled && sync.token) syncNow({ silent: false });
       } catch (err) { toast(err.message); }
     }));
-    $$('[data-book-sync]').forEach((btn) => btn.addEventListener('click', () => syncNow({ silent: false })));
-    $$('[data-book-config]').forEach((btn) => btn.addEventListener('click', async () => {
-      try {
-        if (btn.dataset.bookConfig !== activeRepository) await selectWordbook(btn.dataset.bookConfig);
-        $('#cloud-config-panel').hidden = false;
-        $('#cloud-config-panel').scrollIntoView?.({ block: 'nearest' });
-      } catch (err) { toast(err.message); }
-    }));
-    $$('[data-book-rename]').forEach((btn) => btn.addEventListener('click', () => {
-      const id = btn.dataset.bookRename;
+
+    const commitRename = (id) => {
+      const escId = typeof CSS !== 'undefined' && CSS.escape ? CSS.escape(id) : id;
+      const input = $(`[data-book-name-input="${escId}"]`);
+      const nextName = input?.value?.trim();
+      if (!nextName) { toast('词库名称不能为空'); return; }
       const cur = loadWordbooks();
-      const target = cur.books[id];
-      if (!target) return;
-      const nextName = prompt('输入新的词库名称：', target.name);
-      if (!nextName || !nextName.trim()) return;
-      target.name = nextName.trim();
+      if (!cur.books[id]) return;
+      cur.books[id].name = nextName;
+      cur.books[id].updatedAt = now();
       saveWordbooks(cur);
       renderWordbooks();
       refreshActiveBookBar();
       toast('词库名称已更新');
+    };
+    $$('[data-book-rename-save]').forEach((btn) => btn.addEventListener('click', () => commitRename(btn.dataset.bookRenameSave)));
+    $$('[data-book-name-input]').forEach((input) => input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); commitRename(input.dataset.bookNameInput); }
     }));
+
+    $$('[data-book-upload]').forEach((btn) => btn.addEventListener('click', () => openUploadModal(btn.dataset.bookUpload)));
+    $$('[data-book-export]').forEach((btn) => btn.addEventListener('click', () => {
+      exportWordbook(btn.dataset.bookExport).catch((err) => toast(err.message || '导出失败'));
+    }));
+    $$('[data-book-reset]').forEach((btn) => btn.addEventListener('click', () => resetBookProgress(btn.dataset.bookReset)));
     $$('[data-book-delete]').forEach((btn) => btn.addEventListener('click', async () => {
       const id = btn.dataset.bookDelete;
       const cur = loadWordbooks();
@@ -2677,6 +2796,87 @@
       if (!confirm(`确认删除本地词库「${target.name}」？\n该词库的单词表和本地学习进度都会被删除，不可撤销。`)) return;
       await deleteWordbook(id);
     }));
+
+    $$('[data-book-toggle-token]').forEach((btn) => btn.addEventListener('click', () => {
+      const id = btn.dataset.bookToggleToken;
+      const input = $(`[data-book-token="${CSS?.escape ? CSS.escape(id) : id}"]`);
+      if (!input) return;
+      input.type = input.type === 'password' ? 'text' : 'password';
+      btn.textContent = input.type === 'password' ? '显示' : '隐藏';
+    }));
+
+    const commitToken = (id) => {
+      const cfg = readCloudCardConfig(id);
+      if (!cfg.token) { toast('请先输入访问令牌 Token'); return; }
+      saveCloudBookProfile(id, { token: cfg.token, lastResult: 'Token 已保存' });
+      bookCardStatus[id] = { text: 'Token 已保存，可点击「测试连接」或「立即同步」', mode: 'ok' };
+      renderWordbooks();
+      toast('访问令牌已保存');
+    };
+    $$('[data-book-save-token]').forEach((btn) => btn.addEventListener('click', () => commitToken(btn.dataset.bookSaveToken)));
+    $$('[data-book-token]').forEach((input) => input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); commitToken(input.dataset.bookToken); }
+    }));
+
+    $$('[data-book-autosync]').forEach((cb) => cb.addEventListener('change', () => {
+      const id = cb.dataset.bookAutosync;
+      if (syncing) { toast('同步中，请稍后再修改'); cb.checked = !cb.checked; return; }
+      saveCloudBookProfile(id, { enabled: cb.checked });
+      if (id === activeRepository && cb.checked && sync.token) {
+        syncNow({ silent: false });
+      } else {
+        toast(cb.checked ? '已开启自动同步' : '已关闭自动同步');
+      }
+    }));
+
+    $$('[data-book-sync]').forEach((btn) => btn.addEventListener('click', async () => {
+      const id = btn.dataset.bookSync;
+      const cfg = readCloudCardConfig(id);
+      if (!cfg.token) {
+        expandedBookId = id;
+        bookCardStatus[id] = { text: '请先填写访问令牌 Token 并保存', mode: 'error' };
+        renderWordbooks();
+        toast('请先填写访问令牌 Token');
+        return;
+      }
+      saveCloudBookProfile(id, { token: cfg.token, enabled: cfg.enabled });
+      try {
+        if (id !== activeRepository) await selectWordbook(id);
+        await syncNow({ silent: false, manual: true });
+      } catch (err) { toast(err.message); }
+    }));
+
+    $$('[data-book-test]').forEach((btn) => btn.addEventListener('click', async () => {
+      const id = btn.dataset.bookTest;
+      const cfg = readCloudCardConfig(id);
+      btn.disabled = true;
+      bookCardStatus[id] = { text: '测试连接中…', mode: '' };
+      const statusEl = $(`[data-book-status="${CSS?.escape ? CSS.escape(id) : id}"]`);
+      if (statusEl) { statusEl.hidden = false; statusEl.textContent = '测试连接中…'; statusEl.className = 'hint sync-status book-subcard__status'; }
+      try {
+        if (cfg.token) saveCloudBookProfile(id, { token: cfg.token });
+        const r = await diagnoseSync(cfg);
+        bookCardStatus[id] = { text: r.text, mode: r.mode };
+        renderWordbooks();
+        toast(r.mode === 'ok' ? '连接正常' : '连接测试未通过');
+      } catch (e) {
+        bookCardStatus[id] = { text: '测试出错：' + ((e && e.message) || '未知错误'), mode: 'error' };
+        renderWordbooks();
+      } finally {
+        btn.disabled = false;
+      }
+    }));
+
+    $$('[data-book-forget-token]').forEach((btn) => btn.addEventListener('click', () => {
+      const id = btn.dataset.bookForgetToken;
+      if (syncing) { toast('请等待同步结束'); return; }
+      if (!confirm('清除此云端仓库在本机保存的 token？\n（只影响这台设备；远端文件不删，学习进度也不动）')) return;
+      saveCloudBookProfile(id, { token: '', enabled: false, lastResult: '未配置 token' });
+      bookCardStatus[id] = { text: '已清除本机保存的 Token', mode: '' };
+      renderWordbooks();
+      toast('已清除本机 Token');
+    }));
+
     $$('[data-book-remove-cloud]').forEach((btn) => btn.addEventListener('click', async () => {
       const id = btn.dataset.bookRemoveCloud;
       const cur = loadWordbooks();
@@ -2685,14 +2885,12 @@
       if (!confirm(`将云端词库「${target.name}」从本机列表移出？\n（不会删除 GitHub 仓库里的文件）`)) return;
       await deleteWordbook(id);
     }));
-    $$('[data-book-upload]').forEach((btn) => btn.addEventListener('click', () => openUploadModal(btn.dataset.bookUpload)));
-    $$('[data-book-export]').forEach((btn) => btn.addEventListener('click', () => {
-      exportWordbook(btn.dataset.bookExport).catch((err) => toast(err.message || '导出失败'));
-    }));
   }
 
   async function deleteWordbook(id) {
     if (syncing || session) { toast('请等待当前同步或训练结束后再操作'); return; }
+    if (expandedBookId === id) expandedBookId = '';
+    delete bookCardStatus[id];
     const reg = loadWordbooks();
     const book = reg.books[id];
     if (!book) return;
@@ -3014,25 +3212,44 @@
     }
   }
 
-  /* ---------- 同步面板（兼容原有选择器） ---------- */
+  /* ---------- 同步面板 & 连接弹窗 ---------- */
   function applySyncToUI() {
     const profiles = JSON.parse(localStorage.getItem('worddrill.repositories.v1') || '{}');
-    $('#data-repository').innerHTML = '<option value="">选择已保存的数据仓库</option>' + Object.entries(profiles).map(([id, p]) =>
-      `<option value="${esc(id)}"${id === activeRepository ? ' selected' : ''}>${esc(p.owner)}/${esc(p.repo)}</option>`).join('');
-    $('#sync-owner').value = sync.owner || '';
-    $('#sync-repo').value = sync.repo || '';
-    $('#sync-path').value = sync.path || 'progress.json';
-    $('#sync-token').value = sync.token || '';
-    $('#sync-enabled').checked = !!sync.enabled;
-    $('#sync-device').textContent = sync.deviceId;
+    const repoSel = $('#data-repository');
+    if (repoSel) {
+      repoSel.innerHTML = '<option value="">选择已保存的数据仓库</option>' + Object.entries(profiles).map(([id, p]) =>
+        `<option value="${esc(id)}"${id === activeRepository ? ' selected' : ''}>${esc(p.owner)}/${esc(p.repo)}</option>`).join('');
+      repoSel.disabled = syncing;
+    }
+    const ownerEl = $('#sync-owner'); if (ownerEl) ownerEl.value = sync.owner || '';
+    const repoEl = $('#sync-repo'); if (repoEl) repoEl.value = sync.repo || '';
+    const pathEl = $('#sync-path'); if (pathEl) pathEl.value = sync.path || 'progress.json';
+    const tokenEl = $('#sync-token'); if (tokenEl) tokenEl.value = sync.token || '';
+    const enabledEl = $('#sync-enabled'); if (enabledEl) enabledEl.checked = !!sync.enabled;
+    const deviceEl = $('#sync-device'); if (deviceEl) deviceEl.textContent = sync.deviceId;
     setSyncStatus(describeSync(), /失败/.test(sync.lastResult || '') ? 'error' : sync.lastSyncAt ? 'ok' : '');
-    $('#btn-sync-now').disabled = !sync.enabled || !isCloudBook();
-    $('#btn-use-repository').disabled = syncing;
-    $('#data-repository').disabled = syncing;
+    const syncBtn = $('#btn-sync-now'); if (syncBtn) syncBtn.disabled = !sync.enabled || !isCloudBook();
+    const useBtn = $('#btn-use-repository'); if (useBtn) useBtn.disabled = syncing;
+  }
+
+  function parseConnectModalConfig() {
+    const rawRepo = $('#connect-repo-input')?.value?.trim() || '';
+    const parsed = parseRepoSpec(rawRepo);
+    const token = $('#connect-token')?.value?.trim() || '';
+    return {
+      ...defaultSync(),
+      deviceId: sync?.deviceId || randomId(),
+      owner: parsed ? parsed.owner : '',
+      repo: parsed ? parsed.repo : '',
+      path: 'progress.json',
+      token,
+      enabled: true
+    };
   }
 
   function bindSync() {
     const readForm = () => {
+      if (!$('#sync-owner')) return false;
       normalizeRepoFields();
       const next = { ...sync, owner: $('#sync-owner').value.trim(), repo: $('#sync-repo').value.trim(),
         path: $('#sync-path').value.trim() || 'progress.json', token: $('#sync-token').value.trim(),
@@ -3046,13 +3263,13 @@
         return true;
       } catch (e) { toast(e.message); return false; }
     };
-    $('#btn-use-repository').addEventListener('click', () => {
+    $('#btn-use-repository')?.addEventListener('click', () => {
       if (readForm()) {
         sync.enabled = true; saveSync(); saveProfile(); syncWordbooksRegistry();
         applySyncToUI(); renderWordbooks(); syncNow({ silent: false });
       }
     });
-    $('#data-repository').addEventListener('change', (e) => {
+    $('#data-repository')?.addEventListener('change', (e) => {
       if (!e.target.value) return;
       try {
         const profiles = JSON.parse(localStorage.getItem('worddrill.repositories.v1') || '{}');
@@ -3060,21 +3277,21 @@
         syncNow({ silent: false });
       } catch (err) { toast(err.message); applySyncToUI(); }
     });
-    $('#sync-enabled').addEventListener('change', () => {
+    $('#sync-enabled')?.addEventListener('change', () => {
       if (!readForm()) { applySyncToUI(); return; }
       applySyncToUI();
       if (sync.enabled) syncNow({ silent: false });
     });
 
-    $('#btn-toggle-token').addEventListener('click', () => {
+    $('#btn-toggle-token')?.addEventListener('click', () => {
       const el = $('#sync-token');
+      if (!el) return;
       el.type = el.type === 'password' ? 'text' : 'password';
       $('#btn-toggle-token').textContent = el.type === 'password' ? '显示' : '隐藏';
     });
 
-    $('#btn-sync-now').addEventListener('click', () => { if (readForm()) syncNow({ silent: false }); });
-
-    $('#btn-sync-test').addEventListener('click', async () => {
+    $('#btn-sync-now')?.addEventListener('click', () => { if (readForm()) syncNow({ silent: false }); });
+    $('#btn-sync-test')?.addEventListener('click', async () => {
       if (!readForm()) return;
       const btn = $('#btn-sync-test');
       btn.disabled = true;
@@ -3089,16 +3306,95 @@
         btn.disabled = false;
       }
     });
-
-    $('#btn-sync-forget').addEventListener('click', () => {
+    $('#btn-sync-forget')?.addEventListener('click', () => {
       if (!confirm('清除当前云端仓库在本机保存的 token？\n（只影响这台设备；远端进度文件不删，学习进度也不动）')) return;
       if (syncing) { toast('请等待同步结束'); return; }
       sync = { ...sync, token: '', enabled: false, lastResult: '' };
-      saveProfile();
-      saveSync();
-      applySyncToUI();
-      renderWordbooks();
+      saveProfile(); saveSync(); applySyncToUI(); renderWordbooks();
       toast('已清除当前仓库的 token');
+    });
+
+    // 连接云端仓库弹窗
+    $('#btn-open-connect-cloud')?.addEventListener('click', () => {
+      const repoInput = $('#connect-repo-input');
+      const tokenInput = $('#connect-token');
+      const toggleBtn = $('#btn-connect-toggle-token');
+      const statusEl = $('#connect-status');
+      if (repoInput) repoInput.value = '';
+      if (tokenInput) { tokenInput.value = ''; tokenInput.type = 'password'; }
+      if (toggleBtn) toggleBtn.textContent = '显示';
+      if (statusEl) { statusEl.textContent = ''; statusEl.className = 'hint sync-status'; }
+      openModal('modal-connect-cloud');
+    });
+
+    $('#btn-connect-toggle-token')?.addEventListener('click', () => {
+      const el = $('#connect-token');
+      const btn = $('#btn-connect-toggle-token');
+      if (!el || !btn) return;
+      el.type = el.type === 'password' ? 'text' : 'password';
+      btn.textContent = el.type === 'password' ? '显示' : '隐藏';
+    });
+
+    $('#btn-connect-test')?.addEventListener('click', async () => {
+      const statusEl = $('#connect-status');
+      const btn = $('#btn-connect-test');
+      const cfg = parseConnectModalConfig();
+      if (!cfg.owner || !cfg.repo) {
+        if (statusEl) { statusEl.textContent = '请填写 owner/repo 或粘贴 GitHub 仓库网址'; statusEl.className = 'hint sync-status is-error'; }
+        return;
+      }
+      if (!cfg.token) {
+        if (statusEl) { statusEl.textContent = '请填写访问令牌 Token'; statusEl.className = 'hint sync-status is-error'; }
+        return;
+      }
+      btn.disabled = true;
+      if (statusEl) { statusEl.textContent = '测试连接中…'; statusEl.className = 'hint sync-status'; }
+      try {
+        const r = await diagnoseSync(cfg);
+        if (statusEl) {
+          statusEl.textContent = r.text;
+          statusEl.className = `hint sync-status ${r.mode === 'ok' ? 'is-ok' : 'is-error'}`;
+        }
+      } catch (e) {
+        if (statusEl) {
+          statusEl.textContent = '测试出错：' + ((e && e.message) || '未知错误');
+          statusEl.className = 'hint sync-status is-error';
+        }
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    $('#btn-connect-confirm')?.addEventListener('click', async () => {
+      const statusEl = $('#connect-status');
+      const btn = $('#btn-connect-confirm');
+      const cfg = parseConnectModalConfig();
+      if (!cfg.owner || !cfg.repo) {
+        if (statusEl) { statusEl.textContent = '请填写 owner/repo 或粘贴 GitHub 仓库网址'; statusEl.className = 'hint sync-status is-error'; }
+        return;
+      }
+      if (!cfg.token) {
+        if (statusEl) { statusEl.textContent = '请填写访问令牌 Token'; statusEl.className = 'hint sync-status is-error'; }
+        return;
+      }
+      btn.disabled = true;
+      btn.textContent = '正在连接…';
+      try {
+        selectRepository(cfg);
+        const repoId = repositoryId(cfg);
+        expandedBookId = repoId;
+        closeModal('modal-connect-cloud');
+        await syncNow({ silent: false, manual: true });
+        toast(`已连接云端仓库 ${cfg.owner}/${cfg.repo}`);
+      } catch (err) {
+        if (statusEl) {
+          statusEl.textContent = '连接失败：' + (err.message || '未知错误');
+          statusEl.className = 'hint sync-status is-error';
+        }
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '连接并同步';
+      }
     });
   }
 
@@ -3138,8 +3434,15 @@
       if (!session) showPanel('intro');
       refreshIntro();
     }
-    location.hash = name === 'learn' ? '' : `#${name}`;
-    $('#main').scrollIntoView({ block: 'start', behavior: 'instant' in window ? 'instant' : 'auto' });
+    if (typeof history !== 'undefined' && typeof history.replaceState === 'function' && location.protocol && location.protocol.startsWith('http')) {
+      const nextUrl = name === 'learn' ? (location.pathname || './') + (location.search || '') : `#${name}`;
+      history.replaceState(null, '', nextUrl);
+    } else {
+      location.hash = name === 'learn' ? '' : `#${name}`;
+    }
+    if (typeof window.scrollTo === 'function') {
+      window.scrollTo({ top: 0, behavior: 'auto' });
+    }
   }
 
   /* ---------- 事件绑定 ---------- */
@@ -3222,6 +3525,9 @@
 
     $$('[data-close-modal]').forEach((el) => {
       el.addEventListener('click', () => closeModal(el.dataset.closeModal));
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') $$('.modal').forEach((m) => { if (!m.hidden) m.hidden = true; });
     });
 
     // 键盘：选择题 1-4 直接作答；Enter 进入下一题

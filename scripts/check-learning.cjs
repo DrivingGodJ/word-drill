@@ -45,7 +45,7 @@ const source = fs.readFileSync(path.join(root, 'app.js'), 'utf8')
     setWords: (words) => { WORDS = words; byId.clear(); words.forEach(w => byId.set(w.id, w)); },
     applyPacePreset, getCurrentPace, mergeWordlists, planCloudUpload, uploadLocalToCloud,
     remoteReadFile, loadWordbooks, saveWordbooks, selectWordbook, deleteWordbook, isCloudBook, saveVocabularyLocal,
-    buildWordbookBundle, parseWordbookBundle, wordDifficulty, selectDailyNewWords
+    buildWordbookBundle, parseWordbookBundle, wordDifficulty, selectDailyNewWords, resetBookProgress
   }; sync = { deviceId: 'check' };`);
 vm.runInContext(source, context);
 const app = context.check;
@@ -898,6 +898,54 @@ assert.equal(app.getSession().practice, true);
   reset();
   app.mergeRemote(orderPayload);
   assert.equal(app.getStore().settings.newOrder, 'hard_first');
+
+  // switchView resets scroll to top instead of scrolling down via #main.scrollIntoView.
+  let scrolledTo = null;
+  let mainScrollIntoViewCount = 0;
+  context.window.scrollTo = (opts) => { scrolledTo = opts; };
+  element('#main').scrollIntoView = () => { mainScrollIntoViewCount++; };
+  app.switchView('books');
+  assert.deepEqual(plain(scrolledTo), { top: 0, behavior: 'auto' });
+  assert.equal(mainScrollIntoViewCount, 0);
+
+  // resetBookProgress clears a target book independently without disturbing another book.
+  const otherId = 'local:reset-target';
+  const activeId = 'local:reset-active';
+  storage.set('worddrill.wordbooks.v1', JSON.stringify({
+    activeId,
+    books: {
+      [activeId]: { id: activeId, type: 'local', name: 'A' },
+      [otherId]: { id: otherId, type: 'local', name: 'B' }
+    }
+  }));
+  storage.set('worddrill.v1:' + encodeURIComponent(otherId), JSON.stringify({
+    ...plain(app.defaultStore()),
+    words: { temp: rec() }
+  }));
+  reset({ keepme: rec() });
+  context.confirm = () => true;
+  await app.selectWordbook(activeId);
+  app.getStore().words.keepme = rec();
+  app.saveStore();
+  app.resetBookProgress(otherId);
+  const afterOther = JSON.parse(storage.get('worddrill.v1:' + encodeURIComponent(otherId)));
+  assert.deepEqual(afterOther.words, {}, 'inactive book progress is cleared');
+  assert.ok(app.getStore().words.keepme, 'active book progress remains untouched');
+
+  // Manual sync runs even when auto-sync (enabled) is turned off.
+  cloud = { words: { manualCheck: rec() } };
+  app.selectRepository({ enabled: false, owner: 'test', repo: 'manual-repo', branch: 'main', path: 'progress.json', token: 'tok', deviceId: 'check' });
+  const toB64 = (s) => Buffer.from(s, 'utf8').toString('base64');
+  context.fetch = async (url) => {
+    if (!url.includes('/contents/')) return { ok: true, json: async () => ({ private: true }) };
+    if (url.includes('words.json')) return { ok: true, json: async () => ({ content: toB64(JSON.stringify({ words: trainingWords })), sha: 'w' }) };
+    if (url.includes('distractors.json')) return { ok: true, json: async () => ({ content: toB64(JSON.stringify({ words: [] })), sha: 'd' }) };
+    if (url.includes('cet-pending.json')) return { ok: false, status: 404 };
+    if (url.includes('progress.json')) return { ok: true, json: async () => ({ content: toB64(JSON.stringify({ ...plain(app.defaultStore()), words: cloud.words })), sha: 'p' }) };
+    return { ok: true, json: async () => ({ sha: 'p2' }) };
+  };
+  await app.syncNow({ silent: true, manual: true });
+  assert.ok(app.getStore().words.manualCheck, 'manual sync pulls even when auto-sync is off');
 
   console.log(`Learning checks passed; ${Object.keys(old.words).length} legacy records preserved.`);
 })().catch((error) => { console.error(error); process.exitCode = 1; });
