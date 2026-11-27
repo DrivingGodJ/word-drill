@@ -1,4 +1,4 @@
-name: Build Android & Windows Apps
+name: Build Desktop & Android Apps
 
 on:
   workflow_dispatch:
@@ -28,6 +28,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -39,6 +41,8 @@ jobs:
         with:
           gradle-version: '8.10.2'
       - name: Sync web bundle to Android assets
+        env:
+          WORDDRILL_BUILD_SHA: ${{ github.sha }}
         run: node scripts/sync-web-assets.mjs
       - name: Assemble release APK
         working-directory: apps/android
@@ -58,6 +62,8 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -66,6 +72,8 @@ jobs:
         run: npm install --no-audit --no-fund
       - name: Build Windows NSIS & Portable packages
         working-directory: apps/desktop
+        env:
+          WORDDRILL_BUILD_SHA: ${{ github.sha }}
         run: npm run dist:win
       - name: Stage Windows executables
         shell: pwsh
@@ -79,19 +87,72 @@ jobs:
           path: release-assets/WordDrill-Windows-*.exe
           if-no-files-found: error
 
+  build-macos:
+    name: Build macOS Apple Silicon App
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install desktop dependencies
+        working-directory: apps/desktop
+        run: npm install --no-audit --no-fund
+      - name: Build macOS Apple Silicon DMG
+        working-directory: apps/desktop
+        env:
+          WORDDRILL_BUILD_SHA: ${{ github.sha }}
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+        run: npm run dist:mac
+      - name: Stage macOS DMG
+        run: |
+          mkdir -p release-assets
+          cp apps/desktop/dist/WordDrill-macOS-AppleSilicon.dmg release-assets/WordDrill-macOS-AppleSilicon.dmg
+      - uses: actions/upload-artifact@v4
+        with:
+          name: worddrill-macos-arm64
+          path: release-assets/WordDrill-macOS-AppleSilicon.dmg
+          if-no-files-found: error
+
   publish-release:
     name: Publish GitHub Release
     runs-on: ubuntu-latest
-    needs: [build-android, build-windows]
+    needs: [build-android, build-windows, build-macos]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           path: artifacts
-      - name: Collect build outputs
+      - name: Collect build outputs & generate version.json
         run: |
           mkdir -p release-files
-          find artifacts -type f \( -name '*.apk' -o -name '*.exe' \) -exec cp {} release-files/ \;
+          find artifacts -type f \( -name '*.apk' -o -name '*.exe' -o -name '*.dmg' \) -exec cp {} release-files/ \;
+          TAG="${GITHUB_REF_NAME}"
+          if [[ "${GITHUB_REF}" != refs/tags/* ]]; then TAG="latest"; fi
+          PKG_VER=$(node -p "require('./apps/desktop/package.json').version")
+          VERSION="${PKG_VER}"
+          if [[ "${TAG}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+ ]]; then VERSION="${TAG#v}"; fi
+          BUILT_AT=$(git show -s --format=%cI HEAD 2>/dev/null || date -u +%Y-%m-%dT%H:%M:%SZ)
+          COMMIT="${GITHUB_SHA}"
+          SHORT_COMMIT="${COMMIT:0:7}"
+          node -e '
+            const fs = require("fs");
+            const tag = process.env.REL_TAG;
+            const files = fs.readdirSync("release-files").filter(f => /\.(apk|exe|dmg)$/i.test(f));
+            const base = `https://github.com/DrivingGodJ/word-drill/releases/download/${tag}`;
+            const data = {
+              version: process.env.REL_VER,
+              tag,
+              commit: process.env.REL_COMMIT,
+              shortCommit: process.env.REL_SHORT,
+              builtAt: process.env.REL_TIME,
+              releaseUrl: `https://github.com/DrivingGodJ/word-drill/releases/tag/${tag}`,
+              assets: files.map(name => ({ name, url: `${base}/${encodeURIComponent(name)}` }))
+            };
+            fs.writeFileSync("release-files/version.json", JSON.stringify(data, null, 2));
+          ' REL_TAG="$TAG" REL_VER="$VERSION" REL_COMMIT="$COMMIT" REL_SHORT="$SHORT_COMMIT" REL_TIME="$BUILT_AT"
           ls -lh release-files
       - name: Create or update GitHub Release
         env:
@@ -104,14 +165,32 @@ jobs:
           else
             TAG="latest"
           fi
-          TITLE="WordDrill 本地离线客户端 (${TAG})"
-          NOTES="网页端已本地打包封装，仅在拉取公开词库或同步云端进度时访问网络。\n\n- **Android**：下载 \`WordDrill-android.apk\` 安装，词库位于系统文件管理中的 \`WordDrill 词库\`（\`Android/data/com.drivinggodj.worddrill/files/wordbooks\`）。\n- **Windows**：下载安装版 \`WordDrill-Windows-Setup.exe\` 或绿色免安装版 \`WordDrill-Windows-Portable.exe\`，词库保存在「文档\\\\WordDrill\\\\wordbooks」。"
+          PKG_VER=$(node -p "require('./apps/desktop/package.json').version")
+          VERSION="${PKG_VER}"
+          if [[ "${TAG}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+ ]]; then VERSION="${TAG#v}"; fi
+          BUILT_AT=$(git show -s --format=%cI HEAD 2>/dev/null || date -u +%Y-%m-%dT%H:%M:%SZ)
+          COMMIT="${GITHUB_SHA}"
+          SHORT_COMMIT="${COMMIT:0:7}"
+          META_COMMENT="<!-- worddrill-build: {\"version\":\"${VERSION}\",\"commit\":\"${COMMIT}\",\"shortCommit\":\"${SHORT_COMMIT}\",\"builtAt\":\"${BUILT_AT}\"} -->"
+          TITLE="WordDrill 本地离线客户端 (v${VERSION} · ${SHORT_COMMIT})"
+          NOTES=$(cat <<EOF
+          网页端已本地打包封装，仅在拉取公开词库或同步云端进度时访问网络（内置启动静默检查更新与「设置 → 检查更新」）。
+
+          - **Android**：下载 \`WordDrill-android.apk\` 安装，词库位于系统文件管理中的 \`WordDrill 词库\`（\`Android/data/com.drivinggodj.worddrill/files/wordbooks\`）。
+          - **Windows**：下载安装版 \`WordDrill-Windows-Setup.exe\` 或绿色免安装版 \`WordDrill-Windows-Portable.exe\`，词库保存在「文档\\WordDrill\\wordbooks」。
+          - **macOS (Apple Silicon)**：下载 \`WordDrill-macOS-AppleSilicon.dmg\` 拖入「应用程序」，词库保存在「文稿/WordDrill/wordbooks」（首次打开若提示未知开发者，可在「系统设置 → 隐私与安全性」点击允许或右键打开）。
+
+          ${META_COMMENT}
+          EOF
+          )
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release upload "$TAG" release-files/* --clobber
+            gh release edit "$TAG" --title "$TITLE" --notes "$NOTES"
           else
             if [[ "$IS_TAG" -eq 1 ]]; then
-              gh release create "$TAG" release-files/* --title "$TITLE" --notes "$(echo -e "$NOTES")"
+              gh release create "$TAG" release-files/* --title "$TITLE" --notes "$NOTES"
             else
-              gh release create "$TAG" release-files/* --target main --title "$TITLE" --notes "$(echo -e "$NOTES")"
+              gh release create "$TAG" release-files/* --target "${GITHUB_SHA}" --title "$TITLE" --notes "$NOTES"
             fi
           fi
+

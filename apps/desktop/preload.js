@@ -1,7 +1,8 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('WordDrillNative', {
-  platform: 'windows',
+  platform: process.platform === 'darwin' ? 'macos' : 'windows',
+  getAppInfo: () => ipcRenderer.invoke('worddrill:get-app-info'),
   getWordbooksDir: () => ipcRenderer.invoke('worddrill:get-dir'),
   openWordbooksDir: () => ipcRenderer.invoke('worddrill:open-dir'),
   writeWordbookBundle: (bookId, fileName, content) =>

@@ -46,7 +46,8 @@ const source = fs.readFileSync(path.join(root, 'app.js'), 'utf8')
     applyPacePreset, getCurrentPace, mergeWordlists, planCloudUpload, uploadLocalToCloud,
     remoteReadFile, loadWordbooks, saveWordbooks, selectWordbook, deleteWordbook, isCloudBook, saveVocabularyLocal,
     buildWordbookBundle, parseWordbookBundle, wordDifficulty, selectDailyNewWords, resetBookProgress,
-    getIosPwaState, syncBookToNativeDisk, deleteBookFromNativeDisk, hydrateNativeWordbooksOnBoot
+    getIosPwaState, syncBookToNativeDisk, deleteBookFromNativeDisk, hydrateNativeWordbooksOnBoot,
+    shouldShowTopbarDownload, compareSemver, parseReleaseBuildMeta, pickPlatformAssetUrl, evaluateAppUpdate
   }; sync = { deviceId: 'check' };`);
 vm.runInContext(source, context);
 const app = context.check;
@@ -1024,6 +1025,47 @@ assert.equal(app.getSession().practice, true);
   assert.equal(spokenNative, 'nativehello', 'native TTS bridge speaks when speechSynthesis is absent');
   if (prevSpeech) context.window.speechSynthesis = prevSpeech;
   delete context.window.WordDrillNative;
+
+  // Topbar download button appears only on non-iOS non-standalone web browsers.
+  assert.equal(app.shouldShowTopbarDownload({ navigator: { userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/130.0' }, window: {}, localStorage: { getItem: () => null } }), true);
+  assert.equal(app.shouldShowTopbarDownload({ navigator: { userAgent: 'Mozilla/5.0 (Linux; Android 14) Chrome/130.0 Mobile' }, window: {}, localStorage: { getItem: () => null } }), true);
+  assert.equal(app.shouldShowTopbarDownload({ navigator: { userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) Safari/604.1' }, window: {}, localStorage: { getItem: () => null } }), false);
+  assert.equal(app.shouldShowTopbarDownload({ navigator: { userAgent: 'Mozilla/5.0 (Windows NT 10.0)' }, window: { WordDrillNative: { platform: 'windows' } }, localStorage: { getItem: () => null } }), false);
+
+  // Release updater comparisons (semver + rolling commit/timestamp metadata + platform asset routing).
+  assert.equal(app.compareSemver('1.1.0', '1.0.0'), 1);
+  assert.equal(app.compareSemver('v1.0.0', '1.0.0'), 0);
+  const sampleRelease = {
+    tag_name: 'latest',
+    html_url: 'https://github.com/DrivingGodJ/word-drill/releases/tag/latest',
+    body: 'Release notes\n<!-- worddrill-build: {"version":"1.0.0","commit":"bbbbbbb1234","shortCommit":"bbbbbbb","builtAt":"2026-11-28T02:00:00Z"} -->',
+    assets: [
+      { name: 'WordDrill-android.apk', browser_download_url: 'https://example.com/app.apk' },
+      { name: 'WordDrill-Windows-Setup.exe', browser_download_url: 'https://example.com/setup.exe' },
+      { name: 'WordDrill-macOS-AppleSilicon.dmg', browser_download_url: 'https://example.com/app.dmg' }
+    ]
+  };
+  const sameCommit = app.evaluateAppUpdate(
+    { platform: 'macos', version: '1.0.0', commit: 'bbbbbbb1234', builtAt: '2026-11-28T02:00:00Z' },
+    sampleRelease
+  );
+  assert.equal(sameCommit.hasUpdate, false);
+
+  const newerCommit = app.evaluateAppUpdate(
+    { platform: 'macos', version: '1.0.0', commit: 'aaaaaaa9999', builtAt: '2026-11-28T00:00:00Z' },
+    sampleRelease
+  );
+  assert.equal(newerCommit.hasUpdate, true);
+  assert.equal(newerCommit.downloadUrl, 'https://example.com/app.dmg');
+
+  const newerVersion = app.evaluateAppUpdate(
+    { platform: 'windows', version: '0.9.0', commit: 'bbbbbbb1234', builtAt: '2026-11-28T02:00:00Z' },
+    sampleRelease
+  );
+  assert.equal(newerVersion.hasUpdate, true);
+  assert.equal(newerVersion.downloadUrl, 'https://example.com/setup.exe');
+
+  assert.equal(app.pickPlatformAssetUrl(sampleRelease.assets, 'android'), 'https://example.com/app.apk');
 
   console.log(`Learning checks passed; ${Object.keys(old.words).length} legacy records preserved.`);
 })().catch((error) => { console.error(error); process.exitCode = 1; });

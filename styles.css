@@ -192,6 +192,24 @@ button { cursor: pointer; background: none; border: none; padding: 0; }
 .nav__item:hover { background: var(--color-muted); color: var(--color-fg); }
 .nav__item.is-active { background: var(--color-primary-soft); color: var(--color-primary); font-weight: 600; }
 
+.topbar__download {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 32px; padding: 0 var(--s-3);
+  border-radius: var(--radius-full);
+  border: 1.5px solid color-mix(in srgb, var(--color-primary) 45%, transparent);
+  background: transparent;
+  color: var(--color-primary);
+  font-size: .8125rem; font-weight: 600; text-decoration: none; white-space: nowrap;
+  flex: none;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+.topbar__download svg { width: 14px; height: 14px; flex: none; }
+.topbar__download:hover {
+  background: var(--color-primary); color: var(--color-on-primary);
+  border-color: var(--color-primary);
+}
+.topbar__download-short { display: none; }
+
 /* ---------- Layout ---------- */
 #main {
   flex: 1;
@@ -204,7 +222,7 @@ button { cursor: pointer; background: none; border: none; padding: 0; }
 
 /* 训练独占页面；顶栏和底栏固定，题干可滚动且底部不被遮挡。 */
 :fullscreen { background: var(--color-bg); }
-.is-training .topbar, .is-training .footer, .is-training #cet-review, .is-training #active-book-bar, .is-training #ios-pwa-banner { display: none; }
+.is-training .topbar, .is-training .footer, .is-training #cet-review, .is-training #active-book-bar, .is-training #ios-pwa-banner, .is-training #app-update-banner { display: none; }
 body.is-training { background: var(--color-card); padding-top: var(--sat); }
 .is-training #main {
   max-width: 800px;
@@ -928,10 +946,12 @@ body.is-training { background: var(--color-card); padding-top: var(--sat); }
   .modal__foot {
     display: grid; grid-template-columns: 1fr 1.4fr;
     gap: var(--s-2);
-  }
+  .topbar__download { height: 30px; padding: 0 10px; font-size: .75rem; gap: 4px; }
+  .topbar__download-full { display: none; }
+  .topbar__download-short { display: inline; }
 }
 
-@media (max-width: 375px) {
+@media (max-width: 430px) {
   .brand__name { display: none; }
 }
 
@@ -994,6 +1014,11 @@ body.is-training { background: var(--color-card); padding-top: var(--sat); }
   font-family: var(--font-mono); font-size: .75rem;
   color: var(--color-fg); overflow-wrap: anywhere; word-break: break-all;
 }
+.about-links .setting-block:first-child,
+.settings-card > .setting-block:first-of-type { margin-top: var(--s-5); }
+.about-links .btn-row { margin-top: 0; }
+.app-update-banner { border-color: color-mix(in srgb, var(--color-primary) 55%, transparent); }
+
 @media (max-width: 640px) {
   .ios-pwa-banner { flex-wrap: wrap; padding: var(--s-3); }
   .ios-pwa-banner__actions { width: 100%; justify-content: flex-end; }
@@ -1012,7 +1037,7 @@ body.is-training { background: var(--color-card); padding-top: var(--sat); }
 
 /* ---------- Print ---------- */
 @media print {
-  .topbar, .footer, .toast, .quiz__foot, .summary__actions, .toolbar, .active-book-bar, .ios-pwa-banner { display: none; }
+  .topbar, .footer, .toast, .quiz__foot, .summary__actions, .toolbar, .active-book-bar, .ios-pwa-banner, .app-update-banner { display: none; }
   .card, .wcard { box-shadow: none; border-color: #ccc; }
   body::before { display: none; }
   body { padding-top: 0; padding-bottom: 0; }

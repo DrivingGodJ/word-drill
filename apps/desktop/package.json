@@ -7,7 +7,8 @@
   "scripts": {
     "sync-web": "node ../../scripts/sync-web-assets.mjs",
     "start": "npm run sync-web && electron .",
-    "dist:win": "npm run sync-web && electron-builder --win --x64"
+    "dist:win": "npm run sync-web && electron-builder --win --x64",
+    "dist:mac": "npm run sync-web && electron-builder --mac dmg --arm64"
   },
   "devDependencies": {
     "electron": "^33.2.0",
@@ -23,6 +24,7 @@
     "files": [
       "main.js",
       "preload.js",
+      "build-info.json",
       "web/**/*"
     ],
     "win": {
@@ -50,6 +52,22 @@
     },
     "portable": {
       "artifactName": "WordDrill-Windows-Portable.${ext}"
+    },
+    "mac": {
+      "icon": "build/icon.png",
+      "category": "public.app-category.education",
+      "identity": null,
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64"
+          ]
+        }
+      ]
+    },
+    "dmg": {
+      "artifactName": "WordDrill-macOS-AppleSilicon.${ext}"
     }
   }
 }

@@ -147,11 +147,48 @@ function createWindow() {
   win.loadURL('worddrill://app/index.html');
 }
 
+function readBuildInfo() {
+  for (const candidate of [
+    path.join(__dirname, 'build-info.json'),
+    path.join(WEB_DIR, 'build-info.json')
+  ]) {
+    try {
+      return JSON.parse(fs.readFileSync(candidate, 'utf8'));
+    } catch {
+      // try next path
+    }
+  }
+  return {};
+}
+
+function getAppInfo() {
+  const meta = readBuildInfo();
+  const commit = String(meta.commit || '');
+  return {
+    platform: process.platform === 'darwin' ? 'macos' : 'windows',
+    arch: process.arch,
+    version: String(meta.version || app.getVersion() || '1.0.0'),
+    commit,
+    shortCommit: String(meta.shortCommit || commit.slice(0, 7)),
+    builtAt: String(meta.builtAt || '')
+  };
+}
+
 app.whenReady().then(() => {
-  Menu.setApplicationMenu(null);
+  if (process.platform === 'darwin') {
+    const template = [
+      { role: 'appMenu' },
+      { role: 'editMenu' },
+      { role: 'windowMenu' }
+    ];
+    Menu.setApplicationMenu(Menu.buildFromTemplate(template));
+  } else {
+    Menu.setApplicationMenu(null);
+  }
   getWordbooksDir();
   registerProtocolHandler();
 
+  ipcMain.handle('worddrill:get-app-info', () => getAppInfo());
   ipcMain.handle('worddrill:get-dir', () => getWordbooksDir());
   ipcMain.handle('worddrill:open-dir', async () => {
     const dir = getWordbooksDir();

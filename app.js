@@ -2395,12 +2395,18 @@
 
   /* ---------- iOS PWA 引导 & 原生本地词库桥接 ---------- */
   const IOS_PWA_DISMISS_KEY = 'worddrill.ios-pwa-dismiss.v1';
+  const APP_RELEASES_URL = 'https://github.com/DrivingGodJ/word-drill/releases/latest';
+  const APP_RELEASE_API_URL = 'https://api.github.com/repos/DrivingGodJ/word-drill/releases/latest';
+  const APP_VERSION_FALLBACK_URL = 'https://github.com/DrivingGodJ/word-drill/releases/download/latest/version.json';
+  const UPDATE_DISMISS_KEY = 'worddrill.dismissed-update.v1';
+
   const nativeBridge = () => {
     if (typeof window === 'undefined') return null;
     if (!window.WordDrillNative && window._WordDrillAndroid) {
       const a = window._WordDrillAndroid;
       window.WordDrillNative = {
         platform: 'android',
+        getAppInfo: () => Promise.resolve(a.getAppInfo ? JSON.parse(a.getAppInfo()) : { platform: 'android', version: '1.0.0' }),
         getWordbooksDir: () => Promise.resolve(a.getWordbooksDir()),
         openWordbooksDir: () => Promise.resolve(JSON.parse(a.openWordbooksDir())),
         writeWordbookBundle: (id, name, content) => Promise.resolve(JSON.parse(a.writeWordbookBundle(id, name, content))),
@@ -2460,6 +2466,225 @@
     $('#btn-settings-ios-pwa')?.addEventListener('click', openIosPwaModal);
     $('#btn-dismiss-ios-pwa')?.addEventListener('click', dismiss);
     $('#btn-ios-pwa-dismiss-modal')?.addEventListener('click', dismiss);
+  }
+
+  function shouldShowTopbarDownload(env) {
+    const s = getIosPwaState(env);
+    return !s.isNative && !s.isIos && !s.isStandalone;
+  }
+
+  function initTopbarDownload() {
+    const el = $('#topbar-download-link');
+    if (el) el.hidden = !shouldShowTopbarDownload();
+  }
+
+  function compareSemver(a, b) {
+    const parse = (v) => {
+      const m = String(v || '').trim().match(/^v?(\d+)\.(\d+)\.(\d+)/i);
+      return m ? [Number(m[1]), Number(m[2]), Number(m[3])] : null;
+    };
+    const pa = parse(a);
+    const pb = parse(b);
+    if (!pa || !pb) return null;
+    for (let i = 0; i < 3; i++) {
+      if (pa[i] !== pb[i]) return pa[i] > pb[i] ? 1 : -1;
+    }
+    return 0;
+  }
+
+  function parseReleaseBuildMeta(release) {
+    if (!release || typeof release !== 'object') return null;
+    if (!release.tag_name && (release.version || release.commit || release.builtAt)) {
+      return {
+        version: release.version || '',
+        tag: release.tag || 'latest',
+        commit: release.commit || '',
+        shortCommit: release.shortCommit || String(release.commit || '').slice(0, 7),
+        builtAt: release.builtAt || '',
+        htmlUrl: release.releaseUrl || APP_RELEASES_URL,
+        assets: Array.isArray(release.assets) ? release.assets : []
+      };
+    }
+    const body = String(release.body || '');
+    const m = body.match(/<!--\s*worddrill-build:\s*(\{[\s\S]*?\})\s*-->/);
+    let meta = {};
+    if (m) {
+      try { meta = JSON.parse(m[1]); } catch { meta = {}; }
+    }
+    const tag = String(release.tag_name || meta.tag || '');
+    const semTag = /^v?\d+\.\d+\.\d+/i.test(tag) ? tag.replace(/^v/i, '') : '';
+    const commit = String(meta.commit || '');
+    return {
+      version: String(meta.version || semTag || ''),
+      tag: tag || 'latest',
+      commit,
+      shortCommit: String(meta.shortCommit || commit.slice(0, 7) || ''),
+      builtAt: String(meta.builtAt || release.published_at || release.created_at || ''),
+      htmlUrl: release.html_url || APP_RELEASES_URL,
+      assets: Array.isArray(release.assets)
+        ? release.assets.map((a) => ({ name: a.name, url: a.browser_download_url || a.url }))
+        : []
+    };
+  }
+
+  function pickPlatformAssetUrl(assets, platform, fallbackUrl = APP_RELEASES_URL) {
+    const list = Array.isArray(assets) ? assets : [];
+    const pick = (re) => {
+      const m = list.find((a) => re.test(String(a.name || '')));
+      return m ? (m.url || m.browser_download_url || fallbackUrl) : fallbackUrl;
+    };
+    if (platform === 'android') return pick(/\.apk$/i);
+    if (platform === 'macos') return pick(/\.dmg$/i);
+    if (platform === 'windows') {
+      const m = list.find((a) => /Setup\.exe$/i.test(String(a.name || '')))
+        || list.find((a) => /\.exe$/i.test(String(a.name || '')));
+      return m ? (m.url || m.browser_download_url || fallbackUrl) : fallbackUrl;
+    }
+    return fallbackUrl;
+  }
+
+  function evaluateAppUpdate(localInfo, releaseObj) {
+    const remote = parseReleaseBuildMeta(releaseObj);
+    if (!remote) return { hasUpdate: false, remoteLabel: '', remoteId: '', downloadUrl: APP_RELEASES_URL, releaseUrl: APP_RELEASES_URL };
+    const localVer = String(localInfo?.version || '');
+    const cmp = compareSemver(remote.version, localVer);
+    const localCommit = String(localInfo?.commit || '');
+    const remoteCommit = String(remote.commit || '');
+    const localTime = localInfo?.builtAt ? Date.parse(localInfo.builtAt) : 0;
+    const remoteTime = remote.builtAt ? Date.parse(remote.builtAt) : 0;
+
+    let hasUpdate = false;
+    if (cmp !== null && cmp > 0) {
+      hasUpdate = true;
+    } else if (cmp === 0 || cmp === null) {
+      if (remoteCommit && localCommit && remoteCommit !== localCommit) {
+        hasUpdate = !localTime || !remoteTime || remoteTime > localTime + 60000;
+      } else if (!localCommit && remoteTime && localTime && remoteTime > localTime + 60000) {
+        hasUpdate = true;
+      }
+    }
+
+    const verLabel = remote.version ? `v${remote.version}` : remote.tag;
+    const remoteLabel = remote.shortCommit ? `${verLabel} (${remote.shortCommit})` : verLabel;
+    const remoteId = `${remote.version || remote.tag}:${remote.shortCommit || remote.builtAt}`;
+    const downloadUrl = pickPlatformAssetUrl(remote.assets, localInfo?.platform, remote.htmlUrl || APP_RELEASES_URL);
+    return {
+      hasUpdate,
+      remoteLabel,
+      remoteId,
+      downloadUrl,
+      releaseUrl: remote.htmlUrl || APP_RELEASES_URL
+    };
+  }
+
+  function formatPlatformLabel(platform) {
+    if (platform === 'android') return 'Android 版';
+    if (platform === 'macos') return 'macOS Apple Silicon 版';
+    if (platform === 'windows') return 'Windows 桌面版';
+    return '客户端';
+  }
+
+  async function fetchLatestReleaseMeta() {
+    try {
+      const res = await fetch(APP_RELEASE_API_URL, {
+        headers: { Accept: 'application/vnd.github+json' },
+        cache: 'no-store'
+      });
+      if (res.ok) return await res.json();
+    } catch { /* 回退到 version.json */ }
+    const fb = await fetch(`${APP_VERSION_FALLBACK_URL}?t=${now()}`, { cache: 'no-store' });
+    if (!fb.ok) throw new Error(`检查更新失败（${fb.status}）`);
+    return fb.json();
+  }
+
+  let latestUpdateResult = null;
+  async function checkAppUpdate({ silent = false } = {}) {
+    const bridge = nativeBridge();
+    if (!bridge?.getAppInfo) return null;
+    const statusEl = $('#app-update-status');
+    const dlBtn = $('#btn-update-download');
+    const banner = $('#app-update-banner');
+    const bannerDesc = $('#app-update-banner-desc');
+    const bannerDl = $('#btn-banner-update-download');
+    const checkBtn = $('#btn-check-update');
+
+    if (!silent) {
+      if (checkBtn) checkBtn.disabled = true;
+      if (statusEl) { statusEl.textContent = '正在检查 GitHub Release 新版本…'; statusEl.className = 'hint sync-status'; }
+    }
+
+    try {
+      const localInfo = await bridge.getAppInfo();
+      const releaseData = await fetchLatestReleaseMeta();
+      const result = evaluateAppUpdate(localInfo, releaseData);
+      latestUpdateResult = result;
+
+      if (result.hasUpdate) {
+        if (dlBtn) { dlBtn.href = result.downloadUrl; dlBtn.hidden = false; }
+        if (statusEl) {
+          statusEl.textContent = `发现新版本 ${result.remoteLabel}，点击下方按钮即可前往下载。`;
+          statusEl.className = 'hint sync-status is-ok';
+        }
+        const dismissedId = localStorage.getItem(UPDATE_DISMISS_KEY) || '';
+        if (!silent || dismissedId !== result.remoteId) {
+          if (bannerDesc) bannerDesc.textContent = `最新版本 ${result.remoteLabel} 已发布，点击下载更新`;
+          if (bannerDl) bannerDl.href = result.downloadUrl;
+          if (banner) banner.hidden = false;
+        }
+      } else {
+        if (dlBtn) dlBtn.hidden = true;
+        if (banner) banner.hidden = true;
+        if (!silent && statusEl) {
+          const curLabel = localInfo?.shortCommit ? `v${localInfo.version} (${localInfo.shortCommit})` : `v${localInfo?.version || '1.0.0'}`;
+          statusEl.textContent = `当前已是最新版本（${curLabel}）`;
+          statusEl.className = 'hint sync-status is-ok';
+        }
+      }
+      return result;
+    } catch (err) {
+      if (!silent && statusEl) {
+        statusEl.textContent = err?.message || '检查更新失败，请检查网络连接';
+        statusEl.className = 'hint sync-status is-error';
+      }
+      return null;
+    } finally {
+      if (!silent && checkBtn) checkBtn.disabled = false;
+    }
+  }
+
+  async function initAppUpdater() {
+    const bridge = nativeBridge();
+    const block = $('#app-update-block');
+    const banner = $('#app-update-banner');
+    if (!bridge?.getAppInfo) {
+      if (block) block.hidden = true;
+      if (banner) banner.hidden = true;
+      return;
+    }
+    if (block) block.hidden = false;
+    try {
+      const info = await bridge.getAppInfo();
+      const badge = $('#app-platform-badge');
+      const label = $('#app-version-label');
+      if (badge) badge.textContent = formatPlatformLabel(info?.platform);
+      if (label) {
+        const ver = info?.version ? `v${info.version}` : 'v1.0.0';
+        const sha = info?.shortCommit ? ` (${info.shortCommit})` : '';
+        label.textContent = `当前版本：${formatPlatformLabel(info?.platform)} · ${ver}${sha}`;
+      }
+    } catch { /* 忽略读取版本信息失败 */ }
+
+    $('#btn-check-update')?.addEventListener('click', () => checkAppUpdate({ silent: false }));
+    $('#btn-dismiss-update-banner')?.addEventListener('click', () => {
+      if (banner) banner.hidden = true;
+      if (latestUpdateResult?.remoteId) {
+        try { localStorage.setItem(UPDATE_DISMISS_KEY, latestUpdateResult.remoteId); } catch { /* 忽略 */ }
+      }
+    });
+
+    setTimeout(() => {
+      checkAppUpdate({ silent: true });
+    }, 1200);
   }
 
   const nativeBookShortId = (bookId) => String(bookId || '').replace(/^local:/, '');
@@ -3807,7 +4032,9 @@
     bindEvents();
     bindSettings();
     bindSync();
+    initTopbarDownload();
     initIosPwaGuide();
+    initAppUpdater();
     applySyncToUI();
     renderWordbooks();
     refreshIntro();

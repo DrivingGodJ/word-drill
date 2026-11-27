@@ -6,6 +6,7 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.provider.DocumentsContract
 import android.speech.tts.TextToSpeech
@@ -241,6 +242,25 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
             }.getOrElse { err ->
                 JSONObject().apply { put("ok", false); put("message", err.message ?: "导出失败") }.toString()
             }
+
+        @JavascriptInterface
+        fun getAppInfo(): String {
+            val base = runCatching {
+                assets.open("web/build-info.json").bufferedReader().use { JSONObject(it.readText()) }
+            }.getOrElse { JSONObject() }
+            val fallbackVer = runCatching {
+                packageManager.getPackageInfo(packageName, 0).versionName
+            }.getOrNull() ?: "1.0.0"
+            val commit = base.optString("commit", "")
+            return JSONObject().apply {
+                put("platform", "android")
+                put("arch", Build.SUPPORTED_ABIS.firstOrNull() ?: "arm64-v8a")
+                put("version", base.optString("version", "").ifBlank { fallbackVer })
+                put("commit", commit)
+                put("shortCommit", base.optString("shortCommit", "").ifBlank { commit.take(7) })
+                put("builtAt", base.optString("builtAt", ""))
+            }.toString()
+        }
 
         @JavascriptInterface
         fun speak(text: String): Boolean {
