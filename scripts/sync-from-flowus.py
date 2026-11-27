@@ -137,16 +137,17 @@ def merge(existing: list[dict], incoming: list[dict]) -> tuple[list[dict], list[
         if not item.get("meaning"):
             blank.append(item["word"])
         old = by_id.get(item["id"])
+        req_tag = "只认" if "只认" in (item.get("tags") or []) else "拼写"
         if old is None:
             item.setdefault("collocations", [])
-            item["tags"] = list(item.get("tags", [])) + ["手动添加"]
+            item["tags"] = [req_tag]
             existing.append(item)
             added.append(item["word"])
             continue
 
         changed = False
-        if "手动添加" not in old.get("tags", []):
-            old["tags"] = list(old.get("tags", [])) + ["手动添加"]
+        if old.get("tags") != [req_tag]:
+            old["tags"] = [req_tag]
             changed = True
         for key in ("word", "pos", "meaning", "example", "exampleZh"):
             new_val = item.get(key)

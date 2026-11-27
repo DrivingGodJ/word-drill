@@ -641,15 +641,15 @@ assert.equal(app.getSession().practice, true);
     {
       meta: { shortName: '四级词汇' },
       words: [
-        { id: 'abandon', word: 'abandon', pos: 'v.', meaning: '放弃', tags: ['CET4'] },
-        { id: 'cet4only', word: 'cet4only', pos: 'n.', meaning: '四级专有', example: 'A cet4only sample sentence here.', exampleZh: '例句', tags: ['CET4'] }
+        { id: 'abandon', word: 'abandon', pos: 'v.', meaning: '放弃', tags: ['拼写'] },
+        { id: 'cet4only', word: 'cet4only', pos: 'n.', meaning: '四级专有', example: 'A cet4only sample sentence here.', exampleZh: '例句', tags: ['拼写'] }
       ]
     },
     {
       meta: { shortName: '六级词汇' },
       words: [
-        { id: 'abandon', word: 'abandon', pos: 'v.', meaning: '放弃；抛弃', example: 'Do not abandon hope in hard times.', exampleZh: '困难时不要放弃希望。', tags: ['CET6'] },
-        { id: 'ieltsword', word: 'ieltsword', pos: 'adj.', meaning: '雅思词汇', tags: ['IELTS'] }
+        { id: 'abandon', word: 'abandon', pos: 'v.', meaning: '放弃；抛弃', example: 'Do not abandon hope in hard times.', exampleZh: '困难时不要放弃希望。', tags: ['只认'] },
+        { id: 'ieltsword', word: 'ieltsword', pos: 'adj.', meaning: '雅思词汇', tags: ['只认'] }
       ]
     }
   ], [
@@ -659,7 +659,8 @@ assert.equal(app.getSession().practice, true);
   ]);
   assert.equal(mergedLists.words.length, 3);
   const abandonMerged = mergedLists.words.find(w => w.id === 'abandon');
-  assert.deepEqual(plain(abandonMerged.tags), ['CET4', 'CET6']);
+  assert.deepEqual(plain(abandonMerged.tags), ['拼写']);
+  assert.deepEqual(plain(mergedLists.words.find(w => w.id === 'ieltsword').tags), ['只认']);
   assert.equal(abandonMerged.meaning, '放弃；抛弃');
   assert.equal(mergedLists.distractors.length, 2);
   assert.deepEqual(plain(mergedLists.meta.sources), ['四级词汇', '六级词汇']);
@@ -684,10 +685,11 @@ assert.equal(app.getSession().practice, true);
   await app.autoSync(true);
   assert.equal(unexpectedNetworkCalls, 0, 'local wordbook never triggers cloud autoSync');
 
-  // 3-mode spelling requirement: auto (per wordlist tags), all (force spelling), off (recognize only).
+  // 3-mode spelling requirement: auto (per spelling tag), all (force spelling), off (recognize only).
   app.setWords([
-    { id: 'cet6only', word: 'cet6only', meaning: '六级词', tags: ['CET6'] },
-    { id: 'recOnly', word: 'recOnly', meaning: '只认词', tags: ['CET4', '只认'] }
+    { id: 'cet6only', word: 'cet6only', meaning: '只认词1', tags: ['只认'] },
+    { id: 'recOnly', word: 'recOnly', meaning: '只认词2', tags: ['只认'] },
+    { id: 'spellWord', word: 'spellWord', meaning: '拼写词', tags: ['拼写'] }
   ]);
   reset({
     cet6only: { ...rec('mastered'), masteredBy: 'recognize' },
@@ -695,6 +697,7 @@ assert.equal(app.getSession().practice, true);
   });
   assert.equal(app.requiresWriting('cet6only'), false);
   assert.equal(app.requiresWriting('recOnly'), false);
+  assert.equal(app.requiresWriting('spellWord'), true);
   app.getStore().settings.spelling = 'all';
   assert.equal(app.requiresWriting('cet6only'), true);
   assert.equal(app.requiresWriting('recOnly'), true);

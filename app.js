@@ -249,6 +249,7 @@
     if (store?.settings?.spelling === 'off') return false;
     if (store?.settings?.spelling === 'all') return true;
     const tags = byId.get(id)?.tags || [];
+    if (tags.includes('拼写')) return true;
     if (tags.includes('只认')) return false;
     return !tags.includes('CET6') || tags.includes('CET4')
       || tags.includes('手动添加') || tags.some((tag) => /^Unit\d+$/i.test(tag));
@@ -1172,6 +1173,14 @@
       + (Array.isArray(w.collocations) && w.collocations.length ? 1 : 0) + (w.pos ? 1 : 0);
   }
 
+  function wordRequiresSpellTag(tags = []) {
+    if (!Array.isArray(tags)) return true;
+    if (tags.includes('拼写')) return true;
+    if (tags.includes('只认')) return false;
+    return !tags.includes('CET6') || tags.includes('CET4')
+      || tags.includes('手动添加') || tags.some((tag) => /^Unit\d+$/i.test(tag));
+  }
+
   function mergeWordlists(lists, distractors = []) {
     const map = new Map();
     const sources = [];
@@ -1181,13 +1190,13 @@
       for (const raw of (item?.words || [])) {
         if (!raw || typeof raw.id !== 'string' || !raw.id || !raw.word || !raw.meaning) continue;
         const prev = map.get(raw.id);
-        const tags = Array.isArray(raw.tags) ? raw.tags.slice() : [];
+        const normTag = wordRequiresSpellTag(raw.tags) ? '拼写' : '只认';
         if (!prev) {
-          map.set(raw.id, { ...raw, tags: [...new Set(tags)] });
+          map.set(raw.id, { ...raw, tags: [normTag] });
         } else {
-          const mergedTags = [...new Set([...(prev.tags || []), ...tags])];
+          const prevNeedsSpell = wordRequiresSpellTag(prev.tags);
           const winner = entryRichness(raw) > entryRichness(prev) ? raw : prev;
-          map.set(raw.id, { ...winner, tags: mergedTags });
+          map.set(raw.id, { ...winner, tags: [prevNeedsSpell || normTag === '拼写' ? '拼写' : '只认'] });
         }
       }
     }
@@ -1676,7 +1685,7 @@
               <input type="checkbox" checked data-cet-id="${esc(w.id)}" id="cet-${esc(w.id)}">
               <span class="cet-review__word">${esc(w.word)}</span>
               <span class="cet-review__pos">${esc(w.pos || '')}</span>
-              <span class="cet-review__tag">${esc((w.tags && w.tags[0]) || 'CET')}</span>
+              <span class="cet-review__tag">${esc((w.tags && w.tags[0]) || (requiresWriting(w.id) ? '拼写' : '只认'))}</span>
             </label>
             <span class="cet-review__meaning">${esc(w.meaning)}</span>
             <details class="cet-review__details">

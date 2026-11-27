@@ -189,14 +189,15 @@ def main() -> None:
     cleaned = [normalize(e, f"第 {i + 1} 条") for i, e in enumerate(entries)]
     added, skipped, marked = [], [], []
     for item in cleaned:
+        req_tag = "只认" if ("只认" in (item.get("tags") or []) or "只认" in (args.tag or [])) else "拼写"
         if item["id"] in by_id:
             skipped.append(item["word"])
             old = by_id[item["id"]]
-            if "手动添加" not in old.get("tags", []):
-                old["tags"] = list(old.get("tags", [])) + ["手动添加"]
+            if req_tag == "拼写" and old.get("tags") != ["拼写"]:
+                old["tags"] = ["拼写"]
                 marked.append(item["word"])
             continue
-        item["tags"] = sorted(set(list(item.get("tags") or []) + args.tag + ["手动添加"]))
+        item["tags"] = [req_tag]
         words.append(item)
         by_id[item["id"]] = item
         added.append(item)

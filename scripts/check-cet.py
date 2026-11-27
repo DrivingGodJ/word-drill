@@ -96,6 +96,8 @@ raw = {'headWord': 'advisable', 'bookId': 'CET4_2', 'content': {'word': {'conten
 better = copy.deepcopy(raw); better['bookId'] = 'CET4_3'
 better['content']['word']['content']['trans'] = [{'pos': 'adj', 'tranCn': '明智的', 'tranOther': 'wise'}]
 assert cet.source_item('advisable', [('CET4', raw), ('CET4', better)])['pos'] == 'adj.'
+assert cet.source_item('advisable', [('CET4', raw), ('CET4', better)])['tags'] == ['拼写']
+assert cet.to_worddrill_entry(raw, 'CET6')['tags'] == ['只认']
 assert cet.exam_sources([{'content': {'word': {'content': {'realExamSentence': {'sentences': [
     {'sContent': 'He is proficient.', 'sourceInfo': {'level': 'CET6', 'year': '2016.6', 'paper': '第二套'}},
     {'sContent': 'A proficient worker.', 'sourceInfo': {'level': 'CET6', 'year': '2016.6', 'paper': '第二套'}}
@@ -230,7 +232,8 @@ with contextlib.redirect_stdout(io.StringIO()):
     assert cet.daily_capacity([{'id': 'x'}], progress, boundary)['seen'] == 1
     # Recognition-only mastery newly requiring spelling is available now, like progressOf in JS.
     progress['words']['x'] = {'stage': 'mastered', 'masteredBy': 'recognize', 'due': (at+timedelta(days=1)).timestamp()*1000}
-    assert cet.daily_capacity([{'id': 'x', 'tags': ['CET6', '手动添加']}], progress, at)['due'] == 1
+    assert cet.daily_capacity([{'id': 'x', 'tags': ['拼写']}], progress, at)['due'] == 1
+    assert cet.daily_capacity([{'id': 'x', 'tags': ['只认']}], progress, at)['due'] == 0
 
 # Manual entry paths override a CET6 label without replacing the existing word/ID.
 with tempfile.TemporaryDirectory() as folder, contextlib.redirect_stdout(io.StringIO()):
@@ -253,7 +256,7 @@ with tempfile.TemporaryDirectory() as folder, contextlib.redirect_stdout(io.Stri
     sys.argv = ['check', '--json-file', str(entries), '--no-commit']
     manual.main()
     records = {w['id']: w for w in json.loads(data_file.read_text())['words']}
-    for wid in ('proficient', 'extra'): assert '手动添加' in records[wid]['tags']
+    for wid in ('proficient', 'extra'): assert records[wid]['tags'] == ['拼写']
     assert {k: v for k,v in records['proficient'].items() if k != 'tags'} == {k: v for k,v in original.items() if k != 'tags'}
     before = data_file.read_bytes()
     manual.main()
@@ -262,7 +265,7 @@ with tempfile.TemporaryDirectory() as folder, contextlib.redirect_stdout(io.Stri
     flowus = importlib.util.module_from_spec(spec); spec.loader.exec_module(flowus)
     existing = copy.deepcopy([original])
     merged, added, updated, blank = flowus.merge(existing, [{'id': 'proficient', 'word': 'proficient', 'meaning': item['meaning']}])
-    assert added == [] and updated == ['proficient'] and '手动添加' in merged[0]['tags']
+    assert added == [] and updated == ['proficient'] and merged[0]['tags'] == ['拼写']
     assert merged[0]['custom'] == 'keep' and merged[0]['example'] == original['example']
 print('CET checks passed: adaptive supply, 48h quota, approval/rejection, reserve, replay, dry-run, no-op, bad progress, manual-word priority.')
 

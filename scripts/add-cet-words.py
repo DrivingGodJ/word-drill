@@ -161,6 +161,20 @@ def quality_score(item: dict) -> int:
             + bool(item.get('phonetic')) + bool(item.get('selection', {}).get('examSources')))
 
 
+def spelling_tag(level: str) -> str:
+    return '只认' if level == 'CET6' else '拼写'
+
+
+def word_requires_writing(tags: list[str] | None) -> bool:
+    t = tags or []
+    if '拼写' in t:
+        return True
+    if '只认' in t:
+        return False
+    return ('CET6' not in t or 'CET4' in t or '手动添加' in t
+            or any(re.fullmatch(r'Unit\d+', tag, re.I) for tag in t))
+
+
 def to_worddrill_entry(raw: dict, level: str) -> dict | None:
     head = (raw.get('headWord') or '').strip()
     c = content(raw)
@@ -184,7 +198,7 @@ def to_worddrill_entry(raw: dict, level: str) -> dict | None:
                              for p in c.get('phrase', {}).get('phrases', []) or []
                              if p.get('pContent') and chinese(p.get('pCn', ''))
                              and contains_head(p['pContent'], head)][:3],
-            'phonetic': (c.get('ukphone') or c.get('usphone') or '').strip(), 'tags': [level],
+            'phonetic': (c.get('ukphone') or c.get('usphone') or '').strip(), 'tags': [spelling_tag(level)],
             'exampleSource': '本项目编辑补全（非真题）' if edited else '词书配对例句（非真题）'}
 
 
@@ -384,8 +398,7 @@ def daily_capacity(words: list[dict], progress: dict, at: datetime) -> dict:
         p = progress['words'].get(word['id'], {})
         stage, due = p.get('stage', 'new'), p.get('due', 0)
         tags = word.get('tags', [])
-        writing = ('CET6' not in tags or 'CET4' in tags or '手动添加' in tags
-                   or any(re.fullmatch(r'Unit\d+', tag, re.I) for tag in tags))
+        writing = word_requires_writing(tags)
         if writing and stage == 'mastered' and p.get('masteredBy') == 'recognize':
             stage, due = 'write', 0
         seen = p.get('lastSeen', 0)
