@@ -47,7 +47,7 @@ const source = fs.readFileSync(path.join(root, 'app.js'), 'utf8')
     remoteReadFile, loadWordbooks, saveWordbooks, selectWordbook, deleteWordbook, isCloudBook, saveVocabularyLocal,
     buildWordbookBundle, parseWordbookBundle, wordDifficulty, selectDailyNewWords, resetBookProgress,
     getIosPwaState, syncBookToNativeDisk, deleteBookFromNativeDisk, hydrateNativeWordbooksOnBoot,
-    shouldShowTopbarDownload, compareSemver, parseReleaseBuildMeta, pickPlatformAssetUrl, evaluateAppUpdate
+    shouldShowTopbarDownload, compareSemver, parseReleaseBuildMeta, pickPlatformAssetUrl, evaluateAppUpdate, fetchLatestReleaseMeta
   }; sync = { deviceId: 'check' };`);
 vm.runInContext(source, context);
 const app = context.check;
@@ -1066,6 +1066,18 @@ assert.equal(app.getSession().practice, true);
   assert.equal(newerVersion.downloadUrl, 'https://example.com/setup.exe');
 
   assert.equal(app.pickPlatformAssetUrl(sampleRelease.assets, 'android'), 'https://example.com/app.apk');
+
+  // Native fetchLatestRelease bypasses browser fetch CORS and works even if window.fetch fails.
+  const prevFetch = context.fetch;
+  context.fetch = async () => { throw new Error('Failed to fetch'); };
+  context.window.WordDrillNative = {
+    platform: 'macos',
+    fetchLatestRelease: async () => ({ ok: true, data: { version: '1.0.1', commit: 'cccccc1234', builtAt: '2026-11-28T03:00:00Z', assets: [] } })
+  };
+  const nativeMeta = await app.fetchLatestReleaseMeta();
+  assert.equal(nativeMeta.version, '1.0.1', 'uses native bridge when available to avoid CORS');
+  delete context.window.WordDrillNative;
+  context.fetch = prevFetch;
 
   console.log(`Learning checks passed; ${Object.keys(old.words).length} legacy records preserved.`);
 })().catch((error) => { console.error(error); process.exitCode = 1; });

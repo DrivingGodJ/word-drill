@@ -1,4 +1,4 @@
-const { app, BrowserWindow, dialog, ipcMain, Menu, protocol, shell } = require('electron');
+const { app, BrowserWindow, dialog, ipcMain, Menu, net, protocol, shell } = require('electron');
 const fs = require('node:fs');
 const fsp = require('node:fs/promises');
 const path = require('node:path');
@@ -174,6 +174,39 @@ function getAppInfo() {
   };
 }
 
+async function fetchLatestReleaseMeta(token) {
+  const verUrl = `https://github.com/DrivingGodJ/word-drill/releases/download/latest/version.json?t=${Date.now()}`;
+  let lastErr = '';
+  try {
+    const res = await net.fetch(verUrl, {
+      cache: 'no-store',
+      signal: AbortSignal.timeout(10000),
+      headers: { 'User-Agent': 'WordDrill-Desktop' }
+    });
+    if (res.ok) return { ok: true, data: await res.json() };
+    lastErr = `version.json (${res.status})`;
+  } catch (err) {
+    lastErr = err?.message || 'network error';
+  }
+
+  try {
+    const headers = {
+      Accept: 'application/vnd.github+json',
+      'User-Agent': 'WordDrill-Desktop'
+    };
+    if (token) headers.Authorization = `Bearer ${String(token).trim()}`;
+    const apiRes = await net.fetch('https://api.github.com/repos/DrivingGodJ/word-drill/releases/latest', {
+      cache: 'no-store',
+      signal: AbortSignal.timeout(10000),
+      headers
+    });
+    if (apiRes.ok) return { ok: true, data: await apiRes.json() };
+    return { ok: false, message: `检查更新失败（GitHub ${apiRes.status}${lastErr ? ` / ${lastErr}` : ''}）` };
+  } catch (err) {
+    return { ok: false, message: `无法连接 GitHub（${err?.message || lastErr || '请检查网络或代理'}）` };
+  }
+}
+
 app.whenReady().then(() => {
   if (process.platform === 'darwin') {
     const template = [
@@ -189,6 +222,7 @@ app.whenReady().then(() => {
   registerProtocolHandler();
 
   ipcMain.handle('worddrill:get-app-info', () => getAppInfo());
+  ipcMain.handle('worddrill:fetch-latest-release', (_, token) => fetchLatestReleaseMeta(token));
   ipcMain.handle('worddrill:get-dir', () => getWordbooksDir());
   ipcMain.handle('worddrill:open-dir', async () => {
     const dir = getWordbooksDir();

@@ -26,6 +26,8 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.webkit.WebViewAssetLoader
 import org.json.JSONObject
+import java.net.HttpURLConnection
+import java.net.URL
 import java.util.Locale
 
 class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
@@ -260,6 +262,76 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
                 put("shortCommit", base.optString("shortCommit", "").ifBlank { commit.take(7) })
                 put("builtAt", base.optString("builtAt", ""))
             }.toString()
+        }
+
+        private fun httpGetJson(urlStr: String, token: String? = null, useAuthOnApi: Boolean = false): Pair<Int, String> {
+            var currentUrl = urlStr
+            for (hop in 0 until 6) {
+                val url = URL(currentUrl)
+                val conn = (url.openConnection() as HttpURLConnection).apply {
+                    instanceFollowRedirects = false
+                    connectTimeout = 8000
+                    readTimeout = 8000
+                    requestMethod = "GET"
+                    setRequestProperty("User-Agent", "WordDrill-Android")
+                    setRequestProperty("Accept", "application/json")
+                    if (useAuthOnApi && !token.isNullOrBlank() && url.host == "api.github.com") {
+                        setRequestProperty("Authorization", "Bearer ${token.trim()}")
+                    }
+                }
+                val code = conn.responseCode
+                if (code in listOf(301, 302, 303, 307, 308)) {
+                    val loc = conn.getHeaderField("Location")
+                    conn.disconnect()
+                    if (loc.isNullOrBlank()) return Pair(code, "")
+                    currentUrl = URL(url, loc).toString()
+                    continue
+                }
+                val stream = if (code in 200..299) conn.inputStream else conn.errorStream
+                val body = stream?.bufferedReader()?.use { it.readText() } ?: ""
+                conn.disconnect()
+                return Pair(code, body)
+            }
+            return Pair(599, "Too many redirects")
+        }
+
+        @JavascriptInterface
+        fun fetchLatestRelease(token: String?): String {
+            val verUrl = "https://github.com/DrivingGodJ/word-drill/releases/download/latest/version.json?t=${System.currentTimeMillis()}"
+            var lastErr = ""
+            runCatching {
+                val (code, body) = httpGetJson(verUrl)
+                if (code in 200..299 && body.isNotBlank()) {
+                    return JSONObject().apply {
+                        put("ok", true)
+                        put("data", JSONObject(body))
+                    }.toString()
+                }
+                lastErr = "version.json ($code)"
+            }.onFailure {
+                lastErr = it.message ?: "network error"
+            }
+
+            return runCatching {
+                val apiUrl = "https://api.github.com/repos/DrivingGodJ/word-drill/releases/latest"
+                val (code, body) = httpGetJson(apiUrl, token, useAuthOnApi = true)
+                if (code in 200..299 && body.isNotBlank()) {
+                    JSONObject().apply {
+                        put("ok", true)
+                        put("data", JSONObject(body))
+                    }.toString()
+                } else {
+                    JSONObject().apply {
+                        put("ok", false)
+                        put("message", "检查更新失败（GitHub $code${if (lastErr.isNotBlank()) " / $lastErr" else ""}）")
+                    }.toString()
+                }
+            }.getOrElse { err ->
+                JSONObject().apply {
+                    put("ok", false)
+                    put("message", "无法连接 GitHub（${err.message ?: lastErr}）")
+                }.toString()
+            }
         }
 
         @JavascriptInterface

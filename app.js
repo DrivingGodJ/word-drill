@@ -2407,6 +2407,7 @@
       window.WordDrillNative = {
         platform: 'android',
         getAppInfo: () => Promise.resolve(a.getAppInfo ? JSON.parse(a.getAppInfo()) : { platform: 'android', version: '1.0.0' }),
+        fetchLatestRelease: (token) => Promise.resolve(a.fetchLatestRelease ? JSON.parse(a.fetchLatestRelease(token || '')) : { ok: false, message: '请升级客户端后再试' }),
         getWordbooksDir: () => Promise.resolve(a.getWordbooksDir()),
         openWordbooksDir: () => Promise.resolve(JSON.parse(a.openWordbooksDir())),
         writeWordbookBundle: (id, name, content) => Promise.resolve(JSON.parse(a.writeWordbookBundle(id, name, content))),
@@ -2585,16 +2586,17 @@
   }
 
   async function fetchLatestReleaseMeta() {
-    try {
-      const res = await fetch(APP_RELEASE_API_URL, {
-        headers: { Accept: 'application/vnd.github+json' },
-        cache: 'no-store'
-      });
-      if (res.ok) return await res.json();
-    } catch { /* 回退到 version.json */ }
-    const fb = await fetch(`${APP_VERSION_FALLBACK_URL}?t=${now()}`, { cache: 'no-store' });
-    if (!fb.ok) throw new Error(`检查更新失败（${fb.status}）`);
-    return fb.json();
+    const bridge = nativeBridge();
+    if (bridge?.fetchLatestRelease) {
+      const res = await bridge.fetchLatestRelease(sync?.token || '');
+      if (res?.ok && res.data) return res.data;
+      throw new Error(res?.message || '检查更新失败，请检查网络连接');
+    }
+    const headers = { Accept: 'application/vnd.github+json' };
+    if (sync?.token) headers.Authorization = `Bearer ${sync.token}`;
+    const res = await fetch(APP_RELEASE_API_URL, { headers, cache: 'no-store' });
+    if (!res.ok) throw new Error(res.status === 403 ? 'GitHub API 访问受限（403），请稍后再试' : `检查更新失败（${res.status}）`);
+    return res.json();
   }
 
   let latestUpdateResult = null;
