@@ -42,8 +42,8 @@
   const SYNC_API = 'https://api.github.com';
   /** 学习参数才同步；主题/发音是设备偏好，各设备自己存 */
   const SYNCED_SETTINGS = ['newLimit', 'threshold', 'retention', 'spelling'];
-  /** 拼写要求：auto = 按词表标签判定（六级词只认，四级/手动词要拼）；off = 本词表全部只认不拼。 */
-  const SPELLING_MODES = ['auto', 'off'];
+  /** 拼写要求：auto = 按词表设定；all = 全部强制拼写；off = 全部只认不拼。 */
+  const SPELLING_MODES = ['auto', 'all', 'off'];
   const normSpelling = (v) => (SPELLING_MODES.includes(v) ? v : 'auto');
   /** 学习参数的合法区间 */
   const SETTING_RANGE = { newLimit: [0, 40], threshold: [CREDIT_NEED_MIN, CREDIT_NEED_MAX], retention: [80, 95] };
@@ -247,6 +247,7 @@
 
   function requiresWriting(id) {
     if (store?.settings?.spelling === 'off') return false;
+    if (store?.settings?.spelling === 'all') return true;
     const tags = byId.get(id)?.tags || [];
     if (tags.includes('只认')) return false;
     return !tags.includes('CET6') || tags.includes('CET4')
@@ -1212,11 +1213,7 @@
     };
   }
 
-  /* ---------- 本地词库上传到云端（新增 / 覆盖 / 替换） ---------- */
-  function hasStudyActivity(rec) {
-    return !!rec && (rec.stage !== 'new' || (rec.lastSeen || 0) > 0 || (rec.correct || 0) > 0 || (rec.wrong || 0) > 0);
-  }
-
+  /* ---------- 本地词库上传到云端（新增 / 替换 / 覆盖） ---------- */
   function mergeDistractors(a = [], b = []) {
     const out = [];
     const seen = new Set();
@@ -1230,7 +1227,13 @@
     return out;
   }
 
-  function planCloudUpload({ localVocab, localProgress, remoteVocab, remoteProgress, mode, replaceProgress = false }) {
+  /**
+   * 规划本地词库上传到云端的最终单词表与进度：
+   * - append（新增）：保留云端原有单词表和进度，只追加云端没有的新词，并将两端进度双向合并。
+   * - replace（替换）：只把云端单词表替换为本地单词表（移除云端多出的旧词），同词保留云端历史进度并与本地合并。
+   * - overwrite（覆盖）：单词表与学习进度全部直接覆写为当前本地词库与进度。
+   */
+  function planCloudUpload({ localVocab, localProgress, remoteVocab, remoteProgress, mode }) {
     const localWords = Array.isArray(localVocab?.words) ? localVocab.words : [];
     const remoteWords = Array.isArray(remoteVocab?.words) ? remoteVocab.words : [];
     const lProg = readStore(JSON.parse(JSON.stringify(localProgress || defaultStore())));
@@ -1240,28 +1243,21 @@
     const localMap = new Map(localWords.map((w) => [w.id, w]));
 
     let finalWords = [];
-    let added = 0, overwritten = 0, removed = 0;
+    let added = 0, kept = 0, removed = 0;
 
     if (mode === 'append') {
       finalWords = remoteWords.slice();
+      kept = remoteWords.length;
       for (const w of localWords) {
         if (!remoteMap.has(w.id)) {
           finalWords.push(w);
           added++;
         }
       }
-    } else if (mode === 'overwrite') {
-      const resultMap = new Map(remoteWords.map((w) => [w.id, w]));
-      for (const w of localWords) {
-        if (resultMap.has(w.id)) overwritten++;
-        else added++;
-        resultMap.set(w.id, w);
-      }
-      finalWords = Array.from(resultMap.values());
-    } else if (mode === 'replace') {
+    } else if (mode === 'replace' || mode === 'overwrite') {
       finalWords = localWords.slice();
       for (const w of localWords) {
-        if (remoteMap.has(w.id)) overwritten++;
+        if (remoteMap.has(w.id)) kept++;
         else added++;
       }
       for (const w of remoteWords) {
@@ -1272,8 +1268,10 @@
     }
 
     let finalProgress;
-    if (mode === 'replace' && replaceProgress) {
+    let progressAction;
+    if (mode === 'overwrite') {
       finalProgress = lProg;
+      progressAction = '全部进度覆写为本地状态';
     } else if (mode === 'replace') {
       finalProgress = lProg;
       const filteredRemote = {
@@ -1283,31 +1281,16 @@
         )
       };
       mergeRemote(filteredRemote, finalProgress);
-    } else if (mode === 'overwrite') {
-      finalProgress = rProg;
-      for (const [id, rec] of Object.entries(lProg.words || {})) {
-        if (hasStudyActivity(rec) || !finalProgress.words[id]) {
-          finalProgress.words[id] = normalRec(rec);
-        }
-      }
-      for (const k of ['answers', 'correct', 'sessions', 'streakDays']) {
-        finalProgress.stats[k] = Math.max(finalProgress.stats[k] || 0, lProg.stats[k] || 0);
-      }
-      if (lProg.stats.lastDate && (!finalProgress.stats.lastDate || lProg.stats.lastDate > finalProgress.stats.lastDate)) {
-        finalProgress.stats.lastDate = lProg.stats.lastDate;
-      }
-      if ((lProg.settingsAt || 0) > (finalProgress.settingsAt || 0)) {
-        finalProgress.settings = { ...finalProgress.settings, ...lProg.settings };
-        finalProgress.settingsAt = lProg.settingsAt;
-      }
+      progressAction = '保留同词云端历史进度并与本地合并';
     } else {
       finalProgress = rProg;
       mergeRemote(lProg, finalProgress);
+      progressAction = '保留云端已有进度并与本地合并';
     }
 
-    const finalDistractors = mode === 'replace' && (localVocab?.distractors || []).length
-      ? localVocab.distractors
-      : mergeDistractors(remoteVocab?.distractors || [], localVocab?.distractors || []);
+    const finalDistractors = mode === 'append'
+      ? mergeDistractors(remoteVocab?.distractors || [], localVocab?.distractors || [])
+      : ((localVocab?.distractors || []).length ? localVocab.distractors : mergeDistractors(remoteVocab?.distractors || [], []));
 
     const finalMeta = {
       ...(remoteVocab?.meta || {}),
@@ -1324,14 +1307,15 @@
         remoteCount: remoteWords.length,
         localCount: localWords.length,
         added,
-        overwritten,
+        kept,
         removed,
-        finalCount: finalWords.length
+        finalCount: finalWords.length,
+        progressAction
       }
     };
   }
 
-  async function uploadLocalToCloud({ localBookId, targetConfig, mode, replaceProgress = false }) {
+  async function uploadLocalToCloud({ localBookId, targetConfig, mode }) {
     const diag = await diagnoseSync(targetConfig);
     if (diag.mode !== 'ok') throw new Error(diag.text);
 
@@ -1364,8 +1348,7 @@
         distractors: remoteDistFile?.data?.words || []
       },
       remoteProgress: remoteProgFile?.data || null,
-      mode,
-      replaceProgress
+      mode
     });
 
     const modeTag = { append: 'append', overwrite: 'overwrite', replace: 'replace' }[mode] || mode;
@@ -1649,9 +1632,10 @@
       $('#intro-hint').textContent += ` · 每日备词目标 ${dailyWordTarget()} 词，今日已练 ${dailyCoverage(t).seen} 词`;
     }
     const paceName = getCurrentPace()?.label || '自定义';
-    $('#intro-rule').textContent = store.settings.spelling === 'off'
-      ? `当前模式：只认不拼 · 复习节奏「${paceName}」`
-      : `当前模式：认词 + 拼写（六级默认只认）· 复习节奏「${paceName}」`;
+    const spellDesc = store.settings.spelling === 'off' ? '全部只认不拼'
+      : store.settings.spelling === 'all' ? '全部强制拼写'
+      : '按词表默认（四级要拼、六级只认）';
+    $('#intro-rule').textContent = `当前模式：${spellDesc} · 复习节奏「${paceName}」`;
 
     $('#btn-start').disabled = totalToday === 0;
     $('#btn-review').disabled = due === 0;
@@ -2135,7 +2119,7 @@
         : '到期复习永远优先，每天按这个量补充新词。';
     }
 
-    const spMode = store.settings.spelling === 'off' ? 'off' : 'auto';
+    const spMode = normSpelling(store.settings.spelling);
     $$('[data-spelling]').forEach((btn) => {
       const on = btn.dataset.spelling === spMode;
       btn.classList.toggle('is-selected', on);
@@ -2158,8 +2142,107 @@
 
     const sp = $('#set-speak');
     if (sp) sp.checked = !!store.settings.speak;
-    const backupBtn = $('#btn-backup');
-    if (backupBtn) backupBtn.disabled = !localStorage.getItem(scopedKey(BACKUP_KEY));
+  }
+
+  function buildWordbookBundle({ book, vocab, progress }) {
+    if (!vocab || !Array.isArray(vocab.words) || !vocab.words.length) {
+      throw new Error('当前词库没有可导出的单词');
+    }
+    const cleanProgress = readStore(JSON.parse(JSON.stringify(progress || defaultStore())));
+    return {
+      format: 'worddrill-wordbook',
+      version: 1,
+      exportedAt: now(),
+      book: {
+        name: book?.name || vocab.meta?.name || '导出的词库',
+        type: book?.type || 'local',
+        sources: Array.isArray(book?.sources) ? book.sources : (vocab.meta?.sources || [])
+      },
+      vocabulary: {
+        meta: vocab.meta || {},
+        words: vocab.words,
+        distractors: Array.isArray(vocab.distractors) ? vocab.distractors : [],
+        pending: Array.isArray(vocab.pending) ? vocab.pending : []
+      },
+      progress: cleanProgress
+    };
+  }
+
+  function parseWordbookBundle(parsed) {
+    if (!parsed || typeof parsed !== 'object' || parsed.format !== 'worddrill-wordbook') {
+      throw new Error('请导入完整的词库文件（需同时包含单词表和学习进度），不支持单独导入进度');
+    }
+    const vocab = parsed.vocabulary;
+    if (!vocab || !Array.isArray(vocab.words) || !vocab.words.length) {
+      throw new Error('词库文件缺少有效的单词表');
+    }
+    const ids = new Set();
+    for (const w of vocab.words) {
+      if (!w || typeof w.id !== 'string' || !w.id || ids.has(w.id)
+          || typeof w.word !== 'string' || !w.word || typeof w.meaning !== 'string' || !w.meaning) {
+        throw new Error('词库单词表存在缺失字段或重复 ID');
+      }
+      ids.add(w.id);
+    }
+    const progress = readStore(parsed.progress);
+    migrateStore(progress, parsed.progress?.version);
+    const name = String(parsed.book?.name || vocab.meta?.name || '导入的词库').trim() || '导入的词库';
+    const sources = Array.isArray(parsed.book?.sources) ? parsed.book.sources : (vocab.meta?.sources || []);
+    return {
+      name,
+      sources,
+      vocabulary: {
+        meta: { ...(vocab.meta || {}), name, count: vocab.words.length, updated: vocab.meta?.updated || dayKey(now()) },
+        words: vocab.words,
+        distractors: Array.isArray(vocab.distractors) ? vocab.distractors : [],
+        pending: Array.isArray(vocab.pending) ? vocab.pending : []
+      },
+      progress
+    };
+  }
+
+  async function exportWordbook(bookId = activeRepository) {
+    const reg = loadWordbooks();
+    const book = reg.books[bookId] || getActiveBookInfo();
+    let vocab;
+    let progress;
+    if (!bookId || bookId === activeRepository) {
+      vocab = { meta: META, words: WORDS, distractors: DISTRACTORS, pending: PENDING };
+      progress = store;
+    } else {
+      vocab = await vocabDB.get(bookId) || JSON.parse(localStorage.getItem(scopedKey('worddrill.vocabulary.v1', bookId)) || 'null');
+      progress = loadStore(bookId);
+    }
+    const bundle = buildWordbookBundle({ book, vocab, progress });
+    const safeName = (bundle.book.name || 'wordbook').replace(/[^\w\u4e00-\u9fff-]+/g, '-').replace(/^-|-$/g, '') || 'wordbook';
+    const blob = new Blob([JSON.stringify(bundle)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `worddrill-${safeName}-${dayKey(now())}.json`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    toast(`已导出词库「${bundle.book.name}」（含单词表与进度）`);
+  }
+
+  async function importWordbookBundle(parsed) {
+    const imported = parseWordbookBundle(parsed);
+    const id = 'local:' + randomId();
+    const reg = loadWordbooks();
+    reg.books[id] = {
+      id,
+      type: 'local',
+      name: imported.name,
+      sources: imported.sources,
+      wordCount: imported.vocabulary.words.length,
+      createdAt: now(),
+      updatedAt: now()
+    };
+    saveWordbooks(reg);
+    localStorage.setItem(scopedKey(STORE_KEY, id), JSON.stringify(imported.progress));
+    saveVocabularyLocal(imported.vocabulary, id);
+    await vocabDB.set(id, imported.vocabulary);
+    await selectWordbook(id);
+    return { id, ...imported };
   }
 
   function bindSettings() {
@@ -2194,7 +2277,10 @@
         applySettingsToUI();
         refreshIntro();
         renderLibrary();
-        toast(store.settings.spelling === 'off' ? '已切换为只认不拼' : '已切换为认词 + 拼写');
+        const msg = store.settings.spelling === 'off' ? '已切换为全部只认不拼'
+          : store.settings.spelling === 'all' ? '已切换为全部强制拼写'
+          : '已恢复按词表默认判定拼写';
+        toast(msg);
       });
     });
 
@@ -2220,25 +2306,19 @@
       saveStore();
     });
 
-    $('#btn-export').addEventListener('click', () => exportProgress(JSON.stringify(store, null, 2)));
-    $('#btn-backup').addEventListener('click', () => exportProgress(localStorage.getItem(scopedKey(BACKUP_KEY)), 'before-upgrade'));
+    $('#btn-export-book')?.addEventListener('click', () => {
+      exportWordbook().catch((err) => toast(err.message || '导出失败'));
+    });
 
-    $('#import-file').addEventListener('change', async (e) => {
+    $('#import-book-file')?.addEventListener('change', async (e) => {
       const file = e.target.files?.[0];
       if (!file) return;
       try {
         const data = JSON.parse(await file.text());
-        const imported = readStore(data);
-        migrateStore(imported, data.version);
-        keepBackup(localStorage.getItem(scopedKey(STORE_KEY)) || JSON.stringify(data));
-        store = imported;
-        saveStore();
-        applySettingsToUI();
-        refreshIntro();
-        renderLibrary();
-        toast('进度已导入');
+        const res = await importWordbookBundle(data);
+        toast(`已导入词库「${res.name}」（${res.vocabulary.words.length} 词，含学习进度）`);
       } catch (err) {
-        toast('导入失败：' + err.message);
+        toast('导入失败：' + (err.message || '文件格式不对'));
       } finally {
         e.target.value = '';
       }
@@ -2327,6 +2407,7 @@
               ? '<button class="btn btn--primary btn--sm" data-book-train="1" type="button">去训练</button>'
               : `<button class="btn btn--primary btn--sm" data-book-use="${esc(b.id)}" type="button">切换使用</button>`}
             <button class="btn btn--ghost btn--sm" data-book-upload="${esc(b.id)}" type="button">上传到云端</button>
+            <button class="btn btn--ghost btn--sm" data-book-export="${esc(b.id)}" type="button">导出</button>
             <button class="btn btn--ghost btn--sm" data-book-rename="${esc(b.id)}" type="button">重命名</button>
             <button class="btn btn--danger btn--sm" data-book-delete="${esc(b.id)}" type="button">删除</button>
           </div>
@@ -2356,6 +2437,7 @@
                  <button class="btn btn--ghost btn--sm" data-book-sync="${esc(b.id)}" type="button">立即同步</button>`
               : `<button class="btn btn--primary btn--sm" data-book-use="${esc(b.id)}" type="button">切换并同步</button>`}
             <button class="btn btn--ghost btn--sm" data-book-config="${esc(b.id)}" type="button">配置 / Token</button>
+            <button class="btn btn--ghost btn--sm" data-book-export="${esc(b.id)}" type="button">导出</button>
             <button class="btn btn--danger btn--sm" data-book-remove-cloud="${esc(b.id)}" type="button">移出列表</button>
           </div>
         </div>`;
@@ -2408,6 +2490,9 @@
       await deleteWordbook(id);
     }));
     $$('[data-book-upload]').forEach((btn) => btn.addEventListener('click', () => openUploadModal(btn.dataset.bookUpload)));
+    $$('[data-book-export]').forEach((btn) => btn.addEventListener('click', () => {
+      exportWordbook(btn.dataset.bookExport).catch((err) => toast(err.message || '导出失败'));
+    }));
   }
 
   async function deleteWordbook(id) {
@@ -2582,8 +2667,8 @@
     const preview = $('#upload-preview');
     const confirmBtn = $('#btn-upload-confirm');
     const mode = selectedUploadMode();
-    const replaceWrap = $('#upload-replace-progress-wrap');
-    if (replaceWrap) replaceWrap.hidden = mode !== 'replace';
+    const warnEl = $('#upload-overwrite-warning');
+    if (warnEl) warnEl.hidden = mode !== 'overwrite';
 
     if (!uploadState.ready || !uploadState.localVocab) {
       preview.textContent = '请先点击「读取云端当前词库」以验证权限并预览变更。';
@@ -2596,15 +2681,14 @@
       localProgress: uploadState.localProgress,
       remoteVocab: uploadState.remoteVocab,
       remoteProgress: uploadState.remoteProgress,
-      mode,
-      replaceProgress: !!$('#upload-replace-progress')?.checked
+      mode
     });
     const s = plan.summary;
-    const modeName = mode === 'append' ? '新增合并' : mode === 'overwrite' ? '覆盖更新' : '整库替换';
+    const modeName = mode === 'append' ? '新增（扩充词库）' : mode === 'replace' ? '替换（更换词表，保留进度）' : '覆盖（整库覆写为本地）';
     preview.innerHTML = `
-      <strong>变更预览（${modeName}）</strong><br>
-      云端原有 <b>${s.remoteCount}</b> 词 · 本次本地 <b>${s.localCount}</b> 词<br>
-      新增 <b>+${s.added}</b> 词 · 覆盖 <b>${s.overwritten}</b> 词 · 移除 <b>-${s.removed}</b> 词 → 上传后共 <b>${s.finalCount}</b> 词`;
+      <strong>变更预览 · ${modeName}</strong><br>
+      单词表：云端原有 <b>${s.remoteCount}</b> 词 · 本次本地 <b>${s.localCount}</b> 词 → 新增 <b>+${s.added}</b> 词、保留 <b>${s.kept}</b> 词、移除 <b>-${s.removed}</b> 词，上传后共 <b>${s.finalCount}</b> 词<br>
+      进度处理：${esc(s.progressAction)}`;
     confirmBtn.disabled = false;
   }
 
@@ -2640,7 +2724,6 @@
     $('#upload-new-repo-fields').hidden = firstCloud !== '__new__';
     $('#upload-inspect-status').textContent = '';
     $('#upload-status').textContent = '';
-    $('#upload-replace-progress').checked = false;
     $('input[name="upload-mode"][value="append"]').checked = true;
     updateUploadPreview();
     openModal('modal-upload-cloud');
@@ -2721,8 +2804,7 @@
       const res = await uploadLocalToCloud({
         localBookId: uploadState.localBookId,
         targetConfig: uploadState.targetConfig,
-        mode: selectedUploadMode(),
-        replaceProgress: !!$('#upload-replace-progress').checked
+        mode: selectedUploadMode()
       });
       renderWordbooks();
       closeModal('modal-upload-cloud');
@@ -2940,7 +3022,6 @@
 
     $('#btn-upload-inspect')?.addEventListener('click', inspectUploadTarget);
     $$('input[name="upload-mode"]').forEach((r) => r.addEventListener('change', updateUploadPreview));
-    $('#upload-replace-progress')?.addEventListener('change', updateUploadPreview);
     $('#btn-upload-confirm')?.addEventListener('click', confirmUploadToCloud);
 
     $$('[data-close-modal]').forEach((el) => {

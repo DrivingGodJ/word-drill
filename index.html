@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap">
-<link rel="stylesheet" href="styles.css?v=11">
+<link rel="stylesheet" href="styles.css?v=12">
 <link rel="manifest" href="manifest.webmanifest">
 <!-- iOS「添加到主屏幕」不认 SVG 图标，必须是 PNG（180×180 且不透明）；
      也读不了 manifest 里的 short_name，主屏名字只认 apple-mobile-web-app-title。 -->
@@ -257,6 +257,36 @@
         <p class="hint">本机标识：<code id="sync-device">—</code></p>
       </div>
     </div>
+
+    <!-- 导出 / 导入词库 -->
+    <div class="card books-card">
+      <h2 class="card__title">导出 / 导入词库</h2>
+      <p class="card__desc">
+        当前词库 <strong id="settings-book-name">未选词库</strong>（共 <b id="meta-count">0</b> 个词，更新于 <span id="meta-updated">—</span>）。
+        每个词库都会将<strong>单词表与学习进度</strong>打包在一起导出或导入，不支持单独导出进度。
+      </p>
+      <div class="btn-row">
+        <button class="btn btn--ghost" id="btn-export-book" type="button">导出当前词库</button>
+        <label class="btn btn--ghost" for="import-book-file">导入词库</label>
+        <input type="file" id="import-book-file" accept="application/json,.json" hidden>
+        <button class="btn btn--danger" id="btn-reset" type="button">清空当前词库进度</button>
+      </div>
+    </div>
+
+    <!-- 让 Agent 帮你配置云端仓库 -->
+    <details class="card books-card settings-fold">
+      <summary class="settings-fold__summary">让 Agent 帮你配置云端仓库</summary>
+      <p class="card__desc">复制提示词发给自己的 Agent，让它帮你创建私有数据仓库或向云端词库加词（提示词不含 token 或学习数据）。</p>
+      <div class="field field--stack">
+        <label for="agent-prompt">发给 Agent 的提示词</label>
+        <textarea id="agent-prompt" rows="5" readonly spellcheck="false">请从 https://github.com/DrivingGodJ/word-drill/tree/main/skills/worddrill-assistant 安装并使用 worddrill-assistant Skill（不支持安装时，读取其中的 SKILL.md 并按说明执行）。帮我在自己的 GitHub 账号下创建或复用私有数据仓库（包含 data/words.json 和 progress.json），指导我配置 WordDrill 多设备同步，进度文件统一使用 progress.json，保留已有学习进度。以后我提供词表时，也请按这个 Skill 帮我手动加词。</textarea>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn--primary" id="btn-copy-agent-prompt" type="button">复制给 Agent 的提示词</button>
+        <a class="btn btn--ghost" href="https://github.com/DrivingGodJ/word-drill/tree/main/skills/worddrill-assistant" target="_blank" rel="noopener noreferrer">查看 Skill</a>
+      </div>
+      <p class="hint" id="agent-copy-status" role="status" aria-live="polite"></p>
+    </details>
   </section>
 
   <!-- ============ 单词列表 ============ -->
@@ -323,14 +353,18 @@
         <div class="setting-block__head">
           <span class="setting-block__label">要不要练拼写</span>
         </div>
-        <div class="choice-grid choice-grid--2" id="set-spelling-group" role="group" aria-label="拼写模式">
+        <div class="choice-grid choice-grid--3" id="set-spelling-group" role="group" aria-label="拼写模式">
           <button class="choice-card" type="button" data-spelling="auto">
-            <strong>认词 + 拼写</strong>
-            <span>先认词再拼写（六级词默认只认）</span>
+            <strong>按词表默认</strong>
+            <span>遵循单词表自身设定（如四级要拼、六级只认）</span>
+          </button>
+          <button class="choice-card" type="button" data-spelling="all">
+            <strong>全部强制拼写</strong>
+            <span>本词库所有单词都要过拼写关</span>
           </button>
           <button class="choice-card" type="button" data-spelling="off">
-            <strong>只认不拼</strong>
-            <span>整套词库只考认词，刷词更快</span>
+            <strong>全部只认不拼</strong>
+            <span>本词库所有单词只考认词，不考拼写</span>
           </button>
         </div>
         <input type="checkbox" id="set-no-spelling" hidden>
@@ -365,35 +399,6 @@
         </label>
       </div>
     </div>
-
-    <div class="card settings-card">
-      <h2 class="card__title">当前词库的进度备份</h2>
-      <p class="card__desc">
-        当前词库 <strong id="settings-book-name">未选词库</strong>（共 <b id="meta-count">0</b> 个词，更新于 <span id="meta-updated">—</span>）。
-        每个词库进度独立保存，可随时导出备份或导入恢复。
-      </p>
-      <div class="btn-row">
-        <button class="btn btn--ghost" id="btn-export" type="button">导出进度</button>
-        <button class="btn btn--ghost" id="btn-backup" type="button">导出升级前备份</button>
-        <label class="btn btn--ghost" for="import-file">导入进度</label>
-        <input type="file" id="import-file" accept="application/json,.json" hidden>
-        <button class="btn btn--danger" id="btn-reset" type="button">清空当前词库进度</button>
-      </div>
-    </div>
-
-    <details class="card settings-card settings-fold">
-      <summary class="settings-fold__summary">让 Agent 帮你配置云端仓库</summary>
-      <p class="card__desc">复制提示词发给自己的 Agent，让它帮你创建私有数据仓库或向云端词库加词（提示词不含 token 或学习数据）。</p>
-      <div class="field field--stack">
-        <label for="agent-prompt">发给 Agent 的提示词</label>
-        <textarea id="agent-prompt" rows="5" readonly spellcheck="false">请从 https://github.com/DrivingGodJ/word-drill/tree/main/skills/worddrill-assistant 安装并使用 worddrill-assistant Skill（不支持安装时，读取其中的 SKILL.md 并按说明执行）。帮我在自己的 GitHub 账号下创建或复用私有数据仓库（包含 data/words.json 和 progress.json），指导我配置 WordDrill 多设备同步，进度文件统一使用 progress.json，保留已有学习进度。以后我提供词表时，也请按这个 Skill 帮我手动加词。</textarea>
-      </div>
-      <div class="btn-row">
-        <button class="btn btn--primary" id="btn-copy-agent-prompt" type="button">复制给 Agent 的提示词</button>
-        <a class="btn btn--ghost" href="https://github.com/DrivingGodJ/word-drill/tree/main/skills/worddrill-assistant" target="_blank" rel="noopener noreferrer">查看 Skill</a>
-      </div>
-      <p class="hint" id="agent-copy-status" role="status" aria-live="polite"></p>
-    </details>
   </section>
 
 </main>
@@ -476,34 +481,31 @@
 
       <div class="setting-block" style="margin-top:var(--s-5)">
         <span class="setting-block__label">选择上传方式</span>
-        <div class="upload-modes" id="upload-modes" role="radiogroup" aria-label="上传合并方式">
+        <div class="upload-modes" id="upload-modes" role="radiogroup" aria-label="上传方式">
           <label class="upload-mode">
             <input type="radio" name="upload-mode" value="append" checked>
             <div>
-              <strong>新增（合并扩词）</strong>
-              <p>保留云端已有单词与进度，只追加本地新词，并将两端进度智能合并。</p>
-            </div>
-          </label>
-          <label class="upload-mode">
-            <input type="radio" name="upload-mode" value="overwrite">
-            <div>
-              <strong>覆盖（更新同名词）</strong>
-              <p>保留云端独有词；同名词的词条定义和本地已学进度以本地为准覆盖，新词追加。</p>
+              <strong>新增（扩充词库）</strong>
+              <p>单词表：保留云端已有单词，仅追加云端没有的新词。<br>进度：保留云端已有进度，并智能合并本地进度。</p>
             </div>
           </label>
           <label class="upload-mode">
             <input type="radio" name="upload-mode" value="replace">
             <div>
-              <strong>替换（整库更换）</strong>
-              <p>云端单词表完全替换为当前本地词库，云端多出的旧词将被移除。</p>
+              <strong>替换（更换词表，保留进度）</strong>
+              <p>单词表：完全替换为当前本地词表（移除云端多出的旧词）。<br>进度：同词保留云端历史进度并与本地合并，不丢记忆。</p>
+            </div>
+          </label>
+          <label class="upload-mode">
+            <input type="radio" name="upload-mode" value="overwrite">
+            <div>
+              <strong>覆盖（整库覆写为本地）</strong>
+              <p>单词表：完全替换为当前本地词表。<br>进度：连同学习进度全部覆写为本地状态（云端原进度会先在本机备份）。</p>
             </div>
           </label>
         </div>
 
-        <label class="upload-subcheck" id="upload-replace-progress-wrap" hidden>
-          <input type="checkbox" id="upload-replace-progress">
-          <span>连同云端学习进度也全部替换为本地进度（不勾选则保留同词历史进度）</span>
-        </label>
+        <p class="upload-warning" id="upload-overwrite-warning" hidden>注意：「覆盖」会用当前本地学习进度直接替代云端原有的进度记录，请确认后再上传。</p>
       </div>
 
       <div class="upload-preview" id="upload-preview">请先点击「读取云端当前词库」以预览变更数量。</div>
@@ -524,6 +526,6 @@
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
 <script src="vendor/ts-fsrs-5.4.2.js"></script>
-<script src="app.js?v=15"></script>
+<script src="app.js?v=16"></script>
 </body>
 </html>

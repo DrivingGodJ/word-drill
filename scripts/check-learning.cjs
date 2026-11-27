@@ -44,7 +44,8 @@ const source = fs.readFileSync(path.join(root, 'app.js'), 'utf8')
     getVocabulary: () => ({words: WORDS, meta: META}), getSession: () => session, setMeta: (meta) => { META = meta; },
     setWords: (words) => { WORDS = words; byId.clear(); words.forEach(w => byId.set(w.id, w)); },
     applyPacePreset, getCurrentPace, mergeWordlists, planCloudUpload, uploadLocalToCloud,
-    remoteReadFile, loadWordbooks, saveWordbooks, selectWordbook, deleteWordbook, isCloudBook, saveVocabularyLocal
+    remoteReadFile, loadWordbooks, saveWordbooks, selectWordbook, deleteWordbook, isCloudBook, saveVocabularyLocal,
+    buildWordbookBundle, parseWordbookBundle
   }; sync = { deviceId: 'check' };`);
 vm.runInContext(source, context);
 const app = context.check;
@@ -683,7 +684,40 @@ assert.equal(app.getSession().practice, true);
   await app.autoSync(true);
   assert.equal(unexpectedNetworkCalls, 0, 'local wordbook never triggers cloud autoSync');
 
-  // planCloudUpload supports append, overwrite, and replace (both keep-progress and replace-progress).
+  // 3-mode spelling requirement: auto (per wordlist tags), all (force spelling), off (recognize only).
+  app.setWords([
+    { id: 'cet6only', word: 'cet6only', meaning: '六级词', tags: ['CET6'] },
+    { id: 'recOnly', word: 'recOnly', meaning: '只认词', tags: ['CET4', '只认'] }
+  ]);
+  reset({
+    cet6only: { ...rec('mastered'), masteredBy: 'recognize' },
+    recOnly: { ...rec('mastered'), masteredBy: 'recognize' }
+  });
+  assert.equal(app.requiresWriting('cet6only'), false);
+  assert.equal(app.requiresWriting('recOnly'), false);
+  app.getStore().settings.spelling = 'all';
+  assert.equal(app.requiresWriting('cet6only'), true);
+  assert.equal(app.requiresWriting('recOnly'), true);
+  assert.equal(app.progressOf('cet6only').stage, 'write');
+  const allSpellPayload = plain(app.buildPayload());
+  assert.equal(allSpellPayload.settings.spelling, 'all');
+  reset();
+  app.mergeRemote({ ...allSpellPayload, settingsAt: initialTime + 1000 });
+  assert.equal(app.getStore().settings.spelling, 'all');
+
+  // Wordbook bundle export/import includes both vocabulary and progress; progress-only JSON is rejected.
+  const bundle = app.buildWordbookBundle({
+    book: { name: '测试导出词库', type: 'local', sources: ['四级词汇'] },
+    vocab: mergedLists,
+    progress: app.getStore()
+  });
+  const parsedBundle = app.parseWordbookBundle(plain(bundle));
+  assert.equal(parsedBundle.name, '测试导出词库');
+  assert.equal(parsedBundle.vocabulary.words.length, 3);
+  assert.equal(parsedBundle.progress.settings.spelling, 'all');
+  assert.throws(() => app.parseWordbookBundle(plain(app.defaultStore())), /不支持单独导入进度/);
+
+  // planCloudUpload supports append (add new words + merge progress), replace (replace words, keep/merge progress), and overwrite (replace both words & progress).
   const localVocabPlan = {
     meta: { name: '本地合并词库' },
     words: [
@@ -720,38 +754,40 @@ assert.equal(app.getSession().practice, true);
     localVocab: localVocabPlan, localProgress: localProgPlan,
     remoteVocab: remoteVocabPlan, remoteProgress: remoteProgPlan, mode: 'append'
   });
-  assert.deepEqual(plain(planAppend.summary), { remoteCount: 2, localCount: 2, added: 1, overwritten: 0, removed: 0, finalCount: 3 });
+  assert.deepEqual(plain(planAppend.summary), {
+    remoteCount: 2, localCount: 2, added: 1, kept: 2, removed: 0, finalCount: 3,
+    progressAction: '保留云端已有进度并与本地合并'
+  });
   assert.equal(planAppend.wordsData.words.find(w => w.id === 'shared').meaning, '云端旧释义');
   assert.equal(planAppend.progress.words.shared.stage, 'mastered', 'append keeps newer remote stage');
   assert.ok(planAppend.progress.words.localonly && planAppend.progress.words.remoteonly);
 
-  // 2) overwrite
+  // 2) replace (replace words, keep/merge progress for retained words)
+  const planReplace = app.planCloudUpload({
+    localVocab: localVocabPlan, localProgress: localProgPlan,
+    remoteVocab: remoteVocabPlan, remoteProgress: remoteProgPlan, mode: 'replace'
+  });
+  assert.deepEqual(plain(planReplace.summary), {
+    remoteCount: 2, localCount: 2, added: 1, kept: 1, removed: 1, finalCount: 2,
+    progressAction: '保留同词云端历史进度并与本地合并'
+  });
+  assert.equal(planReplace.wordsData.words.some(w => w.id === 'remoteonly'), false);
+  assert.equal(planReplace.wordsData.words.find(w => w.id === 'shared').meaning, '本地新释义');
+  assert.equal(planReplace.progress.words.shared.stage, 'mastered');
+  assert.equal(planReplace.progress.words.remoteonly, undefined);
+
+  // 3) overwrite (replace both words and progress with local)
   const planOverwrite = app.planCloudUpload({
     localVocab: localVocabPlan, localProgress: localProgPlan,
     remoteVocab: remoteVocabPlan, remoteProgress: remoteProgPlan, mode: 'overwrite'
   });
-  assert.deepEqual(plain(planOverwrite.summary), { remoteCount: 2, localCount: 2, added: 1, overwritten: 1, removed: 0, finalCount: 3 });
-  assert.equal(planOverwrite.wordsData.words.find(w => w.id === 'shared').meaning, '本地新释义');
-  assert.equal(planOverwrite.progress.words.shared.stage, 'write', 'overwrite lets studied local progress override matching word');
-  assert.ok(planOverwrite.progress.words.remoteonly, 'overwrite preserves remote-only words and progress');
-
-  // 3a) replace keeping matching remote progress
-  const planReplaceKeep = app.planCloudUpload({
-    localVocab: localVocabPlan, localProgress: localProgPlan,
-    remoteVocab: remoteVocabPlan, remoteProgress: remoteProgPlan, mode: 'replace', replaceProgress: false
+  assert.deepEqual(plain(planOverwrite.summary), {
+    remoteCount: 2, localCount: 2, added: 1, kept: 1, removed: 1, finalCount: 2,
+    progressAction: '全部进度覆写为本地状态'
   });
-  assert.deepEqual(plain(planReplaceKeep.summary), { remoteCount: 2, localCount: 2, added: 1, overwritten: 1, removed: 1, finalCount: 2 });
-  assert.equal(planReplaceKeep.wordsData.words.some(w => w.id === 'remoteonly'), false);
-  assert.equal(planReplaceKeep.progress.words.shared.stage, 'mastered');
-  assert.equal(planReplaceKeep.progress.words.remoteonly, undefined);
-
-  // 3b) replace overwriting all progress
-  const planReplaceAll = app.planCloudUpload({
-    localVocab: localVocabPlan, localProgress: localProgPlan,
-    remoteVocab: remoteVocabPlan, remoteProgress: remoteProgPlan, mode: 'replace', replaceProgress: true
-  });
-  assert.equal(planReplaceAll.progress.words.shared.stage, 'write');
-  assert.equal(planReplaceAll.progress.words.remoteonly, undefined);
+  assert.equal(planOverwrite.wordsData.words.some(w => w.id === 'remoteonly'), false);
+  assert.equal(planOverwrite.progress.words.shared.stage, 'write');
+  assert.equal(planOverwrite.progress.words.remoteonly, undefined);
 
   // End-to-end uploadLocalToCloud including >1MB git/blobs fallback read and private-repo enforcement.
   const uploadRepoFiles = {
