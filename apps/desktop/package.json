@@ -17,6 +17,7 @@
   "build": {
     "appId": "com.drivinggodj.worddrill",
     "productName": "WordDrill",
+    "afterPack": "scripts/adhoc-sign-mac.js",
     "directories": {
       "buildResources": "build",
       "output": "dist"

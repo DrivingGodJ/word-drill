@@ -177,7 +177,7 @@ jobs:
 
           - **Android**：下载 \`WordDrill-android.apk\` 安装，词库位于系统文件管理中的 \`WordDrill 词库\`（\`Android/data/com.drivinggodj.worddrill/files/wordbooks\`）。
           - **Windows**：下载安装版 \`WordDrill-Windows-Setup.exe\`，词库保存在「文档\\WordDrill\\wordbooks」。
-          - **macOS (Apple Silicon)**：下载 \`WordDrill-macOS-AppleSilicon.dmg\` 拖入「应用程序」，词库保存在「文稿/WordDrill/wordbooks」（首次打开若提示未知开发者，可在「系统设置 → 隐私与安全性」点击允许或右键打开）。
+          - **macOS (Apple Silicon)**：下载 \`WordDrill-macOS-AppleSilicon.dmg\` 拖入「应用程序」，词库保存在「文稿/WordDrill/wordbooks」（首次打开若被安全提示拦截，可去「系统设置 → 隐私与安全性」点「仍要打开」；若仍提示已损坏，在终端执行 \`xattr -cr /Applications/WordDrill.app\` 即可）。
 
           ${META_COMMENT}
           EOF
