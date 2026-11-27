@@ -35,12 +35,6 @@
           "arch": [
             "x64"
           ]
-        },
-        {
-          "target": "portable",
-          "arch": [
-            "x64"
-          ]
         }
       ]
     },
@@ -49,9 +43,6 @@
       "perMachine": false,
       "allowToChangeInstallationDirectory": true,
       "artifactName": "WordDrill-Windows-Setup.${ext}"
-    },
-    "portable": {
-      "artifactName": "WordDrill-Windows-Portable.${ext}"
     },
     "mac": {
       "icon": "build/icon.png",

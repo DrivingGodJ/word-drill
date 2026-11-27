@@ -70,21 +70,20 @@ jobs:
       - name: Install desktop dependencies
         working-directory: apps/desktop
         run: npm install --no-audit --no-fund
-      - name: Build Windows NSIS & Portable packages
+      - name: Build Windows NSIS installer
         working-directory: apps/desktop
         env:
           WORDDRILL_BUILD_SHA: ${{ github.sha }}
         run: npm run dist:win
-      - name: Stage Windows executables
+      - name: Stage Windows installer
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path release-assets | Out-Null
           Copy-Item "apps/desktop/dist/WordDrill-Windows-Setup.exe" "release-assets/WordDrill-Windows-Setup.exe"
-          Copy-Item "apps/desktop/dist/WordDrill-Windows-Portable.exe" "release-assets/WordDrill-Windows-Portable.exe"
       - uses: actions/upload-artifact@v4
         with:
           name: worddrill-windows-exe
-          path: release-assets/WordDrill-Windows-*.exe
+          path: release-assets/WordDrill-Windows-Setup.exe
           if-no-files-found: error
 
   build-macos:
@@ -177,7 +176,7 @@ jobs:
           网页端已本地打包封装，仅在拉取公开词库或同步云端进度时访问网络（内置启动静默检查更新与「设置 → 检查更新」）。
 
           - **Android**：下载 \`WordDrill-android.apk\` 安装，词库位于系统文件管理中的 \`WordDrill 词库\`（\`Android/data/com.drivinggodj.worddrill/files/wordbooks\`）。
-          - **Windows**：下载安装版 \`WordDrill-Windows-Setup.exe\` 或绿色免安装版 \`WordDrill-Windows-Portable.exe\`，词库保存在「文档\\WordDrill\\wordbooks」。
+          - **Windows**：下载安装版 \`WordDrill-Windows-Setup.exe\`，词库保存在「文档\\WordDrill\\wordbooks」。
           - **macOS (Apple Silicon)**：下载 \`WordDrill-macOS-AppleSilicon.dmg\` 拖入「应用程序」，词库保存在「文稿/WordDrill/wordbooks」（首次打开若提示未知开发者，可在「系统设置 → 隐私与安全性」点击允许或右键打开）。
 
           ${META_COMMENT}
