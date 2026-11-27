@@ -1,0 +1,55 @@
+{
+  "name": "worddrill-desktop",
+  "version": "1.0.0",
+  "description": "WordDrill Desktop App (Windows)",
+  "main": "main.js",
+  "private": true,
+  "scripts": {
+    "sync-web": "node ../../scripts/sync-web-assets.mjs",
+    "start": "npm run sync-web && electron .",
+    "dist:win": "npm run sync-web && electron-builder --win --x64"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.drivinggodj.worddrill",
+    "productName": "WordDrill",
+    "directories": {
+      "buildResources": "build",
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "web/**/*"
+    ],
+    "win": {
+      "icon": "build/icon.png",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "artifactName": "WordDrill-Windows-Setup.${ext}"
+    },
+    "portable": {
+      "artifactName": "WordDrill-Windows-Portable.${ext}"
+    }
+  }
+}

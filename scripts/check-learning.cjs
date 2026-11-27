@@ -45,7 +45,8 @@ const source = fs.readFileSync(path.join(root, 'app.js'), 'utf8')
     setWords: (words) => { WORDS = words; byId.clear(); words.forEach(w => byId.set(w.id, w)); },
     applyPacePreset, getCurrentPace, mergeWordlists, planCloudUpload, uploadLocalToCloud,
     remoteReadFile, loadWordbooks, saveWordbooks, selectWordbook, deleteWordbook, isCloudBook, saveVocabularyLocal,
-    buildWordbookBundle, parseWordbookBundle, wordDifficulty, selectDailyNewWords, resetBookProgress
+    buildWordbookBundle, parseWordbookBundle, wordDifficulty, selectDailyNewWords, resetBookProgress,
+    getIosPwaState, syncBookToNativeDisk, deleteBookFromNativeDisk, hydrateNativeWordbooksOnBoot
   }; sync = { deviceId: 'check' };`);
 vm.runInContext(source, context);
 const app = context.check;
@@ -946,6 +947,83 @@ assert.equal(app.getSession().practice, true);
   };
   await app.syncNow({ silent: true, manual: true });
   assert.ok(app.getStore().words.manualCheck, 'manual sync pulls even when auto-sync is off');
+
+  // iOS PWA guide visibility checks across Safari, Chrome/in-app, standalone PWA, desktop, and native wrappers.
+  const iosSafari = app.getIosPwaState({
+    navigator: { userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Mobile/15E148 Safari/604.1' },
+    window: {},
+    localStorage: { getItem: () => null }
+  });
+  assert.equal(iosSafari.showBanner, true);
+  assert.equal(iosSafari.isSafari, true);
+
+  const iosChrome = app.getIosPwaState({
+    navigator: { userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/123.0 Mobile/15E148 Safari/604.1' },
+    window: {},
+    localStorage: { getItem: () => null }
+  });
+  assert.equal(iosChrome.showBanner, true);
+  assert.equal(iosChrome.isSafari, false);
+
+  const iosStandalone = app.getIosPwaState({
+    navigator: { userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X)', standalone: true },
+    window: {},
+    localStorage: { getItem: () => null }
+  });
+  assert.equal(iosStandalone.showBanner, false);
+  assert.equal(iosStandalone.showSettingsEntry, false);
+
+  const iosNative = app.getIosPwaState({
+    navigator: { userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X)' },
+    window: { WordDrillNative: { platform: 'windows' } },
+    localStorage: { getItem: () => null }
+  });
+  assert.equal(iosNative.showBanner, false);
+
+  // Native local disk bridge: syncs local wordbooks to disk, hydrates from disk on boot, and falls back to native TTS.
+  const diskFiles = new Map();
+  let spokenNative = '';
+  const sampleDiskBundle = app.buildWordbookBundle({
+    book: { id: 'local:disk1', type: 'local', name: 'Disk Book', sources: ['CET4'], createdAt: initialTime },
+    vocab: { meta: { name: 'Disk Book', count: 1 }, words: [{ id: 'diskword', word: 'diskword', meaning: '磁盘词' }], distractors: [] },
+    progress: { ...plain(app.defaultStore()), words: { diskword: rec() } }
+  });
+  diskFiles.set('Disk-Book__disk1.json', JSON.stringify(sampleDiskBundle));
+
+  context.window.WordDrillNative = {
+    platform: 'windows',
+    getWordbooksDir: async () => 'C:\\Users\\test\\Documents\\WordDrill\\wordbooks',
+    openWordbooksDir: async () => ({ ok: true }),
+    listWordbookFiles: async () => Array.from(diskFiles.entries()).map(([name, content]) => ({ name, content })),
+    writeWordbookBundle: async (bookId, fileName, content) => {
+      const shortId = String(bookId).replace(/^local:/, '');
+      for (const k of diskFiles.keys()) { if (k.endsWith(`__${shortId}.json`)) diskFiles.delete(k); }
+      diskFiles.set(fileName, content);
+      return { ok: true, path: fileName };
+    },
+    deleteWordbookBundle: async (bookId) => {
+      const shortId = String(bookId).replace(/^local:/, '');
+      for (const k of diskFiles.keys()) { if (k.endsWith(`__${shortId}.json`)) diskFiles.delete(k); }
+      return { ok: true };
+    },
+    speak: async (text) => { spokenNative = text; return true; }
+  };
+
+  await app.hydrateNativeWordbooksOnBoot();
+  assert.ok(app.loadWordbooks().books['local:disk1'], 'hydrates local wordbook bundle found on native disk');
+  assert.equal(elements.get('#native-storage-bar').hidden, false);
+  await app.syncBookToNativeDisk('local:disk1');
+  assert.ok(Array.from(diskFiles.keys()).some((k) => k.endsWith('__disk1.json')));
+  await app.deleteBookFromNativeDisk('local:disk1');
+  assert.equal(Array.from(diskFiles.keys()).some((k) => k.endsWith('__disk1.json')), false);
+
+  const prevSpeech = context.window.speechSynthesis;
+  delete context.window.speechSynthesis;
+  assert.equal(app.canSpeak(), true);
+  app.speak('nativehello');
+  assert.equal(spokenNative, 'nativehello', 'native TTS bridge speaks when speechSynthesis is absent');
+  if (prevSpeech) context.window.speechSynthesis = prevSpeech;
+  delete context.window.WordDrillNative;
 
   console.log(`Learning checks passed; ${Object.keys(old.words).length} legacy records preserved.`);
 })().catch((error) => { console.error(error); process.exitCode = 1; });

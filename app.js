@@ -247,6 +247,7 @@
   function saveStore() {
     try {
       localStorage.setItem(scopedKey(STORE_KEY), JSON.stringify(store));
+      if (!isCloudBook()) scheduleNativeDiskSync(activeRepository);
     } catch {
       toast('进度保存失败：浏览器存储空间不足');
     }
@@ -2392,6 +2393,207 @@
     };
   }
 
+  /* ---------- iOS PWA 引导 & 原生本地词库桥接 ---------- */
+  const IOS_PWA_DISMISS_KEY = 'worddrill.ios-pwa-dismiss.v1';
+  const nativeBridge = () => {
+    if (typeof window === 'undefined') return null;
+    if (!window.WordDrillNative && window._WordDrillAndroid) {
+      const a = window._WordDrillAndroid;
+      window.WordDrillNative = {
+        platform: 'android',
+        getWordbooksDir: () => Promise.resolve(a.getWordbooksDir()),
+        openWordbooksDir: () => Promise.resolve(JSON.parse(a.openWordbooksDir())),
+        writeWordbookBundle: (id, name, content) => Promise.resolve(JSON.parse(a.writeWordbookBundle(id, name, content))),
+        deleteWordbookBundle: (id) => Promise.resolve(JSON.parse(a.deleteWordbookBundle(id))),
+        listWordbookFiles: () => Promise.resolve(JSON.parse(a.listWordbookFiles())),
+        saveExportFile: (name, content) => Promise.resolve(JSON.parse(a.saveExportFile(name, content))),
+        speak: (text) => Promise.resolve(a.speak(text))
+      };
+    }
+    return window.WordDrillNative || null;
+  };
+  const isNativeApp = () => !!nativeBridge();
+  let nativeSyncTimer = null;
+
+  function getIosPwaState(env) {
+    const nav = env?.navigator || (typeof navigator !== 'undefined' ? navigator : {});
+    const win = env?.window || (typeof window !== 'undefined' ? window : {});
+    const ls = env?.localStorage || (typeof localStorage !== 'undefined' ? localStorage : null);
+    const ua = String(nav.userAgent || '');
+    const platform = String(nav.platform || '');
+    const maxTouchPoints = Number(nav.maxTouchPoints || 0);
+    const isIos = /iPhone|iPad|iPod/i.test(ua) || (platform === 'MacIntel' && maxTouchPoints > 1);
+    const isStandalone = !!(win.matchMedia?.('(display-mode: standalone)')?.matches || nav.standalone === true);
+    const isNative = !!(win.WordDrillNative);
+    const isSafari = /Safari/i.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS|UCBrowser|MicroMessenger|QQ\/|Weibo|Baidu/i.test(ua);
+    const dismissed = ls?.getItem?.(IOS_PWA_DISMISS_KEY) === '1';
+    return {
+      isIos,
+      isStandalone,
+      isNative,
+      isSafari,
+      dismissed,
+      showBanner: isIos && !isStandalone && !isNative && !dismissed,
+      showSettingsEntry: isIos && !isStandalone && !isNative
+    };
+  }
+
+  function openIosPwaModal() {
+    const state = getIosPwaState();
+    const note = $('#ios-pwa-safari-note');
+    if (note) note.hidden = state.isSafari;
+    openModal('modal-ios-pwa');
+  }
+
+  function initIosPwaGuide() {
+    const state = getIosPwaState();
+    const banner = $('#ios-pwa-banner');
+    const settingsBlock = $('#ios-pwa-settings-block');
+    if (banner) banner.hidden = !state.showBanner;
+    if (settingsBlock) settingsBlock.hidden = !state.showSettingsEntry;
+    const dismiss = () => {
+      try { localStorage.setItem(IOS_PWA_DISMISS_KEY, '1'); } catch { /* 忽略 */ }
+      if (banner) banner.hidden = true;
+      closeModal('modal-ios-pwa');
+    };
+    $('#btn-open-ios-pwa')?.addEventListener('click', openIosPwaModal);
+    $('#btn-settings-ios-pwa')?.addEventListener('click', openIosPwaModal);
+    $('#btn-dismiss-ios-pwa')?.addEventListener('click', dismiss);
+    $('#btn-ios-pwa-dismiss-modal')?.addEventListener('click', dismiss);
+  }
+
+  const nativeBookShortId = (bookId) => String(bookId || '').replace(/^local:/, '');
+
+  function nativeBookFilename(bookId, name) {
+    const safeName = String(name || 'wordbook')
+      .replace(/[\\/:*?"<>|]/g, '-')
+      .replace(/\s+/g, '-')
+      .replace(/^-|-$/g, '')
+      .slice(0, 48) || 'wordbook';
+    return `${safeName}__${nativeBookShortId(bookId)}.json`;
+  }
+
+  async function syncBookToNativeDisk(bookId = activeRepository) {
+    const bridge = nativeBridge();
+    if (!bridge?.writeWordbookBundle || !bookId || !String(bookId).startsWith('local:')) return null;
+    const reg = loadWordbooks();
+    const book = reg.books[bookId];
+    if (!book || book.type !== 'local') return null;
+    let vocab;
+    let progress;
+    if (bookId === activeRepository && WORDS.length) {
+      vocab = { meta: META, words: WORDS, distractors: DISTRACTORS, pending: PENDING };
+      progress = store;
+    } else {
+      vocab = await vocabDB.get(bookId) || JSON.parse(localStorage.getItem(scopedKey('worddrill.vocabulary.v1', bookId)) || 'null');
+      progress = loadStore(bookId);
+    }
+    if (!vocab || !Array.isArray(vocab.words)) return null;
+    const bundle = buildWordbookBundle({ book, vocab, progress });
+    return bridge.writeWordbookBundle(bookId, nativeBookFilename(bookId, book.name), JSON.stringify(bundle, null, 2));
+  }
+
+  function scheduleNativeDiskSync(bookId = activeRepository) {
+    const bridge = nativeBridge();
+    if (!bridge?.writeWordbookBundle || !bookId || !String(bookId).startsWith('local:')) return;
+    clearTimeout(nativeSyncTimer);
+    nativeSyncTimer = setTimeout(() => {
+      syncBookToNativeDisk(bookId).catch(() => { /* 忽略镜像异常 */ });
+    }, 600);
+  }
+
+  async function deleteBookFromNativeDisk(bookId) {
+    const bridge = nativeBridge();
+    if (!bridge?.deleteWordbookBundle || !bookId || !String(bookId).startsWith('local:')) return;
+    await bridge.deleteWordbookBundle(bookId).catch(() => { /* 忽略 */ });
+  }
+
+  async function hydrateNativeWordbooksOnBoot() {
+    const bar = $('#native-storage-bar');
+    const pathEl = $('#native-storage-path');
+    const openBtn = $('#btn-open-wordbooks-dir');
+    const bridge = nativeBridge();
+    if (!bridge) {
+      if (bar) bar.hidden = true;
+      return;
+    }
+
+    if (bar) bar.hidden = false;
+    try {
+      const dir = await bridge.getWordbooksDir?.();
+      if (pathEl) pathEl.textContent = dir || '应用本地词库目录';
+    } catch {
+      if (pathEl) pathEl.textContent = '应用本地词库目录';
+    }
+
+    if (openBtn && !openBtn.dataset.boundNativeDir) {
+      openBtn.dataset.boundNativeDir = '1';
+      openBtn.addEventListener('click', async () => {
+        try {
+          const res = await bridge.openWordbooksDir?.();
+          if (res && res.ok === false) {
+            toast(res.message || `目录路径已复制：${res.path || ''}`);
+          }
+        } catch (err) {
+          toast('无法打开目录：' + (err?.message || '请手动查看下方路径'));
+        }
+      });
+    }
+
+    let files = [];
+    try {
+      files = await bridge.listWordbookFiles?.() || [];
+    } catch {
+      files = [];
+    }
+
+    const reg = loadWordbooks();
+    const diskIds = new Set();
+    let regChanged = false;
+    for (const item of files) {
+      if (!item || typeof item.content !== 'string') continue;
+      try {
+        const parsed = JSON.parse(item.content);
+        const imported = parseWordbookBundle(parsed);
+        const rawId = typeof parsed.book?.id === 'string' && parsed.book.id.startsWith('local:')
+          ? parsed.book.id
+          : null;
+        const match = String(item.name || '').match(/__([a-zA-Z0-9_-]+)\.json$/);
+        const id = rawId || (match ? `local:${match[1]}` : `local:${randomId()}`);
+        diskIds.add(id);
+
+        if (!reg.books[id]) {
+          reg.books[id] = {
+            id,
+            type: 'local',
+            name: imported.name,
+            sources: imported.sources,
+            wordCount: imported.vocabulary.words.length,
+            createdAt: parsed.book?.createdAt || now(),
+            updatedAt: parsed.exportedAt || now()
+          };
+          localStorage.setItem(scopedKey(STORE_KEY, id), JSON.stringify(imported.progress));
+          saveVocabularyLocal(imported.vocabulary, id);
+          await vocabDB.set(id, imported.vocabulary);
+          if (!reg.activeId) reg.activeId = id;
+          regChanged = true;
+        }
+      } catch { /* 跳过非 WordDrill 词库 JSON 文件 */ }
+    }
+    if (regChanged) saveWordbooks(reg);
+
+    // 首次升级或仅在 IndexedDB 中的本地词库，补写到原生磁盘目录
+    const latestReg = loadWordbooks();
+    for (const [id, b] of Object.entries(latestReg.books)) {
+      if (b.type === 'local' && !diskIds.has(id)) {
+        await syncBookToNativeDisk(id).catch(() => {});
+      }
+    }
+    if (!activeRepository && latestReg.activeId && latestReg.books[latestReg.activeId]?.type === 'local') {
+      activeRepository = latestReg.activeId;
+    }
+  }
+
   async function exportWordbook(bookId = activeRepository) {
     const reg = loadWordbooks();
     const book = reg.books[bookId] || getActiveBookInfo();
@@ -2406,10 +2608,18 @@
     }
     const bundle = buildWordbookBundle({ book, vocab, progress });
     const safeName = (bundle.book.name || 'wordbook').replace(/[^\w\u4e00-\u9fff-]+/g, '-').replace(/^-|-$/g, '') || 'wordbook';
+    const fileName = `worddrill-${safeName}-${dayKey(now())}.json`;
+    const bridge = nativeBridge();
+    if (bridge?.saveExportFile) {
+      const res = await bridge.saveExportFile(fileName, JSON.stringify(bundle, null, 2));
+      if (res?.canceled) return;
+      toast(`已导出词库到：${res?.path || fileName}`);
+      return;
+    }
     const blob = new Blob([JSON.stringify(bundle)], { type: 'application/json' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = `worddrill-${safeName}-${dayKey(now())}.json`;
+    a.download = fileName;
     a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
     toast(`已导出词库「${bundle.book.name}」（含单词表与进度）`);
@@ -2432,6 +2642,7 @@
     localStorage.setItem(scopedKey(STORE_KEY, id), JSON.stringify(imported.progress));
     saveVocabularyLocal(imported.vocabulary, id);
     await vocabDB.set(id, imported.vocabulary);
+    await syncBookToNativeDisk(id).catch(() => {});
     await selectWordbook(id);
     return { id, ...imported };
   }
@@ -2585,6 +2796,7 @@
     } else if (bookId) {
       localStorage.setItem(scopedKey(STORE_KEY, bookId), JSON.stringify(defaultStore()));
     }
+    if (String(bookId).startsWith('local:')) syncBookToNativeDisk(bookId).catch(() => {});
     renderWordbooks();
     toast('进度已清空');
   }
@@ -2774,6 +2986,7 @@
       cur.books[id].name = nextName;
       cur.books[id].updatedAt = now();
       saveWordbooks(cur);
+      if (cur.books[id].type === 'local') syncBookToNativeDisk(id).catch(() => {});
       renderWordbooks();
       refreshActiveBookBar();
       toast('词库名称已更新');
@@ -2799,7 +3012,7 @@
 
     $$('[data-book-toggle-token]').forEach((btn) => btn.addEventListener('click', () => {
       const id = btn.dataset.bookToggleToken;
-      const input = $(`[data-book-token="${CSS?.escape ? CSS.escape(id) : id}"]`);
+      const input = $(`[data-book-token="${typeof CSS !== 'undefined' && CSS.escape ? CSS.escape(id) : id}"]`);
       if (!input) return;
       input.type = input.type === 'password' ? 'text' : 'password';
       btn.textContent = input.type === 'password' ? '显示' : '隐藏';
@@ -2851,7 +3064,7 @@
       const cfg = readCloudCardConfig(id);
       btn.disabled = true;
       bookCardStatus[id] = { text: '测试连接中…', mode: '' };
-      const statusEl = $(`[data-book-status="${CSS?.escape ? CSS.escape(id) : id}"]`);
+      const statusEl = $(`[data-book-status="${typeof CSS !== 'undefined' && CSS.escape ? CSS.escape(id) : id}"]`);
       if (statusEl) { statusEl.hidden = false; statusEl.textContent = '测试连接中…'; statusEl.className = 'hint sync-status book-subcard__status'; }
       try {
         if (cfg.token) saveCloudBookProfile(id, { token: cfg.token });
@@ -2908,6 +3121,7 @@
       localStorage.removeItem?.(scopedKey(k, id));
     }
     await vocabDB.del(id);
+    if (book.type === 'local') await deleteBookFromNativeDisk(id);
 
     const remainingIds = Object.keys(reg.books);
     if (reg.activeId === id || activeRepository === id) {
@@ -3039,6 +3253,7 @@
       localStorage.setItem(scopedKey(STORE_KEY, id), JSON.stringify(defaultStore()));
       saveVocabularyLocal(merged, id);
       await vocabDB.set(id, merged);
+      await syncBookToNativeDisk(id).catch(() => {});
 
       await selectWordbook(id);
       closeModal('modal-create-local');
@@ -3399,19 +3614,34 @@
   }
 
   /* ---------- 发音 ---------- */
-  const canSpeak = () => 'speechSynthesis' in window && typeof SpeechSynthesisUtterance === 'function';
+  const canSpeak = () => ('speechSynthesis' in window && typeof SpeechSynthesisUtterance === 'function') || !!nativeBridge()?.speak;
   function speak(text, onError = null) {
-    if (!canSpeak()) { onError?.(); return; }
+    const bridge = nativeBridge();
+    const useNative = () => {
+      if (!bridge?.speak) { onError?.(); return; }
+      Promise.resolve(bridge.speak(text)).then((ok) => {
+        if (ok === false) onError?.();
+      }).catch(() => onError?.());
+    };
+    if (!('speechSynthesis' in window && typeof SpeechSynthesisUtterance === 'function')) {
+      useNative();
+      return;
+    }
     try {
       window.speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(text);
       u.lang = 'en-US';
       u.rate = 0.9;
       if (onError) u.onerror = (event) => {
-        if (!['canceled', 'interrupted'].includes(event?.error)) onError();
+        if (!['canceled', 'interrupted'].includes(event?.error)) {
+          if (bridge?.speak) useNative();
+          else onError();
+        }
       };
       window.speechSynthesis.speak(u);
-    } catch { onError?.(); }
+    } catch {
+      useNative();
+    }
   }
 
   /* ---------- 视图切换 ---------- */
@@ -3556,6 +3786,7 @@
   /* ---------- 启动 ---------- */
   async function boot() {
     sync = loadSync();
+    await hydrateNativeWordbooksOnBoot();
     try {
       migrateRepositoryStorage();
       if (typeof FSRS === 'undefined') throw new Error('复习算法未载入，请联网刷新一次');
@@ -3576,6 +3807,7 @@
     bindEvents();
     bindSettings();
     bindSync();
+    initIosPwaGuide();
     applySyncToUI();
     renderWordbooks();
     refreshIntro();
@@ -3590,7 +3822,18 @@
     refreshCetReview();
   }
 
-  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+  if (typeof window !== 'undefined') {
+    window.__worddrillBack = () => {
+      const openModalEl = $$('.modal').find((m) => !m.hidden);
+      if (openModalEl) { openModalEl.hidden = true; return true; }
+      if (session) return false;
+      const booksOrOther = !$('#view-learn') || $('#view-learn').hidden;
+      if (booksOrOther) { switchView('learn'); return true; }
+      return false;
+    };
+  }
+
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http') && !nativeBridge()) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('sw.js').catch(() => { /* 忽略 */ });
     });

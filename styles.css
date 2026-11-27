@@ -204,7 +204,7 @@ button { cursor: pointer; background: none; border: none; padding: 0; }
 
 /* 训练独占页面；顶栏和底栏固定，题干可滚动且底部不被遮挡。 */
 :fullscreen { background: var(--color-bg); }
-.is-training .topbar, .is-training .footer, .is-training #cet-review, .is-training #active-book-bar { display: none; }
+.is-training .topbar, .is-training .footer, .is-training #cet-review, .is-training #active-book-bar, .is-training #ios-pwa-banner { display: none; }
 body.is-training { background: var(--color-card); padding-top: var(--sat); }
 .is-training #main {
   max-width: 800px;
@@ -935,6 +935,71 @@ body.is-training { background: var(--color-card); padding-top: var(--sat); }
   .brand__name { display: none; }
 }
 
+/* ---------- iOS PWA Banner & Modal & Native Storage Bar ---------- */
+.ios-pwa-banner {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  margin-bottom: var(--s-4);
+  background: var(--color-primary-soft);
+  border: 1.5px solid color-mix(in srgb, var(--color-primary) 35%, transparent);
+  border-radius: var(--radius-md);
+}
+.ios-pwa-banner__text { display: grid; gap: 2px; min-width: 0; flex: 1; }
+.ios-pwa-banner__text strong { font-size: .9375rem; color: var(--color-fg); }
+.ios-pwa-banner__text span { font-size: .8125rem; color: var(--color-muted-fg); }
+.ios-pwa-banner__actions { display: flex; align-items: center; gap: var(--s-2); flex: none; }
+
+.ios-pwa-note {
+  padding: var(--s-3);
+  margin-bottom: var(--s-4);
+  border-radius: var(--radius-sm);
+  background: var(--color-warning-soft);
+  color: var(--color-warning);
+  font-size: .8125rem; font-weight: 600;
+}
+.ios-pwa-steps { list-style: none; padding: 0; display: grid; gap: var(--s-3); }
+.ios-pwa-step {
+  display: flex; align-items: flex-start; gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  border: 1px solid var(--color-border); border-radius: var(--radius-md);
+  background: var(--color-bg);
+}
+.ios-pwa-step__num {
+  width: 24px; height: 24px; border-radius: var(--radius-full); flex: none;
+  display: grid; place-items: center;
+  background: var(--color-primary); color: var(--color-on-primary);
+  font-size: .75rem; font-weight: 700; margin-top: 2px;
+}
+.ios-pwa-step__icon {
+  width: 34px; height: 34px; border-radius: var(--radius-sm); flex: none;
+  display: grid; place-items: center;
+  background: var(--color-primary-soft); color: var(--color-primary);
+}
+.ios-pwa-step__icon svg { width: 18px; height: 18px; }
+.ios-pwa-step strong { display: block; font-size: .9375rem; }
+.ios-pwa-step p { font-size: .8125rem; color: var(--color-muted-fg); margin-top: 2px; }
+
+.native-storage-bar {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--s-3);
+  flex-wrap: wrap;
+  padding: var(--s-3) var(--s-4);
+  margin-bottom: var(--s-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+}
+.native-storage-bar__info { display: grid; gap: 4px; min-width: 0; flex: 1; }
+.native-storage-bar__label { font-size: .75rem; font-weight: 600; color: var(--color-muted-fg); }
+.native-storage-bar__path {
+  font-family: var(--font-mono); font-size: .75rem;
+  color: var(--color-fg); overflow-wrap: anywhere; word-break: break-all;
+}
+@media (max-width: 640px) {
+  .ios-pwa-banner { flex-wrap: wrap; padding: var(--s-3); }
+  .ios-pwa-banner__actions { width: 100%; justify-content: flex-end; }
+  .native-storage-bar .btn { width: 100%; }
+}
+
 /* ---------- Motion preference ---------- */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -947,7 +1012,7 @@ body.is-training { background: var(--color-card); padding-top: var(--sat); }
 
 /* ---------- Print ---------- */
 @media print {
-  .topbar, .footer, .toast, .quiz__foot, .summary__actions, .toolbar, .active-book-bar { display: none; }
+  .topbar, .footer, .toast, .quiz__foot, .summary__actions, .toolbar, .active-book-bar, .ios-pwa-banner { display: none; }
   .card, .wcard { box-shadow: none; border-color: #ccc; }
   body::before { display: none; }
   body { padding-top: 0; padding-bottom: 0; }
