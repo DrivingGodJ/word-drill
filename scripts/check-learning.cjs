@@ -45,7 +45,7 @@ const source = fs.readFileSync(path.join(root, 'app.js'), 'utf8')
     setWords: (words) => { WORDS = words; byId.clear(); words.forEach(w => byId.set(w.id, w)); },
     applyPacePreset, getCurrentPace, mergeWordlists, planCloudUpload, uploadLocalToCloud,
     remoteReadFile, loadWordbooks, saveWordbooks, selectWordbook, deleteWordbook, isCloudBook, saveVocabularyLocal,
-    buildWordbookBundle, parseWordbookBundle
+    buildWordbookBundle, parseWordbookBundle, wordDifficulty, selectDailyNewWords
   }; sync = { deviceId: 'check' };`);
 vm.runInContext(source, context);
 const app = context.check;
@@ -830,6 +830,74 @@ assert.equal(app.getSession().practice, true);
   assert.ok(writtenFiles['progress.json'].words.abandon && writtenFiles['progress.json'].words.shared);
   assert.ok(storage.get('worddrill.backup.before-v6:' + encodeURIComponent(uploadRes.targetRepoId)), 'backs up remote progress before upload');
   assert.ok(app.loadWordbooks().books[localId], 'local wordbook stays intact after cloud upload');
+
+  // Difficulty-aware daily new-word scheduling (balanced / easy_first / hard_first) & anti-interference spacing.
+  const eEasy = { id: 'book', word: 'book', meaning: '书', difficulty: 1, freq: 300, tags: ['拼写'] };
+  const eHard = { id: 'obfuscate', word: 'obfuscate', meaning: '使模糊；使困惑；弄糊涂', difficulty: 5, freq: 45000, tags: ['拼写'] };
+  const hEasy = { id: 'cat', word: 'cat', meaning: '猫', tags: ['只认'] };
+  const hHard = { id: 'counterproductive', word: 'counterproductive', meaning: '适得其反的；产生相反效果的；无效的', tags: ['拼写'] };
+  assert.ok(app.wordDifficulty(eEasy) < app.wordDifficulty(eHard), 'explicit difficulty & freq rank easy below hard');
+  assert.ok(app.wordDifficulty(hEasy) < app.wordDifficulty(hHard), 'heuristic fallback ranks short recognize word below long spelling word');
+
+  const pool20 = [
+    { id: 'easy-a', word: 'apple', meaning: '苹果', difficulty: 1, freq: 400 },
+    { id: 'easy-b', word: 'bread', meaning: '面包', difficulty: 1, freq: 900 },
+    { id: 'easy-c', word: 'chair', meaning: '椅子', difficulty: 1, freq: 1500 },
+    { id: 'easy-d', word: 'drink', meaning: '喝', difficulty: 1, freq: 2000 },
+    { id: 'easy-e', word: 'earth', meaning: '地球', difficulty: 2, freq: 3600 },
+    { id: 'easy-f', word: 'frame', meaning: '框架', difficulty: 2, freq: 5000 },
+    { id: 'easy-g', word: 'green', meaning: '绿色', difficulty: 2, freq: 6500 },
+    { id: 'med-a', word: 'harvest', meaning: '收获', difficulty: 3, freq: 11000 },
+    { id: 'med-b', word: 'inspire', meaning: '鼓舞', difficulty: 3, freq: 13000 },
+    { id: 'med-c', word: 'journal', meaning: '期刊', difficulty: 3, freq: 15000 },
+    { id: 'med-d', word: 'kinetic', meaning: '运动的', difficulty: 3, freq: 17000 },
+    { id: 'med-e', word: 'lantern', meaning: '灯笼', difficulty: 3, freq: 19000 },
+    { id: 'med-f', word: 'migrate', meaning: '迁移', difficulty: 3, freq: 20500 },
+    { id: 'med-g', word: 'nurture', meaning: '培育', difficulty: 3, freq: 21500 },
+    { id: 'med-h', word: 'obscure', meaning: '模糊的', difficulty: 4, freq: 24000 },
+    { id: 'hard-a', word: 'palpable', meaning: '明显的', difficulty: 4, freq: 30000 },
+    { id: 'hard-b', word: 'quixotic', meaning: '不切实际的', difficulty: 5, freq: 38000 },
+    { id: 'hard-c', word: 'recalcitrant', meaning: '顽抗的', difficulty: 5, freq: 42000 },
+    { id: 'hard-d', word: 'sycophant', meaning: '马屁精', difficulty: 5, freq: 46000 },
+    { id: 'hard-e', word: 'ubiquitous', meaning: '无处不在的', difficulty: 5, freq: 49000 }
+  ];
+
+  const pickedBalanced = app.selectDailyNewWords(pool20, 10, 'balanced', initialTime);
+  assert.equal(pickedBalanced.length, 10);
+  const balancedDiffs = pickedBalanced.map(w => w.difficulty);
+  assert.ok(balancedDiffs.some(d => d <= 2) && balancedDiffs.some(d => d === 3) && balancedDiffs.some(d => d >= 4),
+    'balanced mode mixes easy, medium, and hard words');
+
+  const pickedEasy = app.selectDailyNewWords(pool20, 6, 'easy_first', initialTime);
+  assert.equal(pickedEasy.length, 6);
+  assert.ok(pickedEasy.every(w => w.difficulty <= 2), 'easy_first prioritizes easiest words');
+
+  const pickedHard = app.selectDailyNewWords(pool20, 5, 'hard_first', initialTime);
+  assert.equal(pickedHard.length, 5);
+  assert.ok(pickedHard.every(w => w.difficulty >= 4), 'hard_first prioritizes hardest words');
+
+  // Prefix anti-interference avoids clustering adapt/adopt/adept when diverse prefixes exist.
+  const clusterPool = [
+    { id: 'ada1', word: 'adapt', meaning: '适应', difficulty: 1, freq: 100 },
+    { id: 'ada2', word: 'adaptive', meaning: '适应的', difficulty: 1, freq: 110 },
+    { id: 'ada3', word: 'adaptor', meaning: '适配器', difficulty: 1, freq: 120 },
+    { id: 'brv1', word: 'brave', meaning: '勇敢', difficulty: 1, freq: 200 },
+    { id: 'cln1', word: 'clean', meaning: '干净', difficulty: 1, freq: 210 },
+    { id: 'drk1', word: 'drink', meaning: '喝', difficulty: 1, freq: 220 }
+  ];
+  const spaced = app.selectDailyNewWords(clusterPool, 4, 'easy_first', initialTime);
+  const adaCount = spaced.filter(w => w.word.startsWith('ada')).length;
+  assert.equal(adaCount, 1, 'only one word from the same 3-letter prefix cluster when alternatives exist');
+
+  // newOrder persists and syncs across devices.
+  reset();
+  app.getStore().settings.newOrder = 'hard_first';
+  app.getStore().settingsAt = initialTime + 2000;
+  const orderPayload = plain(app.buildPayload());
+  assert.equal(orderPayload.settings.newOrder, 'hard_first');
+  reset();
+  app.mergeRemote(orderPayload);
+  assert.equal(app.getStore().settings.newOrder, 'hard_first');
 
   console.log(`Learning checks passed; ${Object.keys(old.words).length} legacy records preserved.`);
 })().catch((error) => { console.error(error); process.exitCode = 1; });

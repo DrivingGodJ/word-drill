@@ -348,6 +348,26 @@
 
       <div class="setting-block">
         <div class="setting-block__head">
+          <span class="setting-block__label">新词安排</span>
+        </div>
+        <div class="choice-grid choice-grid--3" id="set-neworder-group" role="group" aria-label="新词安排">
+          <button class="choice-card" type="button" data-neworder="balanced">
+            <strong>难易搭配</strong>
+            <span>基础与难词穿插</span>
+          </button>
+          <button class="choice-card" type="button" data-neworder="easy_first">
+            <strong>先易后难</strong>
+            <span>高频简单词优先</span>
+          </button>
+          <button class="choice-card" type="button" data-neworder="hard_first">
+            <strong>难词优先</strong>
+            <span>先攻克生僻难词</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="setting-block">
+        <div class="setting-block__head">
           <span class="setting-block__label">要不要练拼写</span>
         </div>
         <div class="choice-grid choice-grid--3" id="set-spelling-group" role="group" aria-label="拼写模式">
@@ -523,6 +543,6 @@
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
 <script src="vendor/ts-fsrs-5.4.2.js"></script>
-<script src="app.js?v=18"></script>
+<script src="app.js?v=19"></script>
 </body>
 </html>

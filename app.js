@@ -41,10 +41,14 @@
   const SYNC_KEY = 'worddrill.sync.v1';
   const SYNC_API = 'https://api.github.com';
   /** 学习参数才同步；主题/发音是设备偏好，各设备自己存 */
-  const SYNCED_SETTINGS = ['newLimit', 'threshold', 'retention', 'spelling'];
+  const SYNCED_SETTINGS = ['newLimit', 'threshold', 'retention', 'spelling', 'newOrder'];
   /** 拼写要求：auto = 按词表设定；all = 全部强制拼写；off = 全部只认不拼。 */
   const SPELLING_MODES = ['auto', 'all', 'off'];
   const normSpelling = (v) => (SPELLING_MODES.includes(v) ? v : 'auto');
+  /** 每日新词安排：balanced = 难易搭配；easy_first = 先易后难；hard_first = 难词优先。 */
+  const NEW_ORDER_MODES = ['balanced', 'easy_first', 'hard_first'];
+  const NEW_ORDER_LABEL = { balanced: '难易搭配', easy_first: '先易后难', hard_first: '难词优先' };
+  const normNewOrder = (v) => (NEW_ORDER_MODES.includes(v) ? v : 'balanced');
   /** 学习参数的合法区间 */
   const SETTING_RANGE = { newLimit: [0, 40], threshold: [CREDIT_NEED_MIN, CREDIT_NEED_MAX], retention: [80, 95] };
 
@@ -61,6 +65,7 @@
       s[k] = c === undefined ? defaultStore().settings[k] : c;
     }
     s.spelling = normSpelling(s.spelling);
+    s.newOrder = normNewOrder(s.newOrder);
     return s;
   }
 
@@ -176,7 +181,7 @@
   function defaultStore() {
     return {
       version: STORE_VERSION,
-      settings: { newLimit: 10, threshold: CREDIT_NEED_DEFAULT, retention: 90, speak: true, spelling: 'auto' },
+      settings: { newLimit: 10, threshold: CREDIT_NEED_DEFAULT, retention: 90, speak: true, spelling: 'auto', newOrder: 'balanced' },
       settingsAt: 0,
       cet: { approved: [], rejected: [] },
       words: {},
@@ -999,6 +1004,11 @@
           if (s !== undefined && target.settings.spelling !== s) { target.settings.spelling = s; changed = true; }
           continue;
         }
+        if (k === 'newOrder') {
+          const o = NEW_ORDER_MODES.includes(remote.settings.newOrder) ? remote.settings.newOrder : undefined;
+          if (o !== undefined && target.settings.newOrder !== o) { target.settings.newOrder = o; changed = true; }
+          continue;
+        }
         const v = clampSetting(k, remote.settings[k]);
         if (v !== undefined && target.settings[k] !== v) { target.settings[k] = v; changed = true; }
       }
@@ -1170,7 +1180,8 @@
 
   function entryRichness(w) {
     return (w.example ? 4 : 0) + (w.exampleZh ? 2 : 0) + (w.phonetic ? 1 : 0)
-      + (Array.isArray(w.collocations) && w.collocations.length ? 1 : 0) + (w.pos ? 1 : 0);
+      + (Array.isArray(w.collocations) && w.collocations.length ? 1 : 0) + (w.pos ? 1 : 0)
+      + (w.difficulty ? 1 : 0) + (w.freq ? 1 : 0);
   }
 
   function wordRequiresSpellTag(tags = []) {
@@ -1196,7 +1207,17 @@
         } else {
           const prevNeedsSpell = wordRequiresSpellTag(prev.tags);
           const winner = entryRichness(raw) > entryRichness(prev) ? raw : prev;
-          map.set(raw.id, { ...winner, tags: [prevNeedsSpell || normTag === '拼写' ? '拼写' : '只认'] });
+          const merged = {
+            ...winner,
+            tags: [prevNeedsSpell || normTag === '拼写' ? '拼写' : '只认']
+          };
+          if (merged.difficulty === undefined && (prev.difficulty ?? raw.difficulty) !== undefined) {
+            merged.difficulty = prev.difficulty ?? raw.difficulty;
+          }
+          if (merged.freq === undefined && (prev.freq ?? raw.freq) !== undefined) {
+            merged.freq = prev.freq ?? raw.freq;
+          }
+          map.set(raw.id, merged);
         }
       }
     }
@@ -1411,6 +1432,152 @@
     return { plan, targetRepoId, savedConfig };
   }
 
+  /* ---------- 智能每日新词调度 ---------- */
+  function dailyHash(str) {
+    let h = 2166136261;
+    for (let i = 0; i < str.length; i++) {
+      h ^= str.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return (h >>> 0) / 4294967296;
+  }
+
+  /**
+   * 综合词频、词库难度分级与词形特征估算单词难度（0–100）。
+   * 兼容带 freq/difficulty 的新词表与无元数据的自定义/历史词库。
+   */
+  function wordDifficulty(w) {
+    if (!w) return 50;
+    const freqRank = Number(w.freq || w.freqRank || w.selection?.frequencyRank);
+    const hasFreq = Number.isFinite(freqRank) && freqRank > 0;
+    const rawDiff = Number(w.difficulty);
+    const senses = String(w.meaning || '').split(/[；;]/).filter((s) => s.trim()).length;
+    const letters = String(w.word || '').replace(/[^a-z]/gi, '').length;
+    const freqRatio = hasFreq ? Math.min(1, Math.log10(Math.max(1, freqRank)) / Math.log10(50000)) : null;
+
+    let score;
+    if (Number.isFinite(rawDiff) && rawDiff >= 1 && rawDiff <= 5) {
+      const base = [0, 15, 35, 55, 75, 90][Math.round(rawDiff)];
+      const freqAdj = freqRatio !== null ? (freqRatio - 0.5) * 12 : 0;
+      const shapeAdj = Math.min(5, Math.max(0, (letters - 6) * 0.6)) + (senses >= 3 ? 2 : 0);
+      score = base + freqAdj + shapeAdj;
+    } else if (freqRatio !== null) {
+      score = 10 + freqRatio * 80 + (senses >= 3 ? 2 : 0);
+    } else {
+      const multi = /[\s-]/.test(w.word || '') ? 8 : 0;
+      const lenScore = Math.min(42, Math.max(10, letters * 3.8));
+      const senseScore = Math.min(12, Math.max(0, (senses - 1) * 4));
+      const spellLoad = requiresWriting(w.id) ? 6 : 0;
+      score = 12 + lenScore + senseScore + multi + spellLoad;
+    }
+    return Math.min(100, Math.max(0, Math.round(score * 10) / 10));
+  }
+
+  /**
+   * 从已排序候选池中挑词，尽量分散前 3 字母相近的词形，避免单日集中出现形近易混词。
+   */
+  function pickWithSpacing(pool, count, chosenIds, usedPrefixes) {
+    const picked = [];
+    if (count <= 0 || !pool.length) return picked;
+
+    const remaining = [];
+    for (const w of pool) {
+      if (picked.length >= count) break;
+      if (chosenIds.has(w.id)) continue;
+      const prefix = String(w.word || '').toLowerCase().replace(/[^a-z]/g, '').slice(0, 3);
+      if (prefix.length === 3 && usedPrefixes.has(prefix)) {
+        remaining.push(w);
+        continue;
+      }
+      chosenIds.add(w.id);
+      if (prefix.length === 3) usedPrefixes.add(prefix);
+      picked.push(w);
+    }
+    for (const w of remaining) {
+      if (picked.length >= count) break;
+      if (chosenIds.has(w.id)) continue;
+      chosenIds.add(w.id);
+      picked.push(w);
+    }
+    return picked;
+  }
+
+  /**
+   * 按难度与词频合理安排每日新词（balanced / easy_first / hard_first）。
+   */
+  function selectDailyNewWords(candidates, limit, mode = 'balanced', t = now()) {
+    const list = Array.isArray(candidates) ? candidates : [];
+    const cap = Math.min(list.length, Math.max(0, Math.floor(Number(limit) || 0)));
+    if (!cap) return [];
+
+    const day = dayKey(t);
+    const orderMode = normNewOrder(mode);
+    const meta = list.map((w) => ({
+      w,
+      diff: wordDifficulty(w),
+      jitter: dailyHash(`${day}:${w.id}`)
+    }));
+
+    const chosenIds = new Set();
+    const usedPrefixes = new Set();
+
+    if (orderMode === 'easy_first') {
+      meta.sort((a, b) => (a.diff + a.jitter * 6) - (b.diff + b.jitter * 6));
+      return pickWithSpacing(meta.map((m) => m.w), cap, chosenIds, usedPrefixes);
+    }
+
+    if (orderMode === 'hard_first') {
+      meta.sort((a, b) => (b.diff + b.jitter * 6) - (a.diff + a.jitter * 6));
+      return pickWithSpacing(meta.map((m) => m.w), cap, chosenIds, usedPrefixes);
+    }
+
+    // balanced（默认）：将未学词按难度分为基础(35%) / 中等(40%) / 进阶(25%)三档，按 40% / 40% / 20% 搭配并穿插排布
+    meta.sort((a, b) => a.diff - b.diff || a.jitter - b.jitter);
+    const n = meta.length;
+    const easyEnd = Math.max(1, Math.round(n * 0.35));
+    const medEnd = Math.max(easyEnd, Math.round(n * 0.75));
+    const sortBucket = (arr) => arr
+      .slice()
+      .sort((a, b) => (a.diff * 0.3 + a.jitter * 15) - (b.diff * 0.3 + b.jitter * 15))
+      .map((m) => m.w);
+
+    const easyPool = sortBucket(meta.slice(0, easyEnd));
+    const medPool = sortBucket(meta.slice(easyEnd, medEnd));
+    const hardPool = sortBucket(meta.slice(medEnd));
+
+    let wantHard = cap >= 5 ? Math.max(1, Math.round(cap * 0.2)) : 0;
+    let wantMed = Math.round(cap * 0.4);
+    let wantEasy = cap - wantHard - wantMed;
+
+    const pickedEasy = pickWithSpacing(easyPool, wantEasy, chosenIds, usedPrefixes);
+    const pickedMed = pickWithSpacing(medPool, wantMed, chosenIds, usedPrefixes);
+    const pickedHard = pickWithSpacing(hardPool, wantHard, chosenIds, usedPrefixes);
+
+    // 若某一档不足，按邻近档位自动补齐到目标题量
+    const totalPicked = () => pickedEasy.length + pickedMed.length + pickedHard.length;
+    if (totalPicked() < cap) {
+      for (const extra of pickWithSpacing(medPool, cap - totalPicked(), chosenIds, usedPrefixes)) pickedMed.push(extra);
+    }
+    if (totalPicked() < cap) {
+      for (const extra of pickWithSpacing(easyPool, cap - totalPicked(), chosenIds, usedPrefixes)) pickedEasy.push(extra);
+    }
+    if (totalPicked() < cap) {
+      for (const extra of pickWithSpacing(hardPool, cap - totalPicked(), chosenIds, usedPrefixes)) pickedHard.push(extra);
+    }
+
+    // 穿插排序：基础 -> 中等 -> 基础 -> 进阶，开局顺滑且记忆张弛有度
+    const result = [];
+    let ei = 0, mi = 0, hi = 0;
+    while (result.length < cap && (ei < pickedEasy.length || mi < pickedMed.length || hi < pickedHard.length)) {
+      if (ei < pickedEasy.length) result.push(pickedEasy[ei++]);
+      if (result.length < cap && mi < pickedMed.length) result.push(pickedMed[mi++]);
+      if (result.length < cap && ei < pickedEasy.length) result.push(pickedEasy[ei++]);
+      if (result.length < cap && mi < pickedMed.length) result.push(pickedMed[mi++]);
+      if (result.length < cap && hi < pickedHard.length) result.push(pickedHard[hi++]);
+    }
+    return result;
+  }
+
   /* ---------- 会话 ---------- */
   function startSession(mode = 'learn', ids = null) {
     const t = now();
@@ -1429,10 +1596,11 @@
         const p = progressOf(w.id);
         return (p.stage !== 'new' || p.introducedAt) && p.due <= t;
       })).sort((a, b) => progressOf(a.id).due - progressOf(b.id).due);
-      const fresh = mode === 'review' ? [] : shuffle(WORDS.filter((w) => {
+      const freshPool = mode === 'review' ? [] : WORDS.filter((w) => {
         const p = progressOf(w.id);
         return p.stage === 'new' && !p.introducedAt;
-      })).slice(0, newAllowance(t));
+      });
+      const fresh = mode === 'review' ? [] : selectDailyNewWords(freshPool, newAllowance(t), store.settings.newOrder, t);
       selected = due.concat(fresh);
     }
     const queue = selected.slice(0, REQUESTS_PER_ROUND).map((w) => w.id);
@@ -1641,10 +1809,11 @@
       $('#intro-hint').textContent += ` · 每日备词目标 ${dailyWordTarget()} 词，今日已练 ${dailyCoverage(t).seen} 词`;
     }
     const paceName = getCurrentPace()?.label || '自定义';
+    const orderName = NEW_ORDER_LABEL[normNewOrder(store.settings.newOrder)] || '难易搭配';
     const spellDesc = store.settings.spelling === 'off' ? '全部只认不拼'
       : store.settings.spelling === 'all' ? '全部强制拼写'
       : '按词表默认';
-    $('#intro-rule').textContent = `当前模式：${spellDesc} · 复习节奏「${paceName}」`;
+    $('#intro-rule').textContent = `当前模式：${spellDesc} · 新词「${orderName}」· 复习「${paceName}」`;
 
     $('#btn-start').disabled = totalToday === 0;
     $('#btn-review').disabled = due === 0;
@@ -2137,6 +2306,13 @@
     const noSpell = $('#set-no-spelling');
     if (noSpell) noSpell.checked = spMode === 'off';
 
+    const orderMode = normNewOrder(store.settings.newOrder);
+    $$('[data-neworder]').forEach((btn) => {
+      const on = btn.dataset.neworder === orderMode;
+      btn.classList.toggle('is-selected', on);
+      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+
     const pace = getCurrentPace();
     $$('[data-pace]').forEach((btn) => {
       const on = pace && btn.dataset.pace === pace.key;
@@ -2295,6 +2471,17 @@
 
     $$('[data-pace]').forEach((btn) => {
       btn.addEventListener('click', () => applyPacePreset(btn.dataset.pace));
+    });
+
+    $$('[data-neworder]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        store.settings.newOrder = normNewOrder(btn.dataset.neworder);
+        store.settingsAt = now();
+        saveStore();
+        applySettingsToUI();
+        refreshIntro();
+        toast(`新词安排：${NEW_ORDER_LABEL[store.settings.newOrder]}`);
+      });
     });
 
     const noSpell = $('#set-no-spelling');
