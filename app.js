@@ -1634,7 +1634,7 @@
     const paceName = getCurrentPace()?.label || '自定义';
     const spellDesc = store.settings.spelling === 'off' ? '全部只认不拼'
       : store.settings.spelling === 'all' ? '全部强制拼写'
-      : '按词表默认（四级要拼、六级只认）';
+      : '按词表默认';
     $('#intro-rule').textContent = `当前模式：${spellDesc} · 复习节奏「${paceName}」`;
 
     $('#btn-start').disabled = totalToday === 0;
@@ -1648,8 +1648,8 @@
     $('#btn-context').disabled = !learned.some(hasFillExample);
     $('#btn-listen').disabled = !learned.length || !canSpeak();
     $('#application-hint').textContent = !canSpeak()
-      ? '当前浏览器不支持发音，仍可练语境填空。练习不改变升阶与复习时间。'
-      : '练习已学词的语境和声音；不改变升阶与复习时间。听写使用设备合成语音。';
+      ? '当前浏览器无法朗读，仍可练语境填空。'
+      : '语境与听写加练不影响正式复习计划。';
     refreshActiveBookBar();
   }
 
@@ -2114,9 +2114,9 @@
     }
     const nlHint = $('#set-newlimit-hint');
     if (nlHint) {
-      nlHint.textContent = dailyWordTarget()
-        ? `到期复习永远优先；当前词库已启用每日 ${dailyWordTarget()} 词备词目标。`
-        : '到期复习永远优先，每天按这个量补充新词。';
+      const target = dailyWordTarget();
+      nlHint.hidden = !target;
+      if (target) nlHint.textContent = `当前词库已启用每日 ${target} 词备词目标。`;
     }
 
     const spMode = normSpelling(store.settings.spelling);
@@ -2170,7 +2170,7 @@
 
   function parseWordbookBundle(parsed) {
     if (!parsed || typeof parsed !== 'object' || parsed.format !== 'worddrill-wordbook') {
-      throw new Error('请导入完整的词库文件（需同时包含单词表和学习进度），不支持单独导入进度');
+      throw new Error('词库文件格式不对，需同时包含单词表与学习进度');
     }
     const vocab = parsed.vocabulary;
     if (!vocab || !Array.isArray(vocab.words) || !vocab.words.length) {

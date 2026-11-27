@@ -715,7 +715,7 @@ assert.equal(app.getSession().practice, true);
   assert.equal(parsedBundle.name, '测试导出词库');
   assert.equal(parsedBundle.vocabulary.words.length, 3);
   assert.equal(parsedBundle.progress.settings.spelling, 'all');
-  assert.throws(() => app.parseWordbookBundle(plain(app.defaultStore())), /不支持单独导入进度/);
+  assert.throws(() => app.parseWordbookBundle(plain(app.defaultStore())), /单词表与学习进度/);
 
   // planCloudUpload supports append (add new words + merge progress), replace (replace words, keep/merge progress), and overwrite (replace both words & progress).
   const localVocabPlan = {

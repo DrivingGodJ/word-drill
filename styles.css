@@ -793,27 +793,83 @@ body.is-training { background: var(--color-card); }
 
 /* ---------- Responsive ---------- */
 @media (max-width: 640px) {
-  #main { padding: var(--s-5) var(--s-4) var(--s-8); }
+  #main { padding: var(--s-4) var(--s-3) var(--s-8); }
   .topbar__inner { padding: var(--s-2) var(--s-3); gap: var(--s-2); }
   .brand__name { font-size: .9375rem; }
   .nav__item {
     flex-direction: column; gap: 2px;
     padding: 4px 8px; font-size: 11px; line-height: 1.1; min-height: 44px;
   }
-  .card { padding: var(--s-5); border-radius: var(--radius-md); }
-  .stat-row { gap: var(--s-2); }
+  .card { padding: var(--s-4); border-radius: var(--radius-md); }
+  .stat-row { gap: var(--s-2); margin: var(--s-4) 0; padding: var(--s-4) 0; }
   .stat__num { font-size: 1.5rem; }
+
+  .active-book-bar { flex-wrap: nowrap; padding: var(--s-2) var(--s-3); }
+  .active-book-bar__meta { flex-basis: 100%; font-size: .75rem; }
+  .active-book-bar .btn { flex: none; }
+
+  #btn-start { width: 100%; }
+  #session-intro > .btn-row {
+    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--s-2); margin-top: var(--s-3);
+  }
+  #session-intro > .btn-row .btn,
+  .application .btn-row .btn {
+    padding: 0 var(--s-2); font-size: .8125rem;
+  }
+  .application .btn-row {
+    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--s-2);
+  }
+
   .quiz__head { gap: var(--s-3); }
   .quiz__progress { max-width: none; }
   .quiz__shortcut { display: none; }
+  #recall-actions {
+    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--s-2);
+  }
+  .quiz__foot-inner .quiz__next { flex: 1; max-width: 220px; }
   .spell__row { flex-direction: column; }
+
+  .summary__actions {
+    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--s-2);
+  }
+  .summary__actions #btn-again { grid-column: 1 / -1; }
+
+  .books-card__head .btn { width: 100%; }
+  .book-item__actions {
+    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--s-2);
+  }
+  .book-item__actions .btn--primary { grid-column: 1 / -1; }
+  .books-card .btn-row {
+    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--s-2);
+  }
+  .books-card .btn-row .btn--primary,
+  .books-card .btn-row #btn-reset { grid-column: 1 / -1; }
+
   .toolbar { flex-direction: column; align-items: stretch; }
   .search input { width: 100%; }
   .mastery-summary__head { flex-direction: column; align-items: flex-start; gap: var(--s-1); }
+
   .choice-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .choice-grid--2, .choice-grid--3 { grid-template-columns: 1fr; }
-  .active-book-bar { flex-wrap: wrap; }
+  .choice-grid--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-2); }
+  .choice-grid--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s-2); }
+  .choice-grid--3 .choice-card {
+    align-items: center; text-align: center;
+    padding: var(--s-3) var(--s-2);
+  }
+  .choice-grid--3 .choice-card strong { font-size: .8125rem; }
+  .choice-grid--3 .choice-card span { font-size: .75rem; }
+
   .modal__panel { padding: var(--s-4); max-height: 92dvh; }
+  .modal__foot {
+    display: grid; grid-template-columns: 1fr 1.4fr;
+    gap: var(--s-2);
+  }
 }
 
 /* ---------- Motion preference ---------- */
