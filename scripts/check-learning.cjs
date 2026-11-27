@@ -21,7 +21,7 @@ const element = (key) => {
 const context = vm.createContext({
   document: { body: element('body'), documentElement: element('html'), querySelector: element, querySelectorAll: () => [], visibilityState: 'visible',
     addEventListener: (type, fn) => { documentEvents[type] = fn; } },
-  localStorage: { getItem: (key) => storage.get(key) || null, setItem: (key, value) => storage.set(key, value) },
+  localStorage: { getItem: (key) => storage.get(key) || null, setItem: (key, value) => storage.set(key, value), removeItem: (key) => storage.delete(key) },
   crypto: require('node:crypto').webcrypto, navigator: {}, location: { protocol: 'http:', hash: '' },
   window: { addEventListener: (type, fn) => { windowEvents[type] = fn; } },
   setInterval: (fn) => intervals.push(fn),
@@ -42,7 +42,9 @@ const source = fs.readFileSync(path.join(root, 'app.js'), 'utf8')
     setSync: (config) => { sync = config; }, setSession: (s) => { session = s; },
     getStore: () => store, setStore: (s) => { store = readStore(s); },
     getVocabulary: () => ({words: WORDS, meta: META}), getSession: () => session, setMeta: (meta) => { META = meta; },
-    setWords: (words) => { WORDS = words; byId.clear(); words.forEach(w => byId.set(w.id, w)); }
+    setWords: (words) => { WORDS = words; byId.clear(); words.forEach(w => byId.set(w.id, w)); },
+    applyPacePreset, getCurrentPace, mergeWordlists, planCloudUpload, uploadLocalToCloud,
+    remoteReadFile, loadWordbooks, saveWordbooks, selectWordbook, deleteWordbook, isCloudBook, saveVocabularyLocal
   }; sync = { deviceId: 'check' };`);
 vm.runInContext(source, context);
 const app = context.check;
@@ -620,5 +622,175 @@ assert.equal(app.getSession().practice, true);
   app.selectRepository(configB);
   assert.equal(app.getVocabulary().words[0].id, 'book-b');
   assert.ok(app.getStore().words.midterm);
+
+  // Intuitive preset settings map cleanly to internal threshold + retention values.
+  app.applyPacePreset('light');
+  assert.equal(app.getStore().settings.threshold, 2);
+  assert.equal(app.getStore().settings.retention, 85);
+  assert.equal(app.getCurrentPace().key, 'light');
+  app.applyPacePreset('strict');
+  assert.equal(app.getStore().settings.threshold, 5);
+  assert.equal(app.getStore().settings.retention, 93);
+  assert.equal(app.getCurrentPace().key, 'strict');
+  app.applyPacePreset('standard');
+  assert.equal(app.getCurrentPace().key, 'standard');
+
+  // mergeWordlists deduplicates by ID, unions tags, prefers richer entries, and deduplicates distractors.
+  const mergedLists = app.mergeWordlists([
+    {
+      meta: { shortName: '四级词汇' },
+      words: [
+        { id: 'abandon', word: 'abandon', pos: 'v.', meaning: '放弃', tags: ['CET4'] },
+        { id: 'cet4only', word: 'cet4only', pos: 'n.', meaning: '四级专有', example: 'A cet4only sample sentence here.', exampleZh: '例句', tags: ['CET4'] }
+      ]
+    },
+    {
+      meta: { shortName: '六级词汇' },
+      words: [
+        { id: 'abandon', word: 'abandon', pos: 'v.', meaning: '放弃；抛弃', example: 'Do not abandon hope in hard times.', exampleZh: '困难时不要放弃希望。', tags: ['CET6'] },
+        { id: 'ieltsword', word: 'ieltsword', pos: 'adj.', meaning: '雅思词汇', tags: ['IELTS'] }
+      ]
+    }
+  ], [
+    { w: 'd1', pos: 'n.', meaning: '干扰1' },
+    { w: 'd1', pos: 'n.', meaning: '干扰1' },
+    { w: 'd2', pos: 'v.', meaning: '干扰2' }
+  ]);
+  assert.equal(mergedLists.words.length, 3);
+  const abandonMerged = mergedLists.words.find(w => w.id === 'abandon');
+  assert.deepEqual(plain(abandonMerged.tags), ['CET4', 'CET6']);
+  assert.equal(abandonMerged.meaning, '放弃；抛弃');
+  assert.equal(mergedLists.distractors.length, 2);
+  assert.deepEqual(plain(mergedLists.meta.sources), ['四级词汇', '六级词汇']);
+
+  // Local wordbook isolation & autoSync skipping.
+  const localId = 'local:testbook1';
+  const reg = app.loadWordbooks();
+  reg.books[localId] = { id: localId, type: 'local', name: '四级 + 六级词汇', sources: ['四级词汇', '六级词汇'], wordCount: 3 };
+  app.saveWordbooks(reg);
+  storage.set('worddrill.v1:' + encodeURIComponent(localId), JSON.stringify({
+    ...plain(app.defaultStore()),
+    words: { abandon: { ...rec('recognize'), lastSeen: initialTime + 5000, correct: 4 } }
+  }));
+  app.saveVocabularyLocal(mergedLists, localId);
+  await app.selectWordbook(localId);
+  assert.equal(app.isCloudBook(), false);
+  assert.equal(app.getVocabulary().words.length, 3);
+  assert.equal(app.getStore().words.abandon.correct, 4);
+  assert.equal(app.getStore().words.midterm, undefined);
+  let unexpectedNetworkCalls = 0;
+  context.fetch = async () => { unexpectedNetworkCalls++; return { ok: true, json: async () => ({}) }; };
+  await app.autoSync(true);
+  assert.equal(unexpectedNetworkCalls, 0, 'local wordbook never triggers cloud autoSync');
+
+  // planCloudUpload supports append, overwrite, and replace (both keep-progress and replace-progress).
+  const localVocabPlan = {
+    meta: { name: '本地合并词库' },
+    words: [
+      { id: 'shared', word: 'shared', pos: 'n.', meaning: '本地新释义', tags: ['CET4'] },
+      { id: 'localonly', word: 'localonly', pos: 'v.', meaning: '仅本地词', tags: ['IELTS'] }
+    ],
+    distractors: [{ w: 'dx', pos: 'n.', meaning: '新干扰' }]
+  };
+  const localProgPlan = {
+    ...plain(app.defaultStore()),
+    words: {
+      shared: { ...rec('write'), lastSeen: initialTime - 1000, correct: 9, wrong: 2 },
+      localonly: { ...rec('recognize'), lastSeen: initialTime, correct: 2 }
+    }
+  };
+  const remoteVocabPlan = {
+    meta: { name: '云端原有' },
+    words: [
+      { id: 'shared', word: 'shared', pos: 'n.', meaning: '云端旧释义', tags: ['CET4'] },
+      { id: 'remoteonly', word: 'remoteonly', pos: 'adj.', meaning: '仅云端词', tags: ['CET6'] }
+    ],
+    distractors: [{ w: 'dy', pos: 'v.', meaning: '旧干扰' }]
+  };
+  const remoteProgPlan = {
+    ...plain(app.defaultStore()),
+    words: {
+      shared: { ...rec('mastered'), lastSeen: initialTime + 1000, correct: 12, wrong: 1 },
+      remoteonly: { ...rec('recognize'), lastSeen: initialTime, correct: 3 }
+    }
+  };
+
+  // 1) append
+  const planAppend = app.planCloudUpload({
+    localVocab: localVocabPlan, localProgress: localProgPlan,
+    remoteVocab: remoteVocabPlan, remoteProgress: remoteProgPlan, mode: 'append'
+  });
+  assert.deepEqual(plain(planAppend.summary), { remoteCount: 2, localCount: 2, added: 1, overwritten: 0, removed: 0, finalCount: 3 });
+  assert.equal(planAppend.wordsData.words.find(w => w.id === 'shared').meaning, '云端旧释义');
+  assert.equal(planAppend.progress.words.shared.stage, 'mastered', 'append keeps newer remote stage');
+  assert.ok(planAppend.progress.words.localonly && planAppend.progress.words.remoteonly);
+
+  // 2) overwrite
+  const planOverwrite = app.planCloudUpload({
+    localVocab: localVocabPlan, localProgress: localProgPlan,
+    remoteVocab: remoteVocabPlan, remoteProgress: remoteProgPlan, mode: 'overwrite'
+  });
+  assert.deepEqual(plain(planOverwrite.summary), { remoteCount: 2, localCount: 2, added: 1, overwritten: 1, removed: 0, finalCount: 3 });
+  assert.equal(planOverwrite.wordsData.words.find(w => w.id === 'shared').meaning, '本地新释义');
+  assert.equal(planOverwrite.progress.words.shared.stage, 'write', 'overwrite lets studied local progress override matching word');
+  assert.ok(planOverwrite.progress.words.remoteonly, 'overwrite preserves remote-only words and progress');
+
+  // 3a) replace keeping matching remote progress
+  const planReplaceKeep = app.planCloudUpload({
+    localVocab: localVocabPlan, localProgress: localProgPlan,
+    remoteVocab: remoteVocabPlan, remoteProgress: remoteProgPlan, mode: 'replace', replaceProgress: false
+  });
+  assert.deepEqual(plain(planReplaceKeep.summary), { remoteCount: 2, localCount: 2, added: 1, overwritten: 1, removed: 1, finalCount: 2 });
+  assert.equal(planReplaceKeep.wordsData.words.some(w => w.id === 'remoteonly'), false);
+  assert.equal(planReplaceKeep.progress.words.shared.stage, 'mastered');
+  assert.equal(planReplaceKeep.progress.words.remoteonly, undefined);
+
+  // 3b) replace overwriting all progress
+  const planReplaceAll = app.planCloudUpload({
+    localVocab: localVocabPlan, localProgress: localProgPlan,
+    remoteVocab: remoteVocabPlan, remoteProgress: remoteProgPlan, mode: 'replace', replaceProgress: true
+  });
+  assert.equal(planReplaceAll.progress.words.shared.stage, 'write');
+  assert.equal(planReplaceAll.progress.words.remoteonly, undefined);
+
+  // End-to-end uploadLocalToCloud including >1MB git/blobs fallback read and private-repo enforcement.
+  const uploadRepoFiles = {
+    'data/words.json': { sha: 'w-sha-1', content: '', blobSha: 'blob-w-1', data: remoteVocabPlan },
+    'progress.json': { sha: 'p-sha-1', data: remoteProgPlan }
+  };
+  const writtenFiles = {};
+  context.fetch = async (url, options = {}) => {
+    if (url.endsWith('/repos/test/cloud-target')) {
+      return { ok: true, json: async () => ({ full_name: 'test/cloud-target', private: true, permissions: { push: true } }) };
+    }
+    if (url.includes('/branches/main')) return { ok: true, json: async () => ({ name: 'main' }) };
+    if (url.includes('/git/blobs/blob-w-1')) {
+      return { ok: true, json: async () => ({ content: Buffer.from(JSON.stringify(uploadRepoFiles['data/words.json'].data)).toString('base64') }) };
+    }
+    if (options.method === 'PUT') {
+      const m = url.match(/\/contents\/(.+)$/);
+      const body = JSON.parse(options.body);
+      writtenFiles[m[1]] = JSON.parse(Buffer.from(body.content, 'base64').toString('utf8'));
+      return { ok: true, json: async () => ({ content: { sha: 'new-sha' } }) };
+    }
+    const m = url.match(/\/contents\/([^?]+)/);
+    const f = m && uploadRepoFiles[m[1]];
+    if (!f) return { ok: false, status: 404 };
+    if (f.blobSha) return { ok: true, json: async () => ({ sha: f.blobSha, content: '' }) };
+    return { ok: true, json: async () => ({ sha: f.sha, content: Buffer.from(JSON.stringify(f.data)).toString('base64') }) };
+  };
+
+  const uploadRes = await app.uploadLocalToCloud({
+    localBookId: localId,
+    targetConfig: { owner: 'test', repo: 'cloud-target', branch: 'main', path: 'progress.json', token: 'tok' },
+    mode: 'append'
+  });
+  assert.equal(uploadRes.plan.summary.finalCount, 5);
+  assert.equal(writtenFiles['data/words.json'].words.length, 5);
+  assert.equal(writtenFiles['data/distractors.json'].words.length, 2);
+  assert.ok(writtenFiles['progress.json'].words.abandon && writtenFiles['progress.json'].words.shared);
+  assert.ok(storage.get('worddrill.backup.before-v6:' + encodeURIComponent(uploadRes.targetRepoId)), 'backs up remote progress before upload');
+  assert.ok(app.loadWordbooks().books[localId], 'local wordbook stays intact after cloud upload');
+
   console.log(`Learning checks passed; ${Object.keys(old.words).length} legacy records preserved.`);
 })().catch((error) => { console.error(error); process.exitCode = 1; });
