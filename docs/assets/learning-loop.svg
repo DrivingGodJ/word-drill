@@ -1,0 +1,108 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 420" role="img" aria-label="WordDrill 科学背词算法与自定义学习闭环">
+  <defs>
+    <style>
+      .sans {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+      }
+      .mono {
+        font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+      }
+      @keyframes streamFlow {
+        to { stroke-dashoffset: -40; }
+      }
+      @keyframes nodePulse {
+        0%, 100% { opacity: 0.65; transform: scale(1); }
+        50% { opacity: 1; transform: scale(1.12); }
+      }
+      .flow-beam {
+        stroke-dasharray: 8 8;
+        animation: streamFlow 1.9s linear infinite;
+      }
+      .pulse-dot {
+        transform-box: fill-box;
+        transform-origin: center;
+        animation: nodePulse 2.8s ease-in-out infinite;
+      }
+    </style>
+
+    <linearGradient id="pipe1" gradientUnits="userSpaceOnUse" x1="274" y1="126" x2="328" y2="126">
+      <stop offset="0%" stop-color="#818CF8" />
+      <stop offset="100%" stop-color="#A78BFA" />
+    </linearGradient>
+    <linearGradient id="pipe2" gradientUnits="userSpaceOnUse" x1="572" y1="126" x2="626" y2="126">
+      <stop offset="0%" stop-color="#A78BFA" />
+      <stop offset="100%" stop-color="#C4B5FD" />
+    </linearGradient>
+    <linearGradient id="pipe3" gradientUnits="userSpaceOnUse" x1="870" y1="126" x2="924" y2="126">
+      <stop offset="0%" stop-color="#C4B5FD" />
+      <stop offset="100%" stop-color="#34D399" />
+    </linearGradient>
+  </defs>
+
+  <rect x="2" y="2" width="1196" height="416" rx="22" fill="#08090F" stroke="rgba(167,139,250,0.22)" stroke-width="1.5" />
+
+  <text x="44" y="44" class="sans" font-size="16" font-weight="700" fill="#FFFFFF">科学背词闭环：按难度挑新词 → 独立回想 → 认写分离 → FSRS-6 跨日升阶</text>
+  <text x="1156" y="44" text-anchor="end" class="mono" font-size="13" fill="#A78BFA">FSRS-6 · ts-fsrs 5.4.2</text>
+
+  <!-- Step 1: Smart Difficulty Selection -->
+  <rect x="44" y="72" width="230" height="110" rx="14" fill="#131522" stroke="rgba(129,140,248,0.42)" />
+  <circle class="pulse-dot" cx="68" cy="96" r="5" fill="#818CF8" />
+  <text x="82" y="101" class="sans" font-size="15" font-weight="700" fill="#FFFFFF">1. 按难度排新词</text>
+  <text x="64" y="128" class="sans" font-size="13" fill="#CBD5E1">难易搭配 / 先易后难 / 难词优先</text>
+  <text x="64" y="151" class="sans" font-size="12.5" fill="#94A3B8">综合词频估算难度 · 分散形近词</text>
+
+  <path class="flow-beam" d="M 274 126 L 328 126" stroke="url(#pipe1)" stroke-width="2.5" fill="none" />
+
+  <!-- Step 2: Independent Recall -->
+  <rect x="328" y="72" width="244" height="110" rx="14" fill="#1B1734" stroke="#7C3AED" stroke-opacity="0.7" />
+  <circle class="pulse-dot" cx="352" cy="96" r="5" fill="#A78BFA" />
+  <text x="366" y="101" class="sans" font-size="15" font-weight="700" fill="#FFFFFF">2. 认词先独立回想</text>
+  <text x="348" y="128" class="sans" font-size="13" fill="#DDD6FE">先选「想起了 / 没想起」再核对</text>
+  <text x="348" y="151" class="sans" font-size="12.5" fill="#94A3B8">跨 3 天回忆 + 稳定度 ≥ 7 天</text>
+
+  <path class="flow-beam" d="M 572 126 L 626 126" stroke="url(#pipe2)" stroke-width="2.5" fill="none" />
+
+  <!-- Step 3: Spelling Stage -->
+  <rect x="626" y="72" width="244" height="110" rx="14" fill="#18162E" stroke="#A78BFA" stroke-opacity="0.58" />
+  <circle class="pulse-dot" cx="650" cy="96" r="5" fill="#C4B5FD" />
+  <text x="664" y="101" class="sans" font-size="15" font-weight="700" fill="#FFFFFF">3. 拼写独立验收</text>
+  <text x="646" y="128" class="sans" font-size="13" fill="#E9D5FF">据中文默写英文，答错先订正</text>
+  <text x="646" y="151" class="sans" font-size="12.5" fill="#94A3B8">跨 3 天回忆 + 稳定度 ≥ 21 天</text>
+
+  <path class="flow-beam" d="M 870 126 L 924 126" stroke="url(#pipe3)" stroke-width="2.5" fill="none" />
+
+  <!-- Step 4: Mastered -->
+  <rect x="924" y="72" width="232" height="110" rx="14" fill="#0B2720" stroke="#34D399" stroke-opacity="0.65" />
+  <circle class="pulse-dot" cx="948" cy="96" r="5" fill="#34D399" />
+  <text x="962" y="101" class="sans" font-size="15" font-weight="700" fill="#D1FAE5">4. 真正已掌握</text>
+  <text x="944" y="128" class="sans" font-size="13" fill="#6EE7B7">借助选项或同日刷题均不升阶</text>
+  <text x="944" y="151" class="sans" font-size="12.5" fill="#94A3B8">「只认」词达认词门槛即掌握</text>
+
+  <line x1="44" y1="214" x2="1156" y2="214" stroke="rgba(255,255,255,0.08)" stroke-width="1" />
+
+  <!-- Bottom Row: Customization + Extra Drills + Sync -->
+  <text x="44" y="246" class="sans" font-size="15" font-weight="700" fill="#FFFFFF">全面自定义学习与复习</text>
+  <text x="626" y="246" class="sans" font-size="15" font-weight="700" fill="#FFFFFF">不扰排期的加练 · 离线与私有云同步</text>
+
+  <rect x="44" y="264" width="548" height="110" rx="14" fill="#121420" stroke="rgba(167,139,250,0.22)" />
+  <rect x="64" y="284" width="122" height="32" rx="8" fill="#1E1B38" />
+  <text x="125" y="305" text-anchor="middle" class="sans" font-size="13" font-weight="600" fill="#C4B5FD">每日 0~40 新词</text>
+  <rect x="198" y="284" width="122" height="32" rx="8" fill="#1E1B38" />
+  <text x="259" y="305" text-anchor="middle" class="sans" font-size="13" font-weight="600" fill="#C4B5FD">三档新词难度</text>
+  <rect x="332" y="284" width="118" height="32" rx="8" fill="#1E1B38" />
+  <text x="391" y="305" text-anchor="middle" class="sans" font-size="13" font-weight="600" fill="#C4B5FD">三档拼写要求</text>
+  <rect x="462" y="284" width="110" height="32" rx="8" fill="#1E1B38" />
+  <text x="517" y="305" text-anchor="middle" class="sans" font-size="13" font-weight="600" fill="#C4B5FD">轻松/标准/严格</text>
+  <text x="64" y="346" class="sans" font-size="13" fill="#94A3B8">目标记忆率 80%–95% · 单词级「拼写 / 只认」标签 · 设置随进度自动同步</text>
+
+  <rect x="626" y="264" width="530" height="110" rx="14" fill="#121420" stroke="rgba(52,211,153,0.22)" />
+  <rect x="646" y="284" width="110" height="32" rx="8" fill="#161B26" />
+  <text x="701" y="305" text-anchor="middle" class="sans" font-size="13" font-weight="600" fill="#ECEFF5">语境填空</text>
+  <rect x="768" y="284" width="110" height="32" rx="8" fill="#161B26" />
+  <text x="823" y="305" text-anchor="middle" class="sans" font-size="13" font-weight="600" fill="#ECEFF5">听音拼写</text>
+  <rect x="890" y="284" width="110" height="32" rx="8" fill="#161B26" />
+  <text x="945" y="305" text-anchor="middle" class="sans" font-size="13" font-weight="600" fill="#ECEFF5">错词巩固</text>
+  <rect x="1012" y="284" width="124" height="32" rx="8" fill="#0B2720" />
+  <text x="1074" y="305" text-anchor="middle" class="sans" font-size="13" font-weight="600" fill="#34D399">离线 + 私有云</text>
+  <text x="646" y="346" class="sans" font-size="13" fill="#94A3B8">加练不打乱正式 FSRS 排期 · 本地 IndexedDB + 私有 GitHub 逐词合并</text>
+</svg>
