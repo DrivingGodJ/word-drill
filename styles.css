@@ -790,6 +790,21 @@ body.is-training { background: var(--color-card); padding-top: var(--sat); }
 .catalog-item__count { margin-left: auto; font-size: .75rem; font-weight: 600; color: var(--color-primary); }
 .catalog-item__desc { font-size: .8125rem; color: var(--color-muted-fg); margin-top: 2px; }
 
+.create-progress {
+  margin-top: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  display: grid; gap: var(--s-2);
+}
+.create-progress__head {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--s-2);
+  font-size: .8125rem;
+}
+.create-progress__label { color: var(--color-fg); font-weight: 600; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.create-progress__pct { color: var(--color-primary); font-weight: 700; font-variant-numeric: tabular-nums; flex: none; }
+
 .upload-modes { display: grid; gap: var(--s-2); margin-top: var(--s-2); }
 .upload-mode {
   display: flex; align-items: flex-start; gap: var(--s-3);

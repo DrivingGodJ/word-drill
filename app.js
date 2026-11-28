@@ -1151,37 +1151,81 @@
   }
 
   /* ---------- 公开词表拉取 & 本地词库合并 ---------- */
-  async function fetchPublicRepoJson(repoSpec, filePath) {
-    const parsed = parseRepoSpec(repoSpec);
-    if (!parsed) throw new Error('公开词表仓库格式不对，应为 owner/repo');
-    const path = String(filePath).replace(/^\/+/, '');
-    const branch = DEFAULT_WORDLIST_BRANCH;
-    const headers = { Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' };
-    const apiUrl = `${SYNC_API}/repos/${encodeURIComponent(parsed.owner)}/${encodeURIComponent(parsed.repo)}/contents/${path}?ref=${encodeURIComponent(branch)}`;
-    try {
-      const res = await fetch(apiUrl, { headers, cache: 'no-store' });
-      if (res.ok) {
-        const file = await res.json();
-        if (file.content) return JSON.parse(b64Decode(file.content));
-        if (file.sha) {
-          const blobRes = await fetch(
-            `${SYNC_API}/repos/${encodeURIComponent(parsed.owner)}/${encodeURIComponent(parsed.repo)}/git/blobs/${file.sha}`,
-            { headers, cache: 'no-store' }
-          );
-          if (blobRes.ok) {
-            const blob = await blobRes.json();
-            return JSON.parse(b64Decode(blob.content));
-          }
+  function formatBytes(bytes) {
+    const n = Number(bytes) || 0;
+    if (n < 1024) return `${n} B`;
+    if (n < 1024 * 1024) return `${Math.round(n / 1024)} KB`;
+    return `${(n / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
+  async function readResponseJsonWithProgress(res, expectedBytes = 0, onProgress = null) {
+    const headerLen = Number(res.headers?.get?.('content-length')) || 0;
+    const estTotal = Math.max(Number(expectedBytes) || 0, headerLen);
+    if (res.body && typeof res.body.getReader === 'function') {
+      const reader = res.body.getReader();
+      const chunks = [];
+      let loaded = 0;
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        if (value) {
+          chunks.push(value);
+          loaded += value.byteLength;
+          onProgress?.({ loaded, total: Math.max(estTotal, loaded) });
         }
       }
-      if (res.status === 404) throw new Error(`在 ${parsed.owner}/${parsed.repo} 找不到 ${path}`);
-    } catch (err) {
-      if (/找不到/.test(err?.message || '')) throw err;
+      const merged = new Uint8Array(loaded);
+      let offset = 0;
+      for (const c of chunks) {
+        merged.set(c, offset);
+        offset += c.byteLength;
+      }
+      const text = new TextDecoder().decode(merged);
+      onProgress?.({ loaded, total: Math.max(estTotal, loaded) });
+      return JSON.parse(text);
     }
-    const rawUrl = `https://raw.githubusercontent.com/${encodeURIComponent(parsed.owner)}/${encodeURIComponent(parsed.repo)}/${encodeURIComponent(branch)}/${path}`;
-    const rawRes = await fetch(rawUrl, { cache: 'no-store' });
-    if (!rawRes.ok) throw new Error(`拉取 ${path} 失败（${rawRes.status}）`);
-    return rawRes.json();
+    const data = await res.json();
+    const doneBytes = Math.max(estTotal, 1);
+    onProgress?.({ loaded: doneBytes, total: doneBytes });
+    return data;
+  }
+
+  async function fetchPublicRepoJson(repoSpec, filePath, opts = {}) {
+    const parsed = parseRepoSpec(repoSpec);
+    if (!parsed) throw new Error('公开词表仓库格式不对，应为 owner/repo');
+    const fileRel = String(filePath).replace(/^\/+/, '');
+    const branch = DEFAULT_WORDLIST_BRANCH;
+    const rawUrl = `https://raw.githubusercontent.com/${encodeURIComponent(parsed.owner)}/${encodeURIComponent(parsed.repo)}/${encodeURIComponent(branch)}/${fileRel}`;
+    try {
+      const rawRes = await fetch(rawUrl, { cache: 'no-store' });
+      if (rawRes.ok) {
+        return await readResponseJsonWithProgress(rawRes, opts.expectedBytes, opts.onProgress);
+      }
+    } catch { /* raw 拉取失败时回退到 GitHub API */ }
+
+    const headers = { Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' };
+    const apiUrl = `${SYNC_API}/repos/${encodeURIComponent(parsed.owner)}/${encodeURIComponent(parsed.repo)}/contents/${fileRel}?ref=${encodeURIComponent(branch)}`;
+    const res = await fetch(apiUrl, { headers, cache: 'no-store' });
+    if (res.status === 404) throw new Error(`在 ${parsed.owner}/${parsed.repo} 找不到 ${fileRel}`);
+    if (!res.ok) throw new Error(`拉取 ${fileRel} 失败（${res.status}）`);
+    const file = await res.json();
+    let data;
+    if (file.content) {
+      data = JSON.parse(b64Decode(file.content));
+    } else if (file.sha) {
+      const blobRes = await fetch(
+        `${SYNC_API}/repos/${encodeURIComponent(parsed.owner)}/${encodeURIComponent(parsed.repo)}/git/blobs/${file.sha}`,
+        { headers, cache: 'no-store' }
+      );
+      if (!blobRes.ok) throw new Error(`拉取 ${fileRel} 失败（${blobRes.status}）`);
+      const blob = await blobRes.json();
+      data = JSON.parse(b64Decode(blob.content));
+    } else {
+      throw new Error(`拉取 ${fileRel} 内容为空`);
+    }
+    const doneBytes = Number(opts.expectedBytes) || 1;
+    opts.onProgress?.({ loaded: doneBytes, total: doneBytes });
+    return data;
   }
 
   function entryRichness(w) {
@@ -3382,12 +3426,29 @@
     if (el) el.hidden = true;
   }
 
+  function setCreateProgress(pct, label, visible = true) {
+    const box = $('#create-progress');
+    if (!box) return;
+    box.hidden = !visible;
+    if (!visible) return;
+    const clamped = Math.max(0, Math.min(100, Math.round(Number(pct) || 0)));
+    const labelEl = $('#create-progress-label');
+    const pctEl = $('#create-progress-pct');
+    const fillEl = $('#create-progress-fill');
+    const barEl = $('#create-progress-bar');
+    if (labelEl && label) labelEl.textContent = label;
+    if (pctEl) pctEl.textContent = `${clamped}%`;
+    if (fillEl) fillEl.style.width = `${clamped}%`;
+    if (barEl) barEl.setAttribute('aria-valuenow', String(clamped));
+  }
+
   async function loadPublicCatalog(repoSpec = catalogState.repo) {
     const listEl = $('#catalog-list');
     const statusEl = $('#catalog-status');
     const confirmBtn = $('#btn-create-local-confirm');
     catalogState.repo = repoSpec.trim() || DEFAULT_WORDLIST_REPO;
     $('#wordlist-repo-label').textContent = catalogState.repo;
+    setCreateProgress(0, '', false);
     statusEl.textContent = '正在拉取公开词表目录…';
     statusEl.className = 'hint';
     listEl.innerHTML = '';
@@ -3447,24 +3508,78 @@
 
     const btn = $('#btn-create-local-confirm');
     const statusEl = $('#catalog-status');
+    const repoInput = $('#wordlist-repo-input');
+    const checkboxes = $$('input[data-wl-id]', $('#catalog-list'));
     const bookName = ($('#create-book-name').value || '').trim()
       || items.map((it) => it.shortName || it.name || it.id).join(' + ');
 
     btn.disabled = true;
     btn.textContent = '正在下载词表…';
+    if (repoInput) repoInput.disabled = true;
+    checkboxes.forEach((cb) => { cb.disabled = true; });
     statusEl.className = 'hint';
     statusEl.textContent = `正在从 ${catalogState.repo} 拉取 ${items.length} 份词表…`;
+    setCreateProgress(2, `准备下载 ${items.length} 份词表…`, true);
 
     try {
       const distPath = catalogState.data?.distractors;
+      const tasks = items.map((it) => ({
+        isWordlist: true,
+        file: it.file,
+        expected: Number(it.bytes) || 600000,
+        loaded: 0,
+        done: false
+      }));
+      if (distPath) {
+        tasks.push({
+          isWordlist: false,
+          file: distPath,
+          expected: Number(catalogState.data?.distractorsBytes) || 80000,
+          loaded: 0,
+          done: false
+        });
+      }
+
+      const refreshBar = () => {
+        const loadedSum = tasks.reduce((acc, t) => acc + t.loaded, 0);
+        const totalSum = tasks.reduce((acc, t) => acc + Math.max(t.expected, t.loaded), 0);
+        const doneCount = tasks.filter((t) => t.isWordlist && t.done).length;
+        const ratio = totalSum > 0 ? Math.min(1, loadedSum / totalSum) : 0;
+        const pct = Math.max(3, Math.min(88, Math.round(3 + ratio * 85)));
+        const hasTotalBytes = items.every((it) => Number(it.bytes) > 0);
+        const bytesLabel = hasTotalBytes
+          ? `${formatBytes(loadedSum)} / ${formatBytes(totalSum)}`
+          : formatBytes(loadedSum);
+        setCreateProgress(pct, `正在下载词表（${doneCount}/${items.length}）· ${bytesLabel}`, true);
+      };
+
+      const fetchTask = async (t) => {
+        const data = await fetchPublicRepoJson(catalogState.repo, t.file, {
+          expectedBytes: t.expected,
+          onProgress: ({ loaded, total }) => {
+            t.loaded = Math.max(t.loaded, Number(loaded) || 0);
+            if (total > t.expected) t.expected = total;
+            refreshBar();
+          }
+        });
+        t.done = true;
+        t.loaded = Math.max(t.loaded, t.expected);
+        refreshBar();
+        return data;
+      };
+
+      const wordlistTasks = tasks.filter((t) => t.isWordlist);
+      const distTask = tasks.find((t) => !t.isWordlist);
       const [wordlistPayloads, distPayload] = await Promise.all([
-        Promise.all(items.map((it) => fetchPublicRepoJson(catalogState.repo, it.file))),
-        distPath ? fetchPublicRepoJson(catalogState.repo, distPath).catch(() => ({ words: [] })) : Promise.resolve({ words: [] })
+        Promise.all(wordlistTasks.map(fetchTask)),
+        distTask ? fetchTask(distTask).catch(() => ({ words: [] })) : Promise.resolve({ words: [] })
       ]);
 
+      setCreateProgress(92, '正在合并去重词表…', true);
       const merged = mergeWordlists(wordlistPayloads, distPayload?.words || []);
       if (!merged.words.length) throw new Error('拉取的词表没有有效单词');
 
+      setCreateProgress(96, '正在写入本地存储…', true);
       const id = 'local:' + randomId();
       const reg = loadWordbooks();
       reg.books[id] = {
@@ -3483,12 +3598,17 @@
       await syncBookToNativeDisk(id).catch(() => {});
 
       await selectWordbook(id);
+      setCreateProgress(100, `已完成（共 ${merged.words.length} 词）`, true);
       closeModal('modal-create-local');
+      setCreateProgress(0, '', false);
       toast(`已创建本地词库「${bookName}」（${merged.words.length} 词）`);
     } catch (err) {
+      setCreateProgress(0, '', false);
       statusEl.textContent = '创建失败：' + (err.message || '未知错误');
       statusEl.className = 'hint sync-status is-error';
     } finally {
+      if (repoInput) repoInput.disabled = false;
+      checkboxes.forEach((cb) => { cb.disabled = false; });
       btn.disabled = false;
       btn.textContent = '拉取并创建';
     }

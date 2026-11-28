@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap">
-<link rel="stylesheet" href="styles.css?v=18">
+<link rel="stylesheet" href="styles.css?v=19">
 <link rel="manifest" href="manifest.webmanifest">
 <!-- iOS「添加到主屏幕」不认 SVG 图标，必须是 PNG（180×180 且不透明）；
      也读不了 manifest 里的 short_name，主屏名字只认 apple-mobile-web-app-title。 -->
@@ -462,6 +462,15 @@
 
       <div id="catalog-list" class="catalog-list"></div>
       <p class="hint" id="catalog-status"></p>
+      <div class="create-progress" id="create-progress" hidden>
+        <div class="create-progress__head">
+          <span class="create-progress__label" id="create-progress-label">准备下载…</span>
+          <span class="create-progress__pct" id="create-progress-pct">0%</span>
+        </div>
+        <div class="bar" role="progressbar" id="create-progress-bar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <span class="bar__fill" id="create-progress-fill"></span>
+        </div>
+      </div>
 
       <div class="field field--stack">
         <label for="create-book-name">本地词库名称</label>
@@ -666,6 +675,6 @@
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
 <script src="vendor/ts-fsrs-5.4.2.js"></script>
-<script src="app.js?v=23"></script>
+<script src="app.js?v=24"></script>
 </body>
 </html>

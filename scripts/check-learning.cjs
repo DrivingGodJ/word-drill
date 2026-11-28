@@ -47,7 +47,8 @@ const source = fs.readFileSync(path.join(root, 'app.js'), 'utf8')
     remoteReadFile, loadWordbooks, saveWordbooks, selectWordbook, deleteWordbook, isCloudBook, saveVocabularyLocal,
     buildWordbookBundle, parseWordbookBundle, wordDifficulty, selectDailyNewWords, resetBookProgress,
     getIosPwaState, syncBookToNativeDisk, deleteBookFromNativeDisk, hydrateNativeWordbooksOnBoot,
-    shouldShowTopbarDownload, compareSemver, parseReleaseBuildMeta, pickPlatformAssetUrl, evaluateAppUpdate, fetchLatestReleaseMeta
+    shouldShowTopbarDownload, compareSemver, parseReleaseBuildMeta, pickPlatformAssetUrl, evaluateAppUpdate, fetchLatestReleaseMeta,
+    fetchPublicRepoJson
   }; sync = { deviceId: 'check' };`);
 vm.runInContext(source, context);
 const app = context.check;
@@ -1077,6 +1078,35 @@ assert.equal(app.getSession().practice, true);
   const nativeMeta = await app.fetchLatestReleaseMeta();
   assert.equal(nativeMeta.version, '1.0.1', 'uses native bridge when available to avoid CORS');
   delete context.window.WordDrillNative;
+  context.fetch = prevFetch;
+
+  // fetchPublicRepoJson streams raw.githubusercontent.com first and fires progress updates.
+  const progressEvents = [];
+  const rawJson = JSON.stringify({ meta: { name: 'Demo' }, words: [{ id: 'w1', word: 'consequence', meaning: '后果' }] });
+  const encoded = Buffer.from(rawJson, 'utf8');
+  const mid = Math.floor(encoded.length / 2);
+  let requestedUrl = '';
+  context.fetch = async (url) => {
+    requestedUrl = url;
+    let idx = 0;
+    const chunks = [new Uint8Array(encoded.subarray(0, mid)), new Uint8Array(encoded.subarray(mid))];
+    return {
+      ok: true,
+      headers: { get: (k) => (k.toLowerCase() === 'content-length' ? String(encoded.length) : null) },
+      body: {
+        getReader: () => ({
+          read: async () => (idx < chunks.length ? { done: false, value: chunks[idx++] } : { done: true })
+        })
+      }
+    };
+  };
+  const loadedList = await app.fetchPublicRepoJson('DrivingGodJ/worddrill-wordlists', 'wordlists/cet4.json', {
+    expectedBytes: encoded.length,
+    onProgress: (p) => progressEvents.push(p.loaded)
+  });
+  assert.match(requestedUrl, /^https:\/\/raw\.githubusercontent\.com\/DrivingGodJ\/worddrill-wordlists\/main\/wordlists\/cet4\.json$/);
+  assert.equal(loadedList.words[0].id, 'w1');
+  assert.ok(progressEvents.length >= 2 && progressEvents[progressEvents.length - 1] === encoded.length);
   context.fetch = prevFetch;
 
   console.log(`Learning checks passed; ${Object.keys(old.words).length} legacy records preserved.`);
