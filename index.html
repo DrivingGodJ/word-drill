@@ -446,7 +446,7 @@
     <div class="modal__head">
       <div>
         <h2 class="card__title" id="modal-create-title">从公开词表创建本地词库</h2>
-        <p class="card__desc">支持单选或多选词表，自动去重合并。</p>
+        <p class="card__desc" id="modal-create-desc">支持单选或多选词表，自动去重合并。</p>
       </div>
       <button class="modal__close" type="button" data-close-modal="modal-create-local" aria-label="关闭">✕</button>
     </div>
@@ -472,7 +472,7 @@
         </div>
       </div>
 
-      <div class="field field--stack">
+      <div class="field field--stack" id="create-book-name-field">
         <label for="create-book-name">本地词库名称</label>
         <input type="text" id="create-book-name" placeholder="例如：四级 + 六级词汇" autocomplete="off">
         <p class="hint" id="create-book-summary">请选择至少一个词表</p>
@@ -675,6 +675,6 @@
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
 <script src="vendor/ts-fsrs-5.4.2.js"></script>
-<script src="app.js?v=24"></script>
+<script src="app.js?v=25"></script>
 </body>
 </html>

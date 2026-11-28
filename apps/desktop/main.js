@@ -175,7 +175,7 @@ function getAppInfo() {
 }
 
 async function fetchLatestReleaseMeta(token) {
-  const verUrl = `https://github.com/DrivingGodJ/word-drill/releases/download/latest/version.json?t=${Date.now()}`;
+  const verUrl = `https://github.com/DrivingGodJ/word-drill/releases/latest/download/version.json?t=${Date.now()}`;
   let lastErr = '';
   try {
     const res = await net.fetch(verUrl, {

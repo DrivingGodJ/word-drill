@@ -98,7 +98,7 @@
   const bookCardStatus = {};
 
   // 词库管理弹窗状态
-  let catalogState = { repo: DEFAULT_WORDLIST_REPO, branch: DEFAULT_WORDLIST_BRANCH, data: null, nameEdited: false };
+  let catalogState = { repo: DEFAULT_WORDLIST_REPO, branch: DEFAULT_WORDLIST_BRANCH, data: null, nameEdited: false, mode: 'local', cloudBookId: '' };
   let uploadState = {
     localBookId: '', localVocab: null, localProgress: null,
     targetConfig: null, remoteVocab: null, remoteProgress: null,
@@ -661,7 +661,14 @@
     if (!infoRes.ok) throw syncHttpError(infoRes.status);
     if (!(await infoRes.json()).private) throw new Error('数据仓库必须是私有仓库，已停止同步');
     const [vocab, distractors, pending] = await Promise.all([
-      repositoryJson('data/words.json'), repositoryJson('data/distractors.json', true),
+      repositoryJson('data/words.json').catch(async (err) => {
+        if (/404|找不到/.test(err?.message || '')) {
+          const diag = await diagnoseSync(sync).catch(() => null);
+          if (diag?.mode === 'ok') return { words: [] };
+        }
+        throw err;
+      }),
+      repositoryJson('data/distractors.json', true),
       repositoryJson('data/cet-pending.json', true)
     ]);
     const data = { ...vocab, distractors: distractors.words || [], pending: pending.words || [] };
@@ -1328,9 +1335,15 @@
     if (mode === 'append') {
       finalWords = remoteWords.slice();
       kept = remoteWords.length;
+      const remoteWordKeys = new Set(
+        remoteWords.map((w) => String(w?.word || '').trim().toLowerCase()).filter(Boolean)
+      );
       for (const w of localWords) {
-        if (!remoteMap.has(w.id)) {
+        const wordKey = String(w?.word || '').trim().toLowerCase();
+        if (!remoteMap.has(w.id) && (!wordKey || !remoteWordKeys.has(wordKey))) {
           finalWords.push(w);
+          remoteMap.set(w.id, w);
+          if (wordKey) remoteWordKeys.add(wordKey);
           added++;
         }
       }
@@ -1480,6 +1493,124 @@
     syncWordbooksRegistry();
 
     return { plan, targetRepoId, savedConfig };
+  }
+
+  async function connectAndInitCloudRepo(cfg) {
+    const diag = await diagnoseSync(cfg);
+    if (diag.mode !== 'ok') throw new Error(diag.text);
+
+    const progPath = cfg.path || 'progress.json';
+    const [remoteWordsFile, remoteProgFile] = await Promise.all([
+      remoteReadFile('data/words.json', cfg, true),
+      remoteReadFile(progPath, cfg, true)
+    ]);
+
+    let createdProgress = false;
+    if (!remoteProgFile) {
+      const initialProg = {
+        ...buildPayload(defaultStore()),
+        deviceId: cfg.deviceId || sync?.deviceId || randomId()
+      };
+      await remoteWriteFile(progPath, initialProg, null, 'init progress.json', cfg, true);
+      createdProgress = true;
+    }
+
+    const remoteWords = Array.isArray(remoteWordsFile?.data?.words) ? remoteWordsFile.data.words : [];
+    return {
+      hasWords: remoteWords.length > 0,
+      wordCount: remoteWords.length,
+      createdProgress
+    };
+  }
+
+  async function appendPublicWordlistsToCloud({ cloudBookId, vocab, onStage }) {
+    const cfg = readCloudCardConfig(cloudBookId);
+    if (!cfg || !cfg.owner || !cfg.repo || !cfg.token) {
+      throw new Error('请先填写云端仓库的访问令牌 Token');
+    }
+
+    onStage?.(78, '正在检查云端仓库状态…');
+    const diag = await diagnoseSync(cfg);
+    if (diag.mode !== 'ok') throw new Error(diag.text);
+
+    const progPath = cfg.path || 'progress.json';
+    const [remoteWordsFile, remoteDistFile, remoteProgFile] = await Promise.all([
+      remoteReadFile('data/words.json', cfg, true),
+      remoteReadFile('data/distractors.json', cfg, true),
+      remoteReadFile(progPath, cfg, true)
+    ]);
+
+    const repoId = repositoryId(cfg) || cloudBookId;
+    if (remoteProgFile?.data) {
+      keepBackup(JSON.stringify(remoteProgFile.data), repoId);
+    }
+
+    onStage?.(84, '正在合并并去重词条…');
+    const plan = planCloudUpload({
+      localVocab: vocab,
+      localProgress: loadStore(repoId),
+      remoteVocab: {
+        ...(remoteWordsFile?.data || { words: [] }),
+        distractors: remoteDistFile?.data?.words || []
+      },
+      remoteProgress: remoteProgFile?.data || null,
+      mode: 'append'
+    });
+
+    onStage?.(90, '正在上传词库到云端仓库…');
+    if (!remoteWordsFile || plan.summary.added > 0) {
+      await remoteWriteFile(
+        'data/words.json',
+        plan.wordsData,
+        remoteWordsFile?.sha || null,
+        `import public wordlists (+${plan.summary.added})`,
+        cfg
+      );
+    }
+
+    if (plan.distractorsData.words.length) {
+      await remoteWriteFile(
+        'data/distractors.json',
+        plan.distractorsData,
+        remoteDistFile?.sha || null,
+        'update distractors',
+        cfg
+      );
+    }
+
+    if (!remoteProgFile) {
+      const initialProg = {
+        ...buildPayload(plan.progress),
+        deviceId: sync?.deviceId || cfg.deviceId || randomId()
+      };
+      await remoteWriteFile(progPath, initialProg, null, 'init progress.json', cfg, true);
+    }
+
+    onStage?.(96, '正在刷新本地缓存…');
+    const cachedVocab = { ...plan.wordsData, distractors: plan.distractorsData.words, pending: [] };
+    saveVocabularyLocal(cachedVocab, repoId);
+    await vocabDB.set(repoId, cachedVocab);
+    saveCloudBookProfile(repoId, {
+      lastSyncAt: now(),
+      lastResult: `已加词 +${plan.summary.added}`
+    });
+
+    const reg = loadWordbooks();
+    if (reg.books[repoId]) {
+      reg.books[repoId].wordCount = plan.wordsData.words.length;
+      reg.books[repoId].updatedAt = now();
+      saveWordbooks(reg);
+    }
+
+    if (repoId === activeRepository) {
+      setVocabulary(cachedVocab);
+      applySettingsToUI();
+      refreshIntro();
+      renderLibrary();
+      refreshCetReview();
+    }
+    renderWordbooks();
+    return { plan, cfg, repoId };
   }
 
   /* ---------- 智能每日新词调度 ---------- */
@@ -2441,7 +2572,7 @@
   const IOS_PWA_DISMISS_KEY = 'worddrill.ios-pwa-dismiss.v1';
   const APP_RELEASES_URL = 'https://github.com/DrivingGodJ/word-drill/releases/latest';
   const APP_RELEASE_API_URL = 'https://api.github.com/repos/DrivingGodJ/word-drill/releases/latest';
-  const APP_VERSION_FALLBACK_URL = 'https://github.com/DrivingGodJ/word-drill/releases/download/latest/version.json';
+  const APP_VERSION_FALLBACK_URL = 'https://github.com/DrivingGodJ/word-drill/releases/latest/download/version.json';
   const UPDATE_DISMISS_KEY = 'worddrill.dismissed-update.v1';
 
   const nativeBridge = () => {
@@ -3090,12 +3221,14 @@
     const base = profiles[bookId] || (bookId === activeRepository ? sync : {});
     const tokenEl = $(`[data-book-token="${typeof CSS !== 'undefined' && CSS.escape ? CSS.escape(bookId) : bookId}"]`);
     const autoEl = $(`[data-book-autosync="${typeof CSS !== 'undefined' && CSS.escape ? CSS.escape(bookId) : bookId}"]`);
+    const domToken = typeof tokenEl?.value === 'string' ? tokenEl.value.trim() : '';
+    const hasDomAuto = autoEl && typeof autoEl.checked === 'boolean';
     return {
       ...defaultSync(),
       deviceId: sync?.deviceId || randomId(),
       ...base,
-      ...(tokenEl ? { token: tokenEl.value.trim() } : {}),
-      ...(autoEl ? { enabled: autoEl.checked } : {})
+      ...(domToken ? { token: domToken } : {}),
+      ...(hasDomAuto ? { enabled: autoEl.checked } : {})
     };
   }
 
@@ -3152,7 +3285,7 @@
         </div>
         ${statText ? `<p class="hint sync-status book-subcard__status ${statCls}" data-book-status="${esc(b.id)}">${esc(statText)}</p>` : `<p class="hint sync-status book-subcard__status" data-book-status="${esc(b.id)}" hidden></p>`}
         <div class="book-subcard__actions">
-          <button class="btn btn--ghost btn--sm" data-book-sync="${esc(b.id)}" type="button">立即同步</button>
+          <button class="btn btn--ghost btn--sm" data-book-add-words="${esc(b.id)}" type="button">加词</button>
           <button class="btn btn--ghost btn--sm" data-book-test="${esc(b.id)}" type="button">测试连接</button>
           <button class="btn btn--ghost btn--sm" data-book-export="${esc(b.id)}" type="button">导出词库</button>
           <button class="btn btn--ghost btn--sm" data-book-reset="${esc(b.id)}" type="button">清空进度</button>
@@ -3223,7 +3356,9 @@
           </div>
           <div class="book-item__actions">
             ${active
-              ? `<button class="btn btn--primary btn--sm" data-book-train="1" type="button">去训练</button>
+              ? `${s.total === 0
+                  ? `<button class="btn btn--primary btn--sm" data-book-add-words="${esc(b.id)}" type="button">去加词</button>`
+                  : '<button class="btn btn--primary btn--sm" data-book-train="1" type="button">去训练</button>'}
                  <button class="btn btn--ghost btn--sm" data-book-sync="${esc(b.id)}" type="button">同步</button>`
               : `<button class="btn btn--primary btn--sm" data-book-use="${esc(b.id)}" type="button">切换并同步</button>`}
             <button class="btn btn--ghost btn--sm book-item__manage-btn ${isOpen ? 'is-open' : ''}" data-book-manage="${esc(b.id)}" aria-expanded="${isOpen ? 'true' : 'false'}" type="button">${isOpen ? '收起 ▴' : '管理 ▾'}</button>
@@ -3233,6 +3368,9 @@
     }).join('');
 
     $$('[data-book-train]').forEach((btn) => btn.addEventListener('click', () => switchView('learn')));
+    $$('[data-book-add-words]').forEach((btn) => btn.addEventListener('click', () => {
+      openPublicWordlistModal({ mode: 'cloud', cloudBookId: btn.dataset.bookAddWords });
+    }));
     $$('[data-book-manage]').forEach((btn) => btn.addEventListener('click', () => {
       const id = btn.dataset.bookManage;
       expandedBookId = expandedBookId === id ? '' : id;
@@ -3501,11 +3639,48 @@
     confirmBtn.disabled = false;
   }
 
+  function openPublicWordlistModal({ mode = 'local', cloudBookId = '' } = {}) {
+    catalogState.mode = mode === 'cloud' ? 'cloud' : 'local';
+    catalogState.cloudBookId = catalogState.mode === 'cloud' ? cloudBookId : '';
+    catalogState.nameEdited = false;
+
+    const titleEl = $('#modal-create-title');
+    const descEl = $('#modal-create-desc');
+    const nameField = $('#create-book-name-field');
+    const nameInput = $('#create-book-name');
+    const confirmBtn = $('#btn-create-local-confirm');
+
+    if (catalogState.mode === 'cloud') {
+      const cfg = readCloudCardConfig(cloudBookId);
+      if (!cfg?.token) {
+        expandedBookId = cloudBookId;
+        bookCardStatus[cloudBookId] = { text: '请先填写访问令牌 Token 并保存后再加词', mode: 'error' };
+        renderWordbooks();
+        toast('请先填写访问令牌 Token');
+        return;
+      }
+      if (titleEl) titleEl.textContent = '从公开词表向云端加词';
+      if (descEl) descEl.textContent = `目标仓库：${cfg.owner}/${cfg.repo}（自动去重追加新词，保留原有进度）。`;
+      if (nameField) nameField.hidden = true;
+      if (confirmBtn) confirmBtn.textContent = '拉取并加入云端';
+    } else {
+      if (titleEl) titleEl.textContent = '从公开词表创建本地词库';
+      if (descEl) descEl.textContent = '支持单选或多选词表，自动去重合并。';
+      if (nameField) nameField.hidden = false;
+      if (nameInput) nameInput.value = '';
+      if (confirmBtn) confirmBtn.textContent = '拉取并创建';
+    }
+
+    openModal('modal-create-local');
+    loadPublicCatalog($('#wordlist-repo-input')?.value || DEFAULT_WORDLIST_REPO);
+  }
+
   async function confirmCreateLocalBook() {
     const checked = $$('input[data-wl-id]:checked', $('#catalog-list')).map((i) => i.value);
     const items = (catalogState.data?.wordlists || []).filter((w) => checked.includes(w.id));
     if (!items.length) return;
 
+    const isCloudMode = catalogState.mode === 'cloud' && !!catalogState.cloudBookId;
     const btn = $('#btn-create-local-confirm');
     const statusEl = $('#catalog-status');
     const repoInput = $('#wordlist-repo-input');
@@ -3514,7 +3689,7 @@
       || items.map((it) => it.shortName || it.name || it.id).join(' + ');
 
     btn.disabled = true;
-    btn.textContent = '正在下载词表…';
+    btn.textContent = isCloudMode ? '正在拉取并加入…' : '正在下载词表…';
     if (repoInput) repoInput.disabled = true;
     checkboxes.forEach((cb) => { cb.disabled = true; });
     statusEl.className = 'hint';
@@ -3540,12 +3715,13 @@
         });
       }
 
+      const maxDlPct = isCloudMode ? 76 : 88;
       const refreshBar = () => {
         const loadedSum = tasks.reduce((acc, t) => acc + t.loaded, 0);
         const totalSum = tasks.reduce((acc, t) => acc + Math.max(t.expected, t.loaded), 0);
         const doneCount = tasks.filter((t) => t.isWordlist && t.done).length;
         const ratio = totalSum > 0 ? Math.min(1, loadedSum / totalSum) : 0;
-        const pct = Math.max(3, Math.min(88, Math.round(3 + ratio * 85)));
+        const pct = Math.max(3, Math.min(maxDlPct, Math.round(3 + ratio * (maxDlPct - 3))));
         const hasTotalBytes = items.every((it) => Number(it.bytes) > 0);
         const bytesLabel = hasTotalBytes
           ? `${formatBytes(loadedSum)} / ${formatBytes(totalSum)}`
@@ -3575,42 +3751,62 @@
         distTask ? fetchTask(distTask).catch(() => ({ words: [] })) : Promise.resolve({ words: [] })
       ]);
 
-      setCreateProgress(92, '正在合并去重词表…', true);
+      setCreateProgress(isCloudMode ? 77 : 92, '正在合并去重词表…', true);
       const merged = mergeWordlists(wordlistPayloads, distPayload?.words || []);
       if (!merged.words.length) throw new Error('拉取的词表没有有效单词');
 
-      setCreateProgress(96, '正在写入本地存储…', true);
-      const id = 'local:' + randomId();
-      const reg = loadWordbooks();
-      reg.books[id] = {
-        id,
-        type: 'local',
-        name: bookName,
-        sources: merged.meta.sources,
-        wordCount: merged.words.length,
-        createdAt: now(),
-        updatedAt: now()
-      };
-      saveWordbooks(reg);
-      localStorage.setItem(scopedKey(STORE_KEY, id), JSON.stringify(defaultStore()));
-      saveVocabularyLocal(merged, id);
-      await vocabDB.set(id, merged);
-      await syncBookToNativeDisk(id).catch(() => {});
+      if (isCloudMode) {
+        btn.textContent = '正在加入云端…';
+        const res = await appendPublicWordlistsToCloud({
+          cloudBookId: catalogState.cloudBookId,
+          vocab: merged,
+          onStage: (pct, label) => setCreateProgress(pct, label, true)
+        });
+        const skipped = Math.max(0, res.plan.summary.localCount - res.plan.summary.added);
+        setCreateProgress(100, res.plan.summary.added > 0 ? `已加入（新增 ${res.plan.summary.added} 词）` : '词汇已全部存在', true);
+        closeModal('modal-create-local');
+        setCreateProgress(0, '', false);
+        if (res.plan.summary.added === 0) {
+          toast(`所选词表中的单词已全部在 ${res.cfg.owner}/${res.cfg.repo} 中（已有进度已保留，共 ${res.plan.summary.finalCount} 词）`);
+        } else if (skipped > 0) {
+          toast(`已向 ${res.cfg.owner}/${res.cfg.repo} 加入 ${res.plan.summary.added} 个新词（跳过 ${skipped} 个重复词并保留进度，共 ${res.plan.summary.finalCount} 词）`);
+        } else {
+          toast(`已向 ${res.cfg.owner}/${res.cfg.repo} 加入 ${res.plan.summary.added} 个新词（共 ${res.plan.summary.finalCount} 词）`);
+        }
+      } else {
+        setCreateProgress(96, '正在写入本地存储…', true);
+        const id = 'local:' + randomId();
+        const reg = loadWordbooks();
+        reg.books[id] = {
+          id,
+          type: 'local',
+          name: bookName,
+          sources: merged.meta.sources,
+          wordCount: merged.words.length,
+          createdAt: now(),
+          updatedAt: now()
+        };
+        saveWordbooks(reg);
+        localStorage.setItem(scopedKey(STORE_KEY, id), JSON.stringify(defaultStore()));
+        saveVocabularyLocal(merged, id);
+        await vocabDB.set(id, merged);
+        await syncBookToNativeDisk(id).catch(() => {});
 
-      await selectWordbook(id);
-      setCreateProgress(100, `已完成（共 ${merged.words.length} 词）`, true);
-      closeModal('modal-create-local');
-      setCreateProgress(0, '', false);
-      toast(`已创建本地词库「${bookName}」（${merged.words.length} 词）`);
+        await selectWordbook(id);
+        setCreateProgress(100, `已完成（共 ${merged.words.length} 词）`, true);
+        closeModal('modal-create-local');
+        setCreateProgress(0, '', false);
+        toast(`已创建本地词库「${bookName}」（${merged.words.length} 词）`);
+      }
     } catch (err) {
       setCreateProgress(0, '', false);
-      statusEl.textContent = '创建失败：' + (err.message || '未知错误');
+      statusEl.textContent = (isCloudMode ? '加词失败：' : '创建失败：') + (err.message || '未知错误');
       statusEl.className = 'hint sync-status is-error';
     } finally {
       if (repoInput) repoInput.disabled = false;
       checkboxes.forEach((cb) => { cb.disabled = false; });
       btn.disabled = false;
-      btn.textContent = '拉取并创建';
+      btn.textContent = isCloudMode ? '拉取并加入云端' : '拉取并创建';
     }
   }
 
@@ -3940,14 +4136,20 @@
         return;
       }
       btn.disabled = true;
-      btn.textContent = '正在连接…';
+      btn.textContent = '正在检测并连接…';
       try {
+        const initRes = await connectAndInitCloudRepo(cfg);
         selectRepository(cfg);
         const repoId = repositoryId(cfg);
         expandedBookId = repoId;
         closeModal('modal-connect-cloud');
         await syncNow({ silent: false, manual: true });
-        toast(`已连接云端仓库 ${cfg.owner}/${cfg.repo}`);
+        if (!initRes.hasWords) {
+          toast(`已连接 ${cfg.owner}/${cfg.repo}${initRes.createdProgress ? ' 并初始化进度' : ''}，当前暂无词条，请勾选词表导入`);
+          openPublicWordlistModal({ mode: 'cloud', cloudBookId: repoId });
+        } else {
+          toast(`已连接云端仓库 ${cfg.owner}/${cfg.repo}${initRes.createdProgress ? '（已自动新建进度文件）' : ''}`);
+        }
       } catch (err) {
         if (statusEl) {
           statusEl.textContent = '连接失败：' + (err.message || '未知错误');
@@ -4072,10 +4274,7 @@
     });
 
     $('#btn-open-create-local')?.addEventListener('click', () => {
-      catalogState.nameEdited = false;
-      $('#create-book-name').value = '';
-      openModal('modal-create-local');
-      loadPublicCatalog($('#wordlist-repo-input').value || DEFAULT_WORDLIST_REPO);
+      openPublicWordlistModal({ mode: 'local' });
     });
 
     $('#btn-reload-catalog')?.addEventListener('click', () => {

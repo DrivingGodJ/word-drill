@@ -297,7 +297,7 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 
         @JavascriptInterface
         fun fetchLatestRelease(token: String?): String {
-            val verUrl = "https://github.com/DrivingGodJ/word-drill/releases/download/latest/version.json?t=${System.currentTimeMillis()}"
+            val verUrl = "https://github.com/DrivingGodJ/word-drill/releases/latest/download/version.json?t=${System.currentTimeMillis()}"
             var lastErr = ""
             runCatching {
                 val (code, body) = httpGetJson(verUrl)

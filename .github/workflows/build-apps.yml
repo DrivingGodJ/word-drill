@@ -187,9 +187,13 @@ jobs:
             gh release edit "$TAG" --title "$TITLE" --notes "$NOTES"
           else
             if [[ "$IS_TAG" -eq 1 ]]; then
-              gh release create "$TAG" release-files/* --title "$TITLE" --notes "$NOTES"
+              gh release create "$TAG" release-files/* --latest --title "$TITLE" --notes "$NOTES"
             else
               gh release create "$TAG" release-files/* --target "${GITHUB_SHA}" --title "$TITLE" --notes "$NOTES"
             fi
+          fi
+          if [[ "$IS_TAG" -eq 1 ]] && gh release view latest >/dev/null 2>&1; then
+            gh release upload latest release-files/version.json --clobber
+            gh release edit latest --title "$TITLE" --notes "$NOTES"
           fi
 

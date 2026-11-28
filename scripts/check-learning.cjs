@@ -48,7 +48,7 @@ const source = fs.readFileSync(path.join(root, 'app.js'), 'utf8')
     buildWordbookBundle, parseWordbookBundle, wordDifficulty, selectDailyNewWords, resetBookProgress,
     getIosPwaState, syncBookToNativeDisk, deleteBookFromNativeDisk, hydrateNativeWordbooksOnBoot,
     shouldShowTopbarDownload, compareSemver, parseReleaseBuildMeta, pickPlatformAssetUrl, evaluateAppUpdate, fetchLatestReleaseMeta,
-    fetchPublicRepoJson
+    fetchPublicRepoJson, connectAndInitCloudRepo, appendPublicWordlistsToCloud
   }; sync = { deviceId: 'check' };`);
 vm.runInContext(source, context);
 const app = context.check;
@@ -1107,6 +1107,89 @@ assert.equal(app.getSession().practice, true);
   assert.match(requestedUrl, /^https:\/\/raw\.githubusercontent\.com\/DrivingGodJ\/worddrill-wordlists\/main\/wordlists\/cet4\.json$/);
   assert.equal(loadedList.words[0].id, 'w1');
   assert.ok(progressEvents.length >= 2 && progressEvents[progressEvents.length - 1] === encoded.length);
+  context.fetch = prevFetch;
+
+  // connectAndInitCloudRepo auto-creates progress.json on empty private repo and reports hasWords=false.
+  const cloudWrites = new Map();
+  let repoHasWords = false;
+  let repoHasProg = false;
+  let progPutCount = 0;
+  context.fetch = async (url, options = {}) => {
+    const clean = url.split('?')[0];
+    if (options.method === 'PUT') {
+      const body = JSON.parse(options.body);
+      const parsedBody = JSON.parse(Buffer.from(body.content, 'base64').toString('utf8'));
+      const rel = clean.split('/contents/')[1];
+      cloudWrites.set(rel, parsedBody);
+      if (rel === 'progress.json') { repoHasProg = true; progPutCount++; }
+      if (rel === 'data/words.json') repoHasWords = true;
+      return { ok: true, json: async () => ({ content: { sha: 'newsha' } }) };
+    }
+    if (clean.endsWith('/repos/test/empty-cloud')) {
+      return { ok: true, json: async () => ({ full_name: 'test/empty-cloud', private: true, permissions: { push: true } }) };
+    }
+    if (clean.includes('/branches/main')) {
+      return { ok: true, json: async () => ({ name: 'main' }) };
+    }
+    if (clean.endsWith('/contents/data/words.json')) {
+      if (!repoHasWords) return { ok: false, status: 404 };
+      const data = cloudWrites.get('data/words.json') || { words: trainingWords };
+      return { ok: true, json: async () => ({ sha: 'wsha', content: Buffer.from(JSON.stringify(data)).toString('base64') }) };
+    }
+    if (clean.endsWith('/contents/data/distractors.json')) return { ok: false, status: 404 };
+    if (clean.endsWith('/contents/progress.json')) {
+      if (!repoHasProg) return { ok: false, status: 404 };
+      const pdata = cloudWrites.get('progress.json') || plain(app.defaultStore());
+      return { ok: true, json: async () => ({ sha: 'psha', content: Buffer.from(JSON.stringify(pdata)).toString('base64') }) };
+    }
+    return { ok: false, status: 404 };
+  };
+
+  const emptyCfg = { owner: 'test', repo: 'empty-cloud', branch: 'main', path: 'progress.json', token: 'tok', deviceId: 'check' };
+  const initEmpty = await app.connectAndInitCloudRepo(emptyCfg);
+  assert.equal(initEmpty.hasWords, false);
+  assert.equal(initEmpty.createdProgress, true);
+  assert.ok(cloudWrites.get('progress.json'), 'initializes progress.json when absent');
+
+  // appendPublicWordlistsToCloud imports public words into empty cloud repo without losing progress.
+  app.selectRepository({ ...emptyCfg, enabled: true });
+  const importRes = await app.appendPublicWordlistsToCloud({
+    cloudBookId: app.repositoryId(emptyCfg),
+    vocab: { meta: { name: '四级' }, words: trainingWords, distractors: [{ w: 'foo', pos: 'n.', meaning: '示例' }] }
+  });
+  assert.equal(importRes.plan.summary.added, trainingWords.length);
+  assert.equal(cloudWrites.get('data/words.json').words.length, trainingWords.length);
+  assert.equal(app.getVocabulary().words.length, trainingWords.length);
+
+  // Importing another wordlist skips duplicate IDs/words and preserves existing remote + local progress.
+  const firstId = trainingWords[0].id;
+  const existingRecord = { ...rec('mastered'), correct: 7, wrong: 1 };
+  cloudWrites.get('progress.json').words[firstId] = plain(existingRecord);
+  app.setStore({ ...plain(app.defaultStore()), words: { [firstId]: plain(existingRecord) } });
+  app.saveStore();
+  const progPutBefore = progPutCount;
+  const importRes2 = await app.appendPublicWordlistsToCloud({
+    cloudBookId: app.repositoryId(emptyCfg),
+    vocab: {
+      meta: { name: '六级' },
+      words: [
+        { ...trainingWords[0], meaning: '新释义不应覆盖旧词' },
+        { ...trainingWords[1], id: 'dup-by-word-text', meaning: '同词不同ID不应重复加入' },
+        { id: 'brand_new_word', word: 'brandnew', pos: 'adj.', meaning: '全新的', tags: ['只认'] }
+      ],
+      distractors: []
+    }
+  });
+  assert.equal(importRes2.plan.summary.added, 1);
+  assert.equal(importRes2.plan.summary.finalCount, trainingWords.length + 1);
+  const finalWords = cloudWrites.get('data/words.json').words;
+  assert.equal(finalWords.some(w => w.id === 'dup-by-word-text'), false, 'deduplicates by word text too');
+  assert.equal(finalWords.find(w => w.id === firstId).meaning, trainingWords[0].meaning, 'keeps existing word entry');
+  assert.equal(finalWords.some(w => w.id === 'brand_new_word'), true, 'appends genuinely new word');
+  assert.equal(progPutCount, progPutBefore, 'does not overwrite existing remote progress.json');
+  assert.equal(cloudWrites.get('progress.json').words[firstId].stage, 'mastered');
+  assert.equal(cloudWrites.get('progress.json').words[firstId].correct, 7);
+  assert.equal(app.getStore().words[firstId].stage, 'mastered');
   context.fetch = prevFetch;
 
   console.log(`Learning checks passed; ${Object.keys(old.words).length} legacy records preserved.`);
