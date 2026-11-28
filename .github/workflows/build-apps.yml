@@ -136,7 +136,7 @@ jobs:
           BUILT_AT=$(git show -s --format=%cI HEAD 2>/dev/null || date -u +%Y-%m-%dT%H:%M:%SZ)
           COMMIT="${GITHUB_SHA}"
           SHORT_COMMIT="${COMMIT:0:7}"
-          node -e '
+          REL_TAG="$TAG" REL_VER="$VERSION" REL_COMMIT="$COMMIT" REL_SHORT="$SHORT_COMMIT" REL_TIME="$BUILT_AT" node -e '
             const fs = require("fs");
             const tag = process.env.REL_TAG;
             const files = fs.readdirSync("release-files").filter(f => /\.(apk|exe|dmg)$/i.test(f));
@@ -151,7 +151,7 @@ jobs:
               assets: files.map(name => ({ name, url: `${base}/${encodeURIComponent(name)}` }))
             };
             fs.writeFileSync("release-files/version.json", JSON.stringify(data, null, 2));
-          ' REL_TAG="$TAG" REL_VER="$VERSION" REL_COMMIT="$COMMIT" REL_SHORT="$SHORT_COMMIT" REL_TIME="$BUILT_AT"
+          '
           ls -lh release-files
       - name: Create or update GitHub Release
         env:
