@@ -1014,6 +1014,8 @@ assert.equal(app.getSession().practice, true);
   await app.hydrateNativeWordbooksOnBoot();
   assert.ok(app.loadWordbooks().books['local:disk1'], 'hydrates local wordbook bundle found on native disk');
   assert.equal(elements.get('#native-storage-bar').hidden, false);
+  assert.equal(elements.get('#local-books-desc').textContent.includes('浏览器'), false);
+  assert.equal(elements.get('#connect-token-hint').textContent.includes('浏览器'), false);
   await app.syncBookToNativeDisk('local:disk1');
   assert.ok(Array.from(diskFiles.keys()).some((k) => k.endsWith('__disk1.json')));
   await app.deleteBookFromNativeDisk('local:disk1');
@@ -1026,6 +1028,10 @@ assert.equal(app.getSession().practice, true);
   assert.equal(spokenNative, 'nativehello', 'native TTS bridge speaks when speechSynthesis is absent');
   if (prevSpeech) context.window.speechSynthesis = prevSpeech;
   delete context.window.WordDrillNative;
+  await app.hydrateNativeWordbooksOnBoot();
+  assert.equal(elements.get('#native-storage-bar').hidden, true);
+  assert.equal(elements.get('#local-books-desc').textContent.includes('浏览器'), true);
+  assert.equal(elements.get('#connect-token-hint').textContent.includes('浏览器'), true);
 
   // Topbar download button appears only on non-iOS non-standalone web browsers.
   assert.equal(app.shouldShowTopbarDownload({ navigator: { userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/130.0' }, window: {}, localStorage: { getItem: () => null } }), true);

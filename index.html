@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap">
-<link rel="stylesheet" href="styles.css?v=19">
+<link rel="stylesheet" href="styles.css?v=20">
 <link rel="manifest" href="manifest.webmanifest">
 <!-- iOS「添加到主屏幕」不认 SVG 图标，必须是 PNG（180×180 且不透明）；
      也读不了 manifest 里的 short_name，主屏名字只认 apple-mobile-web-app-title。 -->
@@ -220,7 +220,7 @@
       <div class="books-card__head">
         <div>
           <h2 class="card__title">本地词库</h2>
-          <p class="card__desc">单词表与进度保存在本机浏览器。</p>
+          <p class="card__desc" id="local-books-desc">单词表与进度保存在本机浏览器。</p>
         </div>
         <div class="books-card__head-actions">
           <button class="btn btn--primary btn--sm" id="btn-open-create-local" type="button">+ 新建词库</button>
@@ -588,7 +588,7 @@
           <input type="password" id="connect-token" placeholder="github_pat_…" autocomplete="off" spellcheck="false">
           <button class="btn btn--ghost btn--sm" id="btn-connect-toggle-token" type="button">显示</button>
         </div>
-        <p class="hint">仅存于本机浏览器，需仓库 Contents 读写权限。</p>
+        <p class="hint" id="connect-token-hint">仅存于本机浏览器，需仓库 Contents 读写权限。</p>
       </div>
 
       <div class="btn-row" style="margin-top:var(--s-4)">
@@ -675,6 +675,6 @@
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
 <script src="vendor/ts-fsrs-5.4.2.js"></script>
-<script src="app.js?v=25"></script>
+<script src="app.js?v=26"></script>
 </body>
 </html>

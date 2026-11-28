@@ -249,7 +249,7 @@
       localStorage.setItem(scopedKey(STORE_KEY), JSON.stringify(store));
       if (!isCloudBook()) scheduleNativeDiskSync(activeRepository);
     } catch {
-      toast('进度保存失败：浏览器存储空间不足');
+      toast(nativeBridge() ? '进度保存失败：本地存储空间不足' : '进度保存失败：浏览器存储空间不足');
     }
   }
 
@@ -1763,7 +1763,7 @@
   function startSession(mode = 'learn', ids = null) {
     const t = now();
     const practice = ['practice', 'mistakes', 'context', 'listen'].includes(mode);
-    if (mode === 'listen' && !canSpeak()) { toast('当前浏览器不支持发音，请使用语境填空或自由加练'); return; }
+    if (mode === 'listen' && !canSpeak()) { toast(nativeBridge() ? '当前设备不支持发音，请使用语境填空或自由加练' : '当前浏览器不支持发音，请使用语境填空或自由加练'); return; }
     let selected;
     if (practice) {
       selected = shuffle(WORDS.filter((w) => {
@@ -2008,7 +2008,7 @@
     $('#btn-context').disabled = !learned.some(hasFillExample);
     $('#btn-listen').disabled = !learned.length || !canSpeak();
     $('#application-hint').textContent = !canSpeak()
-      ? '当前浏览器无法朗读，仍可练语境填空。'
+      ? (nativeBridge() ? '当前设备无法朗读，仍可练语境填空。' : '当前浏览器无法朗读，仍可练语境填空。')
       : '语境与听写加练不影响正式复习计划。';
     refreshActiveBookBar();
   }
@@ -2914,13 +2914,19 @@
     const bar = $('#native-storage-bar');
     const pathEl = $('#native-storage-path');
     const openBtn = $('#btn-open-wordbooks-dir');
+    const localDesc = $('#local-books-desc');
+    const tokenHint = $('#connect-token-hint');
     const bridge = nativeBridge();
     if (!bridge) {
       if (bar) bar.hidden = true;
+      if (localDesc) localDesc.textContent = '单词表与进度保存在本机浏览器。';
+      if (tokenHint) tokenHint.textContent = '仅存于本机浏览器，需仓库 Contents 读写权限。';
       return;
     }
 
     if (bar) bar.hidden = false;
+    if (localDesc) localDesc.textContent = '单词表与进度保存在本机，可离线学习。';
+    if (tokenHint) tokenHint.textContent = '仅保存在本机应用内，需仓库 Contents 读写权限。';
     try {
       const dir = await bridge.getWordbooksDir?.();
       if (pathEl) pathEl.textContent = dir || '应用本地词库目录';
